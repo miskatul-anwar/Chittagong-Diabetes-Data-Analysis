@@ -1,0 +1,466 @@
+---
+title: "Thana-Level Population Distribution and Age Group Analysis"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    code-fold: false
+    code-tools: true
+execute:
+  warning: false
+  message: false
+---
+
+## Overview
+
+This document presents a reproducible analysis workflow for examining population records by **Thana**, **City Corporation classification**, and **Age Group**. The experiment focuses on cleaning location labels, separating records into areas inside and outside the City Corporation, summarizing population counts, and calculating percentage distributions.
+
+The analysis uses a cleaned Excel dataset loaded from an environment variable. The workflow is designed to support transparent reporting, verification, and future replication without hard-coding the input file path.
+
+## Objectives
+
+The main objectives of this experiment are to:
+
+- Load the cleaned dataset from a configured environment path.
+- Remove records from Thanas that are outside the intended analysis scope.
+- Standardize inconsistent or alternative Thana names through mapping.
+- Classify Thanas into City Corporation and non-City Corporation groups.
+- Create an age-based grouping using a threshold of 30 years.
+- Produce total population counts and Thana-wise summaries.
+- Calculate percentage distributions for City Corporation, outside City Corporation, and overall dataset shares.
+- Run a verification check to confirm whether all records are accounted for in the final grouping.
+
+## Dataset Loading and Environment Setup
+
+The workflow begins by importing the required Python libraries and loading environment variables. The dataset path is expected to be stored in the `CLEANED_DATASET_PATH` environment variable.
+
+```{python}
+import os
+import pandas as pd
+import numpy as np
+from dotenv import load_dotenv
+load_dotenv()
+```
+
+## Display Configuration
+
+The following display settings are configured to make exploratory outputs easier to inspect. These options ensure that all rows, columns, and long cell values are visible when printed or displayed in the notebook output.
+
+```{python}
+# Show all rows
+pd.set_option('display.max_rows', None)
+
+# Show all columns
+pd.set_option('display.max_columns', None)
+
+# Show full cell content (stops long text from getting cut off)
+pd.set_option('display.max_colwidth', None)
+
+```
+
+## Initial Data Loading and Scope Filtering
+
+The cleaned dataset is loaded from the Excel file specified in the environment variable. A predefined list of Thanas is then excluded from the analysis. These excluded values represent locations that are not part of the intended analytical scope for this experiment.
+
+Records with missing `Thana` values are also removed because the location field is essential for all subsequent grouping, classification, and percentage calculations.
+
+```{python}
+
+path = os.getenv("CLEANED_DATASET_PATH")
+if path is None:
+    raise ValueError("CLEANED_DATASET_PATH not set")
+
+df = pd.read_excel(path)
+
+values = ["Senbag", "Shahjadpur", "Barkal", "Chandina", "Chatkhil",
+          "Chouddagram", "Companyganj", "Cox's Bazar Sadar",
+          "Cumilla Adarsha Sadar", "Jorargonj", "Kawkhali",
+          "Khagrachhari Sadar", "Kobirhat", "Manikchhari",
+          "Matiranga", "Moheshkhali", "Muradnagar", "Nabinagar",
+          "Noakhali Sadar", "Ramgarh", "Rangamati Sadar",
+          "Shahrasti", "Sonagazi", "Ukhia", "Hatia", "Chakaria"]
+
+df = df.loc[~df['Thana'].isin(values)]
+
+df.dropna(subset=["Thana"], inplace=True)
+```
+
+## City Corporation and Outside City Corporation Classification
+
+Two reference lists are created to classify Thanas into two analytical groups:
+
+- **Inside City Corporation**, representing Thanas within the City Corporation area.
+- **Outside City Corporation**, representing Thanas outside the City Corporation but still within the analysis boundary.
+
+These lists are later used to split the dataset and calculate separate summaries for each group.
+
+```{python}
+thanas_outside_cc = ["Mirsharai", "Fatikchhari", "Raozan", "Sitakunda", "Hathazari", "Boalkhali", "Patiya", "Chandanaish", "Sandwip", "Rangunia", "Anowara", "Satkania", "Banshkhali", "Lohagara"]
+thanas_in_cc = ["Bayejid Bostami", "Chandgaon", "Bakalia", "Kotwali", "Double Mooring", "Patenga", "Chittagong Port", "Halishahar", "Pahartali", "Khulshi", "Panchlaish"]
+```
+
+## Standardizing Thana Names
+
+Some records contain alternative spellings, informal names, administrative variants, or localized labels for the same Thana. A mapping dictionary is used to standardize these names into the classification labels used in the analysis.
+
+This step is important because inconsistent naming can split the same geographic area into multiple categories and distort count-based summaries.
+
+```{python}
+mapping = {
+    "Firingibazar": "Kotwali",
+    "EPZ": "Chittagong Port",
+    "Lalkhan Bazar": "Khulshi",
+    "Patharghata": "Kotwali",
+    "Kaptai": "Rangunia",
+    "Fouzdarhat": "Sitakunda",
+    "New Mooring": "Chittagong Port",
+    "Agrabad": "Double Mooring",
+    "Karnaphuli": "Patiya",
+    "Bhujpur": "Fatikchhari",
+    "Chawk Bazar": "Panchlaish",
+    "Bandar": "Chittagong Port",
+    "Anwara":"Anowara",
+    "Sadarghat": "Patiya",
+    "Akbar Shah":"Pahartali",
+    "Bayazid Bostami":"Bayejid Bostami",
+    "Bandarban Sadar":"Satkania"
+}
+```
+
+The mapping is applied to the `Thana` column. Any value not found in the mapping dictionary is retained as its original value.
+
+```{python}
+df["Thana"] = df["Thana"].map(mapping).fillna(df["Thana"])
+```
+
+## Reference List Size Check
+
+The number of Thanas in each reference list is printed to confirm the expected coverage of the City Corporation and outside City Corporation groups.
+
+```{python}
+print(thanas_in_cc.__len__())
+print(thanas_outside_cc.__len__())
+```
+
+## Unique Thana Inspection
+
+This step prints all unique Thana names available in the filtered and standardized dataset. It helps identify whether any unexpected, unmapped, misspelled, or out-of-scope Thana names remain after cleaning.
+
+```{python}
+thanas = set(df["Thana"].tolist())
+
+for thana in thanas:
+    print(thana)
+
+print(f"\nTotal {thanas.__len__()} thanas")
+```
+
+## Age Group Creation
+
+A new categorical variable, `Age Group`, is created using the following rule:
+
+- `<=30` for records where age is less than or equal to 30.
+- `>30` for records where age is greater than 30.
+
+This age grouping supports comparison of younger and older population segments across Thanas and City Corporation classifications.
+
+```{python}
+df["Age Group"] = np.where(df["Age"] <= 30, "<=30", ">30")
+
+df["Age Group"].value_counts()
+
+df.groupby(["Age Group", "Thana"]).size()
+```
+
+## Total Population Count
+
+The total number of records remaining after filtering and standardization is calculated. This value acts as the denominator for global percentage calculations later in the workflow.
+
+```{python}
+total_records = len(df)
+print("Total Population",total_records)
+```
+
+## Creating City Corporation and Outside City Corporation Subsets
+
+The dataset is divided into two filtered DataFrames:
+
+- `df_cc`: records belonging to Thanas inside the City Corporation.
+- `df_outside`: records belonging to Thanas outside the City Corporation.
+
+Creating these subsets simplifies downstream calculations and keeps the analysis more readable.
+
+```{python}
+# Pre-filter DataFrames for cleaner execution
+df_cc = df[df["Thana"].isin(thanas_in_cc)]
+df_outside = df[df["Thana"].isin(thanas_outside_cc)]
+```
+
+## Record Counts by Classification and Thana
+
+This section calculates total records inside the City Corporation, total records outside the City Corporation, and individual Thana-level counts for both groups.
+
+```{python}
+# Total records in City Corporation
+total_cc_records = len(df_cc)
+
+# Total records for each individual thana in City Corporation
+thana_counts_in_cc = df_cc["Thana"].value_counts()
+
+# Total records Outside City Corporation
+total_outside_cc_records = len(df_outside)
+
+# Total records for each individual thana outside City Corporation
+thana_counts_outside_cc = df_outside["Thana"].value_counts()
+```
+
+## Age Group Counts by Classification and Thana
+
+The following grouped summaries are calculated:
+
+- Total City Corporation records by age group.
+- City Corporation Thana-level records by age group.
+- Outside City Corporation Thana-level records by age group.
+- Total outside City Corporation records by age group.
+
+These grouped outputs support both aggregate and location-specific demographic interpretation.
+
+```{python}
+# Total records in City Corporation grouped by Age Group
+cc_records_by_age = df_cc.groupby("Age Group").size()
+
+# Total records for each thana in CC grouped by Age Group
+cc_thana_records_by_age = df_cc.groupby(["Thana", "Age Group"]).size()
+
+# Total records for each thana outside CC grouped by Age Group
+outside_thana_records_by_age = df_outside.groupby(["Thana", "Age Group"]).size()
+
+# Total records outside CC grouped by Age Group
+outside_cc_records_by_age = df_outside.groupby("Age Group").size()
+```
+
+## City Corporation Summary
+
+This section prints the total number of records inside the City Corporation and the distribution of those records by age group.
+
+```{python}
+# Total records in CC
+total_cc = len(df[df["Thana"].isin(thanas_in_cc)])
+print(f"Total records in CC: {total_cc}")
+
+# Total records in CC by Age Group
+cc_age_counts = df[df["Thana"].isin(thanas_in_cc)]["Age Group"].value_counts()
+print("\nTotal records in CC for each age group:")
+print(cc_age_counts.to_string())
+```
+
+## Outside City Corporation Summary
+
+This section reports record counts for each Thana outside the City Corporation. It also creates a Thana-by-age-group table, where each row represents a Thana and each column represents an age group.
+
+```{python}
+# -------------------------------------------------------------
+# 1. Total records outside CC for each Thana
+# -------------------------------------------------------------
+print("     TOTAL RECORDS OUTSIDE CC FOR EACH THANA      ")
+print(thana_counts_outside_cc.to_string())
+
+print("\n")
+
+# -------------------------------------------------------------
+# 2. Total records outside CC for each Thana by Age Group
+# -------------------------------------------------------------
+
+print("    RECORDS OUTSIDE CC BY THANA AND AGE GROUP    ")
+# .unstack() moves the 'Age Group' index level into tidy columns
+thana_age_table = outside_thana_records_by_age.unstack(fill_value=0)
+print(thana_age_table.to_string())
+```
+
+## City Corporation Percentage Breakdown
+
+This section calculates the share of City Corporation records relative to the full dataset. It also calculates the age group distribution within the City Corporation subset.
+
+```{python}
+# Calculate the total records across the entire dataset
+total_dataset_records = len(df)
+
+print("              PERCENTAGE BREAKDOWNS               ")
+
+# 1. Total percentage in CC based on total number of records
+if total_dataset_records > 0:
+    cc_percentage = (total_cc_records / total_dataset_records) * 100
+    print(f"Total records in CC: {cc_percentage:.2f}% of the entire dataset")
+else:
+    print("Total records in CC: 0.00% (Dataset is empty)")
+
+print("-" * 50)
+
+# 2. Percentage of each age group based on total records in CC
+print("Percentage of each age group within CC:")
+if total_cc_records > 0:
+    cc_age_percentage = (cc_records_by_age / total_cc_records) * 100
+    for age_group, percentage in cc_age_percentage.items():
+        print(f"  * Age Group {age_group}: {percentage:.2f}%")
+else:
+    print("  * No records available in CC to calculate age percentages.")
+```
+
+## Age Group Percentages Within City Corporation Thanas
+
+This section calculates the internal age distribution for each City Corporation Thana. Each row is normalized by its own total so that the percentages show the age group composition within that specific Thana.
+
+```{python}
+
+print("   PERCENTAGE OF AGE GROUPS IN EACH THANA (CC)    ")
+
+# 1. Pivot the counts into a table (Thanas as rows, Age Groups as columns)
+cc_thana_age_table = cc_thana_records_by_age.unstack(fill_value=0)
+
+# 2. Divide each row by its total sum to get proportions, then multiply by 100
+cc_thana_age_pct = cc_thana_age_table.div(cc_thana_age_table.sum(axis=1), axis=0) * 100
+
+# 3. Print the formatted result rounded to 2 decimal places
+print(cc_thana_age_pct.round(2).to_string())
+```
+
+## Outside City Corporation Percentage Breakdown
+
+This section reports two types of Thana-level percentage calculations for areas outside the City Corporation:
+
+- Percentage based on the total number of records outside the City Corporation.
+- Percentage based on the total population of the entire dataset.
+
+It then calculates age group percentages within each outside-City-Corporation Thana.
+
+```{python}
+
+print("     THANA RECORD PERCENTAGES (OUTSIDE CC)        ")
+
+
+if total_outside_cc_records > 0:
+    # Option A: Based on total records OUTSIDE CC
+    thana_pct_outside_total = (thana_counts_outside_cc / total_outside_cc_records) * 100
+    print("A. Percentage based on total records OUTSIDE CC:")
+    print(thana_pct_outside_total.round(2).to_string())
+    
+    print("-" * 50)
+    
+    # Option B: Based on the ENTIRE dataset's total records
+    thana_pct_global_total = (thana_counts_outside_cc / total_dataset_records) * 100
+    print("B. Percentage based on the ENTIRE dataset population:")
+    print(thana_pct_global_total.round(2).to_string())
+else:
+    print("No records found outside CC.")
+
+print("   PERCENTAGE OF AGE GROUPS IN EACH THANA (OUTSIDE)")
+
+
+# Pivot, divide across rows (axis=0) to get internal distributions, and multiply by 100
+outside_thana_age_table = outside_thana_records_by_age.unstack(fill_value=0)
+
+if not outside_thana_age_table.empty:
+    outside_thana_age_pct = outside_thana_age_table.div(outside_thana_age_table.sum(axis=1), axis=0) * 100
+    print(outside_thana_age_pct.round(2).to_string())
+else:
+    print("No age group records found outside CC.")
+```
+
+## Inside City Corporation Thana Percentage Breakdown
+
+This section reports two types of percentage calculations for Thanas inside the City Corporation:
+
+- Percentage based on total records inside the City Corporation.
+- Percentage based on total records in the full dataset.
+
+These outputs help distinguish between local distribution within the City Corporation and global contribution to the overall dataset.
+
+```{python}
+print("      THANA RECORD PERCENTAGES (INSIDE CC)        ")
+
+
+if total_cc_records > 0:
+    # Option A: Based on total records INSIDE CC
+    thana_pct_cc_total = (thana_counts_in_cc / total_cc_records) * 100
+    print("A. Percentage based on total records INSIDE CC:")
+    print(thana_pct_cc_total.round(2).to_string())
+    
+    print("-" * 50)
+    
+    # Option B: Based on the ENTIRE dataset's total records
+    thana_pct_global_total = (thana_counts_in_cc / total_dataset_records) * 100
+    print("B. Percentage based on the ENTIRE dataset population:")
+    print(thana_pct_global_total.round(2).to_string())
+else:
+    print("No records found inside CC.")
+```
+
+## Global Population Share and Verification
+
+The final section calculates the City Corporation share of the total dataset and the individual outside-City-Corporation Thana shares. These percentages are then summed to verify whether the classification accounts for the entire filtered dataset.
+
+If the combined percentage does not equal 100%, the output warns that some records may still contain missing, unmapped, or unclassified Thana values.
+
+```{python}
+# Ensure we have the global total
+total_population = len(df)
+
+print("       GLOBAL POPULATION SHARE BREAKDOWN          ")
+
+
+# 1. Percentage of records in CC based on total population
+cc_pct_global = (len(df[df["Thana"].isin(thanas_in_cc)]) / total_population) * 100
+print(f"Total City Corporation (CC) Share: {cc_pct_global:.2f}%\n")
+
+print("--------------------------------------------------")
+print("Individual Thana Shares (Outside CC):")
+# 2. Percentage of records in each thana outside CC based on total population
+outside_thana_pct_global = (df[df["Thana"].isin(thanas_outside_cc)]["Thana"].value_counts() / total_population) * 100
+print(outside_thana_pct_global.round(2).to_string())
+
+
+print("                VERIFICATION CHECK                ")
+
+
+# Summing CC total + individual outside thana percentages
+grand_total_percentage = cc_pct_global + outside_thana_pct_global.sum()
+print(f"Combined Sum of Percentages: {grand_total_percentage:.2f}%")
+
+if round(grand_total_percentage, 2) == 100.00:
+    print(" Check Passed: Perfect 100%! All data is accounted for.")
+else:
+    print("⚠️ Check Warning: Does not equal 100%. You may have missing (NaN) values or unmapped Thanas in your raw data.")
+```
+
+## Interpretation Guide
+
+Use the generated outputs as follows:
+
+- **Total Population** shows the number of valid records after filtering and removing missing Thana values.
+- **Total records in CC** shows how many records fall inside the City Corporation classification.
+- **Outside CC Thana counts** show how the non-City-Corporation records are distributed geographically.
+- **Age Group summaries** show whether records are concentrated in the `<=30` or `>30` group.
+- **Within-group percentages** explain internal composition, such as the age distribution inside a specific Thana.
+- **Global percentages** show how much each group contributes to the entire filtered dataset.
+- **Verification check** confirms whether all standardized Thana records are covered by either the City Corporation list or the outside City Corporation list.
+
+## Notes for Reproducibility
+
+Before rendering this document, ensure that:
+
+- The `.env` file exists in the working directory or the environment variable is otherwise available.
+- `CLEANED_DATASET_PATH` points to the cleaned Excel dataset.
+- The dataset contains the required columns: `Thana` and `Age`.
+- Required Python packages are installed: `pandas`, `numpy`, `python-dotenv`, and an Excel-reading engine such as `openpyxl`.
+
+## Expected Output
+
+After running the document, the analysis should produce:
+
+- A cleaned and standardized Thana list.
+- Total population count after filtering.
+- Counts for City Corporation and outside City Corporation areas.
+- Thana-wise record counts.
+- Age group counts and percentages.
+- City Corporation and outside City Corporation percentage breakdowns.
+- A final verification result indicating whether the grouped records sum to the full filtered dataset.

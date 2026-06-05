@@ -1,0 +1,798 @@
+---
+title: "Fasting, Body Composition, and Lifestyle Patterns by Age Group"
+format: html
+---
+
+## Analysis Objective
+
+This report explores how fasting measurements, BMI, body size, sex, and lifestyle-related variables vary across two age groups:
+
+- `Age <= 30`
+- `Age > 30`
+
+The objective is to identify descriptive patterns, compare distributions, and examine how anthropometric and metabolic variables behave across these two age-based segments.
+
+## Import necessary libraries
+
+```{python}
+import os
+import numpy as np
+import pandas as pd
+import seaborn as sns
+from dotenv import load_dotenv
+```
+
+## Set the visual theme
+
+```{python}
+sns.set_theme(
+    style="whitegrid",
+    context="notebook",
+    rc={"figure.figsize": (8, 5)}
+)
+```
+
+## Load the dataset
+
+```{python}
+load_dotenv()
+
+dataset_path = os.getenv("CLEANED_DATASET_PATH")
+if dataset_path is None:
+    raise ValueError("CLEANED_DATASET_PATH is not set in the environment.")
+
+df = pd.read_excel(dataset_path)
+df.head()
+```
+
+## Initial data overview
+
+### Shape of the dataset
+
+```{python}
+df.shape
+```
+
+### Column names
+
+```{python}
+df.columns.tolist()
+```
+
+### Check required columns
+
+```{python}
+required_columns = [
+    "Age",
+    "Sex",
+    "Height (CM)",
+    "Weight (KG)",
+    "BMI",
+    "Fasting"
+]
+
+missing_columns = [col for col in required_columns if col not in df.columns]
+
+if missing_columns:
+    raise ValueError(f"Missing required columns: {missing_columns}")
+else:
+    print("All required columns are present.")
+```
+
+### Data types
+
+```{python}
+df.dtypes
+```
+
+### Missing values summary
+
+```{python}
+df[required_columns].isnull().sum().sort_values(ascending=False)
+```
+
+### Duplicate rows
+
+```{python}
+df.duplicated().sum()
+```
+
+## Descriptive statistics
+
+### Numerical summary
+
+```{python}
+df[["Age", "Height (CM)", "Weight (KG)", "BMI", "Fasting"]].describe()
+```
+
+### Categorical summary
+
+```{python}
+categorical_columns = ["Sex"] + (["Diet"] if "Diet" in df.columns else [])
+
+for col in categorical_columns:
+    print(f"\nValue counts for: {col}")
+    print(df[col].value_counts(dropna=False))
+```
+
+## Data cleaning and outlier handling
+
+The goal here is to remove implausible or extreme records that may distort the analysis.
+
+```{python}
+df = df.drop_duplicates().copy()
+
+df = df[
+    ~(
+        (df["BMI"] >= 60) |
+        (df["BMI"] <= 15) |
+        (df["Weight (KG)"] >= 500) |
+        (df["Weight (KG)"] <= 30) |
+        (df["Height (CM)"] > 250) |
+        (df["Height (CM)"] <= 100) |
+        (df["Fasting"] > 50)
+    )
+].copy()
+```
+
+### Quick sanity check after filtering
+
+```{python}
+df[["Age", "Height (CM)", "Weight (KG)", "BMI", "Fasting"]].describe()
+```
+
+## Feature engineering
+
+### Create age group labels
+
+```{python}
+df["Age Group"] = np.where(df["Age"] <= 30, "<=30", ">30")
+df["Age Group"].value_counts()
+```
+
+### Create BMI category
+
+```{python}
+bmi_bins = [0, 18.5, 25, 30, np.inf]
+bmi_labels = ["Underweight", "Normal", "Overweight", "Obese"]
+
+df["BMI Category"] = pd.cut(
+    df["BMI"],
+    bins=bmi_bins,
+    labels=bmi_labels,
+    right=False
+)
+
+df["BMI Category"].value_counts(dropna=False)
+```
+
+## Sample composition
+
+### Participant count by age group
+
+```{python}
+ax = sns.countplot(data=df, x="Age Group", hue="Age Group", palette="Set2", legend=False)
+ax.set(
+    xlabel="Age Group",
+    ylabel="Count",
+    title="Participant Distribution by Age Group"
+)
+```
+
+### Sex distribution across age groups
+
+```{python}
+ax = sns.countplot(data=df, x="Age Group", hue="Sex", palette="Set1")
+ax.set(
+    xlabel="Age Group",
+    ylabel="Count",
+    title="Sex Distribution Across Age Groups"
+)
+```
+
+### BMI category distribution by age group
+
+```{python}
+g = sns.catplot(
+    data=df,
+    x="BMI Category",
+    hue="Age Group",
+    kind="count",
+    palette="Set2",
+    height=5,
+    aspect=1.6
+)
+
+g.set_axis_labels("BMI Category", "Count")
+g.set_titles("BMI Category Distribution by Age Group")
+g.ax.tick_params(axis="x", rotation=15)
+```
+
+## Grouped descriptive analytics
+
+### Summary statistics by age group
+
+```{python}
+group_summary = (
+    df.groupby("Age Group")[["Age", "Height (CM)", "Weight (KG)", "BMI", "Fasting"]]
+    .agg(["count", "mean", "median", "std", "min", "max"])
+    .round(2)
+)
+
+group_summary
+```
+
+### Summary statistics by age group and sex
+
+```{python}
+group_sex_summary = (
+    df.groupby(["Age Group", "Sex"])[["Height (CM)", "Weight (KG)", "BMI", "Fasting"]]
+    .agg(["count", "mean", "median", "std"])
+    .round(2)
+)
+
+group_sex_summary
+```
+
+## Correlation analysis
+
+### Overall correlation heatmap
+
+```{python}
+corr = df[["Age", "Height (CM)", "Weight (KG)", "BMI", "Fasting"]].corr(numeric_only=True)
+
+ax = sns.heatmap(
+    corr,
+    annot=True,
+    cmap="coolwarm",
+    fmt=".2f",
+    linewidths=0.5
+)
+
+ax.set_title("Correlation Heatmap of Core Numerical Variables")
+```
+
+### Correlation heatmap for `Age <= 30`
+
+```{python}
+corr_young = (
+    df.loc[df["Age Group"] == "<=30", ["Age", "Height (CM)", "Weight (KG)", "BMI", "Fasting"]]
+    .corr(numeric_only=True)
+)
+
+ax = sns.heatmap(
+    corr_young,
+    annot=True,
+    cmap="coolwarm",
+    fmt=".2f",
+    linewidths=0.5
+)
+
+ax.set_title("Correlation Heatmap for Age <= 30")
+```
+
+### Correlation heatmap for `Age > 30`
+
+```{python}
+corr_older = (
+    df.loc[df["Age Group"] == ">30", ["Age", "Height (CM)", "Weight (KG)", "BMI", "Fasting"]]
+    .corr(numeric_only=True)
+)
+
+ax = sns.heatmap(
+    corr_older,
+    annot=True,
+    cmap="coolwarm",
+    fmt=".2f",
+    linewidths=0.5
+)
+
+ax.set_title("Correlation Heatmap for Age > 30")
+```
+
+## Distribution analysis
+
+### Fasting distribution overall
+
+```{python}
+ax = sns.histplot(
+    data=df,
+    x="Fasting",
+    kde=True,
+    bins=30
+)
+
+ax.set(
+    xlabel="Fasting",
+    ylabel="Count",
+    title="Overall Distribution of Fasting"
+)
+```
+
+### Fasting distribution by age group
+
+```{python}
+ax = sns.histplot(
+    data=df,
+    x="Fasting",
+    hue="Age Group",
+    kde=True,
+    bins=30,
+    element="step",
+    stat="count",
+    common_norm=False
+)
+
+ax.set(
+    xlabel="Fasting",
+    ylabel="Count",
+    title="Fasting Distribution by Age Group"
+)
+```
+
+### BMI distribution overall
+
+```{python}
+ax = sns.histplot(
+    data=df,
+    x="BMI",
+    kde=True,
+    bins=30
+)
+
+ax.set(
+    xlabel="BMI",
+    ylabel="Count",
+    title="Overall Distribution of BMI"
+)
+```
+
+### BMI distribution by age group
+
+```{python}
+ax = sns.histplot(
+    data=df,
+    x="BMI",
+    hue="Age Group",
+    kde=True,
+    bins=30,
+    element="step",
+    stat="count",
+    common_norm=False
+)
+
+ax.set(
+    xlabel="BMI",
+    ylabel="Count",
+    title="BMI Distribution by Age Group"
+)
+```
+
+### Density comparison of fasting by age group
+
+```{python}
+ax = sns.kdeplot(
+    data=df,
+    x="Fasting",
+    hue="Age Group",
+    fill=True,
+    common_norm=False,
+    alpha=0.4
+)
+
+ax.set(
+    xlabel="Fasting",
+    ylabel="Density",
+    title="Density of Fasting by Age Group"
+)
+```
+
+## Core relationship analysis
+
+### Age vs fasting
+
+#### Scatter plot
+
+```{python}
+ax = sns.scatterplot(
+    data=df,
+    x="Age",
+    y="Fasting",
+    hue="Age Group",
+    palette="Set1",
+    alpha=0.7
+)
+
+ax.set(
+    xlabel="Age",
+    ylabel="Fasting",
+    title="Age vs Fasting"
+)
+```
+
+#### Mean fasting by age
+
+```{python}
+age_fasting = (
+    df.groupby(["Age", "Age Group"], as_index=False)["Fasting"]
+    .mean()
+)
+
+ax = sns.lineplot(
+    data=age_fasting,
+    x="Age",
+    y="Fasting",
+    hue="Age Group",
+    marker="o"
+)
+
+ax.set(
+    xlabel="Age",
+    ylabel="Mean Fasting",
+    title="Mean Fasting by Age"
+)
+```
+
+### BMI vs fasting
+
+#### Scatter plot by age group
+
+```{python}
+ax = sns.scatterplot(
+    data=df,
+    x="BMI",
+    y="Fasting",
+    hue="Age Group",
+    alpha=0.7,
+    palette="Set2"
+)
+
+ax.set(
+    xlabel="BMI",
+    ylabel="Fasting",
+    title="BMI vs Fasting by Age Group"
+)
+```
+
+#### Regression view
+
+```{python}
+g = sns.lmplot(
+    data=df,
+    x="BMI",
+    y="Fasting",
+    hue="Age Group",
+    height=5,
+    aspect=1.4,
+    scatter_kws={"alpha": 0.6}
+)
+
+g.set_axis_labels("BMI", "Fasting")
+```
+
+### Weight vs fasting
+
+```{python}
+ax = sns.scatterplot(
+    data=df,
+    x="Weight (KG)",
+    y="Fasting",
+    hue="Age Group",
+    alpha=0.7,
+    palette="Set1"
+)
+
+ax.set(
+    xlabel="Weight (KG)",
+    ylabel="Fasting",
+    title="Weight vs Fasting by Age Group"
+)
+```
+
+### Height vs fasting
+
+```{python}
+ax = sns.scatterplot(
+    data=df,
+    x="Height (CM)",
+    y="Fasting",
+    hue="Age Group",
+    alpha=0.7,
+    palette="Set2"
+)
+
+ax.set(
+    xlabel="Height (CM)",
+    ylabel="Fasting",
+    title="Height vs Fasting by Age Group"
+)
+```
+
+## Categorical comparisons
+
+### Sex vs fasting
+
+```{python}
+ax = sns.boxplot(
+    data=df,
+    x="Sex",
+    y="Fasting",
+    hue="Age Group",
+    palette="Set2"
+)
+
+ax.set(
+    xlabel="Sex",
+    ylabel="Fasting",
+    title="Fasting by Sex and Age Group"
+)
+```
+
+### Sex vs BMI
+
+```{python}
+ax = sns.boxplot(
+    data=df,
+    x="Sex",
+    y="BMI",
+    hue="Age Group",
+    palette="Set1"
+)
+
+ax.set(
+    xlabel="Sex",
+    ylabel="BMI",
+    title="BMI by Sex and Age Group"
+)
+```
+
+### Age group vs fasting
+
+```{python}
+ax = sns.boxplot(
+    data=df,
+    x="Age Group",
+    y="Fasting",
+    hue="Age Group",
+    palette="Set2",
+    legend=False
+)
+
+ax.set(
+    xlabel="Age Group",
+    ylabel="Fasting",
+    title="Fasting by Age Group"
+)
+```
+
+### Age group vs BMI
+
+```{python}
+ax = sns.boxplot(
+    data=df,
+    x="Age Group",
+    y="BMI",
+    hue="Age Group",
+    palette="Set1",
+    legend=False
+)
+
+ax.set(
+    xlabel="Age Group",
+    ylabel="BMI",
+    title="BMI by Age Group"
+)
+```
+
+### Violin plot of fasting by age group
+
+```{python}
+ax = sns.violinplot(
+    data=df,
+    x="Age Group",
+    y="Fasting",
+    hue="Age Group",
+    palette="Pastel1",
+    legend=False
+)
+
+ax.set(
+    xlabel="Age Group",
+    ylabel="Fasting",
+    title="Fasting Distribution Shape by Age Group"
+)
+```
+
+## Diet-related analysis
+
+This section runs only if the `Diet` column exists.
+
+### Diet frequency table
+
+```{python}
+if "Diet" in df.columns:
+    df["Diet"].value_counts(dropna=False)
+else:
+    print("Diet column not found in the dataset.")
+```
+
+### Diet vs BMI
+
+```{python}
+if "Diet" in df.columns:
+    g = sns.catplot(
+        data=df,
+        x="Diet",
+        y="BMI",
+        hue="Age Group",
+        kind="box",
+        height=5,
+        aspect=1.8
+    )
+
+    g.set_axis_labels("Diet", "BMI")
+    g.ax.tick_params(axis="x", rotation=20)
+else:
+    print("Diet column not found in the dataset.")
+```
+
+### Diet vs fasting
+
+```{python}
+if "Diet" in df.columns:
+    g = sns.catplot(
+        data=df,
+        x="Diet",
+        y="Fasting",
+        hue="Age Group",
+        kind="box",
+        height=5,
+        aspect=1.8
+    )
+
+    g.set_axis_labels("Diet", "Fasting")
+    g.ax.tick_params(axis="x", rotation=20)
+else:
+    print("Diet column not found in the dataset.")
+```
+
+### Diet composition across age groups
+
+```{python}
+if "Diet" in df.columns:
+    g = sns.catplot(
+        data=df,
+        x="Diet",
+        hue="Age Group",
+        kind="count",
+        height=5,
+        aspect=1.8
+    )
+
+    g.set_axis_labels("Diet", "Count")
+    g.ax.tick_params(axis="x", rotation=20)
+else:
+    print("Diet column not found in the dataset.")
+```
+
+## Multivariable relationship analysis
+
+### Age and sex to fasting
+
+```{python}
+ax = sns.lineplot(
+    data=df,
+    x="Age",
+    y="Fasting",
+    hue="Sex",
+    style="Age Group",
+    estimator="mean"
+)
+
+ax.set(
+    xlabel="Age",
+    ylabel="Mean Fasting",
+    title="Mean Fasting by Age, Sex, and Age Group"
+)
+```
+
+### BMI vs fasting faceted by age group
+
+```{python}
+g = sns.relplot(
+    data=df,
+    x="BMI",
+    y="Fasting",
+    col="Age Group",
+    hue="Sex",
+    kind="scatter",
+    alpha=0.7,
+    height=5,
+    aspect=1.1
+)
+
+g.set_axis_labels("BMI", "Fasting")
+g.set_titles("Age Group: {col_name}")
+```
+
+### Weight vs fasting faceted by age group
+
+```{python}
+g = sns.relplot(
+    data=df,
+    x="Weight (KG)",
+    y="Fasting",
+    col="Age Group",
+    hue="Sex",
+    kind="scatter",
+    alpha=0.7,
+    height=5,
+    aspect=1.1
+)
+
+g.set_axis_labels("Weight (KG)", "Fasting")
+g.set_titles("Age Group: {col_name}")
+```
+
+### Pairwise view of core variables
+
+```{python}
+pairplot_df = df[
+    ["Age", "Height (CM)", "Weight (KG)", "BMI", "Fasting", "Age Group"]
+].dropna()
+
+sns.pairplot(
+    pairplot_df,
+    hue="Age Group",
+    corner=True,
+    diag_kind="hist"
+)
+```
+
+## Group comparison tables
+
+### Mean comparison across age groups
+
+```{python}
+mean_comparison = (
+    df.groupby("Age Group")[["Height (CM)", "Weight (KG)", "BMI", "Fasting"]]
+    .mean()
+    .round(2)
+    .sort_index()
+)
+
+mean_comparison
+```
+
+### Median comparison across age groups
+
+```{python}
+median_comparison = (
+    df.groupby("Age Group")[["Height (CM)", "Weight (KG)", "BMI", "Fasting"]]
+    .median()
+    .round(2)
+    .sort_index()
+)
+
+median_comparison
+```
+
+### Sex-wise mean fasting within each age group
+
+```{python}
+sex_age_fasting = (
+    df.groupby(["Age Group", "Sex"])["Fasting"]
+    .mean()
+    .round(2)
+    .unstack()
+)
+
+sex_age_fasting
+```
+
+### BMI category by age group
+
+```{python}
+bmi_age_table = pd.crosstab(df["BMI Category"], df["Age Group"])
+bmi_age_table
+```

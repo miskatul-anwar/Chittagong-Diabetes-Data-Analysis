@@ -1,0 +1,267 @@
+---
+title: "Data Cleaning and Standardization"
+description: "Transform raw diabetes patient data into a standardized format by handling duplicates, extracting numerical values from mixed-type columns, and ensuring consistent data types for downstream analysis."
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    code-fold: false
+    code-tools: true
+execute:
+  warning: false
+  message: false
+---
+
+## Overview
+
+This document describes a reproducible data cleaning and standardization workflow for a diabetes patient dataset. The purpose of this workflow is to transform raw patient records into a cleaner and more analysis-ready dataset by removing duplicate fields and records, updating fasting glucose values from a supplementary file, standardizing mixed-format numeric columns, and exporting the cleaned dataset for downstream analysis.
+
+The workflow relies on environment variables to locate the raw dataset, supplementary update file, and final cleaned output path. This approach avoids hard-coding local file locations and makes the pipeline easier to reuse across different environments.
+
+## Objectives
+
+The main objectives of this cleaning process are to:
+
+- Load the raw diabetes dataset from a configured environment path.
+- Inspect the structure and column inventory of the dataset.
+- Remove duplicate columns created during data collection or export.
+- Remove duplicate patient records using `ID` as the unique identifier.
+- Update the primary dataset with corrected or newly available fasting glucose values from a supplementary dataset.
+- Convert selected anthropometric variables to numeric format.
+- Extract numeric fasting glucose values from mixed text formats.
+- Remove records that are missing key analytical fields such as `Fasting` and `Age`.
+- Export the cleaned dataset to the configured output path.
+
+## Expected Input and Output
+
+This workflow expects the following environment variables to be available:
+
+- `DATASET_PATH`: path to the primary raw Excel dataset.
+- `NEW_PATH`: path to the supplementary Excel dataset containing updated fasting glucose values.
+- `CLEANED_DATASET_PATH`: path where the cleaned Excel dataset will be saved.
+
+The expected output is a cleaned Excel dataset containing standardized patient records suitable for subsequent analysis, modeling, or reporting.
+
+## Load Dependencies
+
+The workflow begins by importing the required Python libraries. The `os` module is used to read environment variables, `pandas` is used for data loading and transformation, and `load_dotenv` is used to load variables from a `.env` file.
+
+```{python}
+import os
+import pandas as pd
+from dotenv import load_dotenv
+```
+
+## Import Raw Dataset
+
+The environment variables are loaded first. The raw dataset path is then retrieved from `DATASET_PATH`, and the Excel file is imported into a pandas DataFrame.
+
+```{python}
+load_dotenv()
+dataset_path = os.getenv("DATASET_PATH")
+df = pd.read_excel(dataset_path)
+```
+
+## Inspect Data Structure
+
+A preview of the first few rows is displayed to understand the structure of the dataset, verify that the file was loaded correctly, and inspect the initial format of the variables.
+
+```{python}
+df.head()
+```
+
+## Column Inventory
+
+The column names are collected and printed. This step provides a quick inventory of all variables available in the raw dataset and helps identify potential duplicate columns, inconsistent naming, or unexpected fields.
+
+```{python}
+cols = df.columns.tolist()
+for col in cols:
+    print(col, end=", ")
+print(f"\n\nTotal {len(cols)} columns")
+```
+
+## Remove Duplicate Columns
+
+Duplicate columns are removed from the dataset. This can happen when Excel files are exported, merged, or manually edited. Keeping only the first occurrence of each column name prevents ambiguity during later transformations.
+
+```{python}
+df = df.loc[:, ~df.columns.duplicated()]
+```
+
+## Remove Duplicate Records
+
+Duplicate patient records are removed using `ID` as the unique patient identifier. When multiple records share the same `ID`, the last occurrence is retained. This assumes that later entries are more complete or more recently updated.
+
+```{python}
+df.drop_duplicates(subset="ID", keep="last", inplace=True)
+df.__len__()
+```
+
+## Update the Original Dataset with Cleaned Data
+
+A supplementary dataset is loaded from the path stored in `NEW_PATH`. This file is used to update the `Fasting` column in the primary dataset.
+
+Before merging, duplicate records are also removed from the supplementary dataset using the same `ID`-based rule. Copies of the `ID` and `Fasting` columns are created for comparison and verification purposes before the update is applied.
+
+```{python}
+new_file = os.getenv("NEW_PATH")
+new_df = pd.read_excel(new_file)
+new_df.drop_duplicates(subset="ID", keep="last", inplace=True)
+
+# Create index copies for comparison before merge
+df_before_fasting = df[["ID", "Fasting"]].copy()
+new_df_fasting = new_df[["ID", "Fasting"]].copy()
+```
+
+The update is performed by temporarily setting `ID` as the index in both datasets. The `Fasting` values in the primary dataset are then updated using matching `ID` values from the supplementary dataset. After the update, the index is reset so that `ID` returns to a regular column.
+
+```{python}
+# Perform merge using ID-based index
+df.set_index("ID", inplace=True)
+new_df.set_index("ID", inplace=True)
+df.update(new_df["Fasting"])
+df.reset_index(inplace=True)
+```
+
+## Verify Merge Success
+
+The following checks confirm whether the `Fasting` column contains values after the merge and how many records still have missing fasting values. This provides a simple quality-control checkpoint before further standardization.
+
+```{python}
+# Count records with Fasting values before and after merge
+print("=== Fasting Column Update Verification ===\n")
+print(f"Records with Fasting values (after merge): {df['Fasting'].notna().sum()}")
+print(f"Records with missing Fasting: {df['Fasting'].isna().sum()}")
+print(f"\nTotal records: {len(df)}")
+```
+
+A small sample of the updated `ID` and `Fasting` values is displayed to visually inspect whether the merged column appears correctly aligned with patient records.
+
+```{python}
+# Show sample of merged data to verify alignment
+merge_sample = df[["ID", "Fasting"]].head(10)
+print("\nSample of merged Fasting column:")
+print(merge_sample)
+```
+
+## Define Export Path
+
+The cleaned dataset output path is retrieved from the `CLEANED_DATASET_PATH` environment variable. This path is used at the end of the workflow to save the final cleaned Excel file.
+
+```{python}
+clean_dataset_path = os.getenv("CLEANED_DATASET_PATH")
+```
+
+## Check Dataset Size After Initial Cleaning
+
+The number of records remaining after duplicate removal and fasting-value update is checked before additional transformations are applied.
+
+```{python}
+df.__len__()
+```
+
+## Preview Updated Dataset
+
+The dataset is previewed again to inspect the current state after duplicate removal and fasting-value update.
+
+```{python}
+df.head()
+```
+
+## Convert Anthropometric Columns to Numeric Format
+
+The columns `BMI`, `Weight (KG)`, and `Height (CM)` are converted to numeric data types. Any non-convertible values are coerced to missing values using `errors="coerce"`.
+
+This step ensures that these fields can be used reliably in later statistical analysis, visualization, or machine learning workflows.
+
+```{python}
+cols = ["BMI", "Weight (KG)", "Height (CM)"]
+
+for col in cols:
+    df[col] = pd.to_numeric(df[col], errors="coerce")
+```
+
+## Standardize Fasting Column to Numerical Values
+
+The original `Fasting` column may contain mixed-format values, such as numbers combined with units or text. A regular expression is used to extract the first numeric value from each entry.
+
+For example, a value such as `10.0MMOL` is converted to `10.0`. Records without a valid numeric fasting value are treated as missing.
+
+```{python}
+import re   
+def extract_numerical_value(value):
+    if pd.isna(value):
+        return None
+    match = re.search(r"(\d+\.?\d*)", str(value))
+    return float(match.group(1)) if match else None
+df["Fasting"] = df["Fasting"].apply(extract_numerical_value)
+df["Fasting"] = df["Fasting"].astype(float)
+df.dropna(subset=["Fasting"], inplace=True)
+```
+
+## Verify Numerical Standardization
+
+This verification step confirms how many records have valid numerical fasting values after extraction and type conversion. It also reports the number of missing fasting values and the remaining dataset size.
+
+```{python}
+print("=== Fasting Column Standardization Verification ===\n")
+print(f"Records with numerical Fasting values: {df['Fasting'].notna().sum()}")
+print(f"Records with missing Fasting: {df['Fasting'].isna().sum()}")
+print(f"\nTotal records: {len(df)}")
+```
+
+## Remove Records with Missing Age
+
+Records with missing `Age` values are removed. Age is typically a key variable in diabetes-related analysis, and removing missing values here ensures that downstream analysis can rely on complete age information.
+
+```{python}
+df.dropna(subset=["Age"],inplace=True)
+```
+
+## Export Cleaned Dataset
+
+The final dataset is previewed and then exported as an Excel file to the path defined by `CLEANED_DATASET_PATH`.
+
+```{python}
+df.head()
+df.to_excel(clean_dataset_path, index=False)
+```
+
+## Cleaning Summary
+
+This cleaning workflow performs the following transformations:
+
+- Loads the primary diabetes patient dataset from an environment-defined path.
+- Removes duplicate columns from the raw dataset.
+- Removes duplicate patient records using `ID`, keeping the last occurrence.
+- Loads a supplementary dataset and updates the primary `Fasting` values by matching on `ID`.
+- Verifies the fasting-value update through count summaries and sample inspection.
+- Converts `BMI`, `Weight (KG)`, and `Height (CM)` to numeric format.
+- Extracts numeric values from mixed-format fasting glucose entries.
+- Removes records missing valid fasting glucose values.
+- Removes records missing age values.
+- Saves the cleaned dataset for downstream analysis.
+
+## Reproducibility Notes
+
+Before rendering this document, ensure that:
+
+- A `.env` file exists or the required environment variables are already available in the execution environment.
+- `DATASET_PATH` points to the raw Excel dataset.
+- `NEW_PATH` points to the supplementary Excel dataset used for fasting-value updates.
+- `CLEANED_DATASET_PATH` points to the desired cleaned dataset output location.
+- The input datasets contain the required columns: `ID`, `Fasting`, `Age`, `BMI`, `Weight (KG)`, and `Height (CM)`.
+- Required Python packages are installed: `pandas`, `python-dotenv`, and an Excel engine such as `openpyxl`.
+
+## Expected Output
+
+After running this document successfully, the output should be a cleaned Excel dataset with:
+
+- Duplicate columns removed.
+- Duplicate patient IDs resolved.
+- Updated fasting glucose values merged from the supplementary dataset.
+- Numeric values extracted from the `Fasting` column.
+- Anthropometric variables converted to numeric format.
+- Records with missing `Fasting` or `Age` removed.
+- Final cleaned data saved to `CLEANED_DATASET_PATH`.

@@ -1,0 +1,40 @@
+project:
+  type: book
+  output-dir: docs
+
+book:
+  title: "Chattogram Diabetes Data Analysis"
+  page-navigation: true
+  author: "Miskatul Anwar"
+  cover-image: cover.png
+  chapters:
+    - index.qmd
+    - process/data-wrangling.qmd
+    - process/initial_analysis.qmd
+    - process/map_creation.qmd
+    - process/final_calculation.qmd
+
+format:
+  html:
+    theme:
+      light: flatly
+      dark: darkly
+    toc: true
+    toc-depth: 3
+    code-fold: true
+    code-copy: true
+    code-summary: "Show Code"
+    code-tools: false
+    number-sections: true
+  pdf:
+    documentclass: scrreprt
+    toc: true
+    number-sections: true
+
+execute:
+  echo: true
+  warning: false
+  message: false
+  freeze: auto
+
+jupyter: python3

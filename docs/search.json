@@ -1,0 +1,772 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Chittagong Diabetes Data Analysis",
+    "section": "",
+    "text": "Overview\nThis project documents a reproducible workflow for preparing and analyzing diabetes patient data from the Chittagong region. The current version of the project focuses on two major stages: cleaning and standardizing the raw clinical dataset, then analyzing the cleaned records by Thana, City Corporation classification, and age group.\nThe analysis pipeline is designed to support transparent reporting and future extension. Dataset paths are managed through environment variables, cleaned records are exported for downstream analysis, and location-based summaries are generated from the standardized dataset.",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Chittagong Diabetes Data Analysis</span>"
+    ]
+  },
+  {
+    "objectID": "index.html#project-scope",
+    "href": "index.html#project-scope",
+    "title": "Chittagong Diabetes Data Analysis",
+    "section": "Project Scope",
+    "text": "Project Scope\nThe project currently covers the following analytical areas:\n\nCleaning raw diabetes patient records and removing duplicate entries.\nUpdating fasting glucose values from a supplementary dataset using patient ID.\nStandardizing mixed-format clinical variables into analysis-ready numeric fields.\nRemoving records with missing key analytical fields such as Fasting, Age, and Thana where required.\nStandardizing Thana names to reduce spelling and administrative-label inconsistencies.\nSeparating records into City Corporation and outside City Corporation groups.\nCreating age groups using the threshold &lt;=30 and &gt;30.\nCalculating population counts, Thana-wise distributions, and percentage breakdowns.\nVerifying whether the final regional grouping accounts for the full filtered dataset.",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Chittagong Diabetes Data Analysis</span>"
+    ]
+  },
+  {
+    "objectID": "index.html#analysis-workflow",
+    "href": "index.html#analysis-workflow",
+    "title": "Chittagong Diabetes Data Analysis",
+    "section": "Analysis Workflow",
+    "text": "Analysis Workflow\nThe project is organized into a sequential workflow. Each stage produces outputs that support the next stage of analysis.\n\nData Cleaning and Standardization\nThe first stage prepares the raw diabetes dataset for analysis. It loads the primary dataset and supplementary fasting-value dataset from environment-defined paths, removes duplicate columns and duplicate patient records, updates fasting values, standardizes numeric fields, and exports the cleaned dataset.\nKey tasks in this stage include:\n\nLoading the raw Excel dataset from DATASET_PATH.\nRemoving duplicate columns.\nDeduplicating records by ID, keeping the last available record.\nLoading the supplementary file from NEW_PATH.\nUpdating the Fasting column by matching records on ID.\nConverting BMI, Weight (KG), and Height (CM) to numeric values.\nExtracting numeric values from mixed-format Fasting entries.\nRemoving records with missing fasting glucose or age values.\nSaving the cleaned dataset to CLEANED_DATASET_PATH.\n\nThe complete documentation for this stage is available in:\ndata_cleaning_and_standardization.qmd\n\n\nThana-Level Population Distribution and Age Group Analysis\nThe second stage uses the cleaned dataset to examine the regional distribution of patient records. It focuses on Thana-level classification, City Corporation grouping, age-group segmentation, and percentage-based summaries.\nKey tasks in this stage include:\n\nLoading the cleaned dataset from CLEANED_DATASET_PATH.\nRemoving Thanas outside the selected analysis scope.\nDropping records with missing Thana values.\nMapping alternative Thana names to standardized labels.\nDefining Thanas inside and outside the City Corporation.\nCreating the Age Group variable using &lt;=30 and &gt;30 categories.\nCalculating total population records after filtering.\nSummarizing records inside the City Corporation.\nSummarizing records outside the City Corporation.\nCalculating Thana-level and age-group percentages.\nRunning a final verification check to identify unmapped or unclassified records.\n\nThe complete documentation for this stage is available in:\nthana_population_distribution_analysis.qmd",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Chittagong Diabetes Data Analysis</span>"
+    ]
+  },
+  {
+    "objectID": "index.html#data-sources-and-environment-variables",
+    "href": "index.html#data-sources-and-environment-variables",
+    "title": "Chittagong Diabetes Data Analysis",
+    "section": "Data Sources and Environment Variables",
+    "text": "Data Sources and Environment Variables\nThis project avoids hard-coded file paths. The workflow expects file locations to be provided through environment variables.\nRequired variables:\nDATASET_PATH\nNEW_PATH\nCLEANED_DATASET_PATH\nThese variables should be defined in a .env file or made available directly in the execution environment before rendering the project files.",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Chittagong Diabetes Data Analysis</span>"
+    ]
+  },
+  {
+    "objectID": "index.html#current-dataset-preparation-logic",
+    "href": "index.html#current-dataset-preparation-logic",
+    "title": "Chittagong Diabetes Data Analysis",
+    "section": "Current Dataset Preparation Logic",
+    "text": "Current Dataset Preparation Logic\nThe latest data preparation workflow uses the following assumptions and rules:\n\nID is treated as the unique patient identifier for deduplication.\nIf multiple records share the same ID, the last occurrence is retained.\nThe supplementary dataset is used to update fasting glucose values in the primary dataset.\nFasting glucose values may contain units or mixed text, so the first numeric value is extracted.\nRecords without valid fasting glucose values are removed from the cleaned dataset.\nRecords without age values are removed from the cleaned dataset.\nThana names are standardized before regional analysis.\nRecords without valid Thana values are removed before Thana-level analysis.",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Chittagong Diabetes Data Analysis</span>"
+    ]
+  },
+  {
+    "objectID": "index.html#regional-classification-used-in-the-analysis",
+    "href": "index.html#regional-classification-used-in-the-analysis",
+    "title": "Chittagong Diabetes Data Analysis",
+    "section": "Regional Classification Used in the Analysis",
+    "text": "Regional Classification Used in the Analysis\nThe current regional analysis separates Thanas into two groups: inside the City Corporation and outside the City Corporation.\n\nInside City Corporation\nThe current City Corporation list includes:\nBayejid Bostami, Chandgaon, Bakalia, Kotwali, Double Mooring, Patenga,\nChittagong Port, Halishahar, Pahartali, Khulshi, Panchlaish\n\n\nOutside City Corporation\nThe current outside City Corporation list includes:\nMirsharai, Fatikchhari, Raozan, Sitakunda, Hathazari, Boalkhali,\nPatiya, Chandanaish, Sandwip, Rangunia, Anowara, Satkania,\nBanshkhali, Lohagara",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Chittagong Diabetes Data Analysis</span>"
+    ]
+  },
+  {
+    "objectID": "index.html#standardized-thana-mapping",
+    "href": "index.html#standardized-thana-mapping",
+    "title": "Chittagong Diabetes Data Analysis",
+    "section": "Standardized Thana Mapping",
+    "text": "Standardized Thana Mapping\nThe regional analysis standardizes alternative Thana names before grouping. Examples include:\nFiringibazar -&gt; Kotwali\nEPZ -&gt; Chittagong Port\nLalkhan Bazar -&gt; Khulshi\nPatharghata -&gt; Kotwali\nKaptai -&gt; Rangunia\nFouzdarhat -&gt; Sitakunda\nNew Mooring -&gt; Chittagong Port\nAgrabad -&gt; Double Mooring\nKarnaphuli -&gt; Patiya\nBhujpur -&gt; Fatikchhari\nChawk Bazar -&gt; Panchlaish\nBandar -&gt; Chittagong Port\nAnwara -&gt; Anowara\nSadarghat -&gt; Patiya\nAkbar Shah -&gt; Pahartali\nBayazid Bostami -&gt; Bayejid Bostami\nBandarban Sadar -&gt; Satkania",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Chittagong Diabetes Data Analysis</span>"
+    ]
+  },
+  {
+    "objectID": "index.html#key-outputs",
+    "href": "index.html#key-outputs",
+    "title": "Chittagong Diabetes Data Analysis",
+    "section": "Key Outputs",
+    "text": "Key Outputs\nThe current project generates the following outputs:\n\nA cleaned Excel dataset saved to the path defined by CLEANED_DATASET_PATH.\nA verified column inventory after duplicate column removal.\nDeduplicated patient records based on ID.\nUpdated fasting glucose values from the supplementary dataset.\nNumeric versions of fasting glucose, BMI, weight, and height fields.\nTotal population count after cleaning and filtering.\nCity Corporation and outside City Corporation record counts.\nThana-wise population counts.\nAge group counts by Thana.\nPercentage breakdowns within City Corporation and outside City Corporation groups.\nGlobal population share by City Corporation and outside-City-Corporation Thanas.\nA final verification check for unmapped or unclassified Thana records.",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Chittagong Diabetes Data Analysis</span>"
+    ]
+  },
+  {
+    "objectID": "index.html#how-to-render-the-project",
+    "href": "index.html#how-to-render-the-project",
+    "title": "Chittagong Diabetes Data Analysis",
+    "section": "How to Render the Project",
+    "text": "How to Render the Project\nFrom the project root, render the website with:\nquarto render\nTo preview the website locally, use:\nquarto preview\nBefore rendering, confirm that the .env file is available and that all required dataset paths are valid.",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Chittagong Diabetes Data Analysis</span>"
+    ]
+  },
+  {
+    "objectID": "index.html#project-files",
+    "href": "index.html#project-files",
+    "title": "Chittagong Diabetes Data Analysis",
+    "section": "Project Files",
+    "text": "Project Files\nThe latest documentation files are:\nindex.qmd\ndata_cleaning_and_standardization.qmd\nthana_population_distribution_analysis.qmd\nSuggested website order:\nindex.qmd\nData Cleaning and Standardization\nThana-Level Population Distribution and Age Group Analysis",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Chittagong Diabetes Data Analysis</span>"
+    ]
+  },
+  {
+    "objectID": "index.html#reproducibility-checklist",
+    "href": "index.html#reproducibility-checklist",
+    "title": "Chittagong Diabetes Data Analysis",
+    "section": "Reproducibility Checklist",
+    "text": "Reproducibility Checklist\nBefore running the full project, verify that:\n\nThe .env file exists or environment variables are already configured.\nDATASET_PATH points to the raw diabetes dataset.\nNEW_PATH points to the supplementary fasting-value dataset.\nCLEANED_DATASET_PATH points to the intended cleaned output file.\nThe raw and supplementary datasets contain the required columns.\nPython dependencies are installed, including pandas, numpy, python-dotenv, and openpyxl.\nThe data cleaning stage is rendered before the regional analysis stage.",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Chittagong Diabetes Data Analysis</span>"
+    ]
+  },
+  {
+    "objectID": "index.html#next-steps",
+    "href": "index.html#next-steps",
+    "title": "Chittagong Diabetes Data Analysis",
+    "section": "Next Steps",
+    "text": "Next Steps\nThe current project website can be extended with additional analysis pages, such as:\n\nExploratory analysis of clinical variables.\nDiabetes risk factor profiling by age group and region.\nBMI, fasting glucose, and anthropometric distribution analysis.\nCity Corporation versus outside City Corporation comparison.\nVisual dashboards or maps for Thana-level patterns.\nModel-ready feature engineering and predictive modeling documentation.",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Chittagong Diabetes Data Analysis</span>"
+    ]
+  },
+  {
+    "objectID": "process/data-wrangling.html",
+    "href": "process/data-wrangling.html",
+    "title": "2  Data Cleaning and Standardization",
+    "section": "",
+    "text": "2.1 Overview\nThis document describes a reproducible data cleaning and standardization workflow for a diabetes patient dataset. The purpose of this workflow is to transform raw patient records into a cleaner and more analysis-ready dataset by removing duplicate fields and records, updating fasting glucose values from a supplementary file, standardizing mixed-format numeric columns, and exporting the cleaned dataset for downstream analysis.\nThe workflow relies on environment variables to locate the raw dataset, supplementary update file, and final cleaned output path. This approach avoids hard-coding local file locations and makes the pipeline easier to reuse across different environments.",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Data Cleaning and Standardization</span>"
+    ]
+  },
+  {
+    "objectID": "process/data-wrangling.html#objectives",
+    "href": "process/data-wrangling.html#objectives",
+    "title": "2  Data Cleaning and Standardization",
+    "section": "2.2 Objectives",
+    "text": "2.2 Objectives\nThe main objectives of this cleaning process are to:\n\nLoad the raw diabetes dataset from a configured environment path.\nInspect the structure and column inventory of the dataset.\nRemove duplicate columns created during data collection or export.\nRemove duplicate patient records using ID as the unique identifier.\nUpdate the primary dataset with corrected or newly available fasting glucose values from a supplementary dataset.\nConvert selected anthropometric variables to numeric format.\nExtract numeric fasting glucose values from mixed text formats.\nRemove records that are missing key analytical fields such as Fasting and Age.\nExport the cleaned dataset to the configured output path.",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Data Cleaning and Standardization</span>"
+    ]
+  },
+  {
+    "objectID": "process/data-wrangling.html#expected-input-and-output",
+    "href": "process/data-wrangling.html#expected-input-and-output",
+    "title": "2  Data Cleaning and Standardization",
+    "section": "2.3 Expected Input and Output",
+    "text": "2.3 Expected Input and Output\nThis workflow expects the following environment variables to be available:\n\nDATASET_PATH: path to the primary raw Excel dataset.\nNEW_PATH: path to the supplementary Excel dataset containing updated fasting glucose values.\nCLEANED_DATASET_PATH: path where the cleaned Excel dataset will be saved.\n\nThe expected output is a cleaned Excel dataset containing standardized patient records suitable for subsequent analysis, modeling, or reporting.",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Data Cleaning and Standardization</span>"
+    ]
+  },
+  {
+    "objectID": "process/data-wrangling.html#load-dependencies",
+    "href": "process/data-wrangling.html#load-dependencies",
+    "title": "2  Data Cleaning and Standardization",
+    "section": "2.4 Load Dependencies",
+    "text": "2.4 Load Dependencies\nThe workflow begins by importing the required Python libraries. The os module is used to read environment variables, pandas is used for data loading and transformation, and load_dotenv is used to load variables from a .env file.\n\nimport os\nimport pandas as pd\nfrom dotenv import load_dotenv",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Data Cleaning and Standardization</span>"
+    ]
+  },
+  {
+    "objectID": "process/data-wrangling.html#import-raw-dataset",
+    "href": "process/data-wrangling.html#import-raw-dataset",
+    "title": "2  Data Cleaning and Standardization",
+    "section": "2.5 Import Raw Dataset",
+    "text": "2.5 Import Raw Dataset\nThe environment variables are loaded first. The raw dataset path is then retrieved from DATASET_PATH, and the Excel file is imported into a pandas DataFrame.\n\nload_dotenv()\ndataset_path = os.getenv(\"DATASET_PATH\")\ndf = pd.read_excel(dataset_path)",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Data Cleaning and Standardization</span>"
+    ]
+  },
+  {
+    "objectID": "process/data-wrangling.html#inspect-data-structure",
+    "href": "process/data-wrangling.html#inspect-data-structure",
+    "title": "2  Data Cleaning and Standardization",
+    "section": "2.6 Inspect Data Structure",
+    "text": "2.6 Inspect Data Structure\nA preview of the first few rows is displayed to understand the structure of the dataset, verify that the file was loaded correctly, and inspect the initial format of the variables.\n\ndf.head()\n\n\n\n\n\n\n\n\nID\nEntry Date\nAge\nSex\nAddress\nHeight (CM)\nWeight (KG)\nFasting\nABF\nUring Color Fasting\n...\nDiet\nHeight (CM).1\nWeight (KG).1\nBMI\nNormalized Address\nDivision\nDistrict\nCity Corporation\nSub-District\nThana\n\n\n\n\n0\nK-225859\n2025-02-25 00:00:00\n50.0\nF\nMIRESHARAI CTG\n147CM\n44 KG\n17.0MMOL\n21.1MMOL\nORANGE\n...\n4\n147.0\n44.0\n20.361886\nMirsharai, Chattogram\nChattogram\nChattogram\nNaN\nMirsharai\nMirsharai Thana\n\n\n1\nK-225401\n2025-02-11 00:00:00\n35.0\nM\nLOHAGORA CTG\n160CM\n62 KG\n10.0 MMOL\n16.2MMOL\nGREEN\n...\n6\n160.0\n62.0\n24.218750\nLohagara, Chattogram\nChattogram\nChattogram\nNaN\nLohagara\nLohagara\n\n\n2\nK-225407\n2025-02-11 00:00:00\n55.0\nM\nSANDWIP CTG\n164CM\n61KG\n15.5MMOL\n22.3MMOL\nYELLOW\n...\n6\n164.0\n61.0\n22.679952\nSandwip, Chattogram\nChattogram\nChattogram\nNaN\nSandwip\nSandwip\n\n\n3\nK-225413\n2025-02-11 00:00:00\n50.0\nM\nANOWARA CTG\n151CM\n52 KG\n22.7MMOL\n27.1\\nMMOL\nRED\n...\n5\n151.0\n52.0\n22.806017\nAnwara, Chattogram\nChattogram\nChattogram\nNaN\nAnwara\nAnwara\n\n\n4\nK-225655\n2025-02-19 00:00:00\n57.0\nM\nMIRESHARAI CTG\n168CM\n76KG\n7.6MMOL\n15.0MMOL\nNIL\n...\n5\n168.0\n76.0\n26.927438\nMirsharai, Chattogram\nChattogram\nChattogram\nNaN\nMirsharai\nMirsharai Thana\n\n\n\n\n5 rows × 23 columns",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Data Cleaning and Standardization</span>"
+    ]
+  },
+  {
+    "objectID": "process/data-wrangling.html#column-inventory",
+    "href": "process/data-wrangling.html#column-inventory",
+    "title": "2  Data Cleaning and Standardization",
+    "section": "2.7 Column Inventory",
+    "text": "2.7 Column Inventory\nThe column names are collected and printed. This step provides a quick inventory of all variables available in the raw dataset and helps identify potential duplicate columns, inconsistent naming, or unexpected fields.\n\ncols = df.columns.tolist()\nfor col in cols:\n    print(col, end=\", \")\nprint(f\"\\n\\nTotal {len(cols)} columns\")\n\nID, Entry Date, Age, Sex, Address, Height (CM), Weight (KG), Fasting, ABF, Uring Color Fasting, Uring Color ABF, Acitone, Albumin, Diet, Height (CM).1, Weight (KG).1, BMI, Normalized Address, Division, District, City Corporation, Sub-District, Thana, \n\nTotal 23 columns",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Data Cleaning and Standardization</span>"
+    ]
+  },
+  {
+    "objectID": "process/data-wrangling.html#remove-duplicate-columns",
+    "href": "process/data-wrangling.html#remove-duplicate-columns",
+    "title": "2  Data Cleaning and Standardization",
+    "section": "2.8 Remove Duplicate Columns",
+    "text": "2.8 Remove Duplicate Columns\nDuplicate columns are removed from the dataset. This can happen when Excel files are exported, merged, or manually edited. Keeping only the first occurrence of each column name prevents ambiguity during later transformations.\n\ndf = df.loc[:, ~df.columns.duplicated()]",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Data Cleaning and Standardization</span>"
+    ]
+  },
+  {
+    "objectID": "process/data-wrangling.html#remove-duplicate-records",
+    "href": "process/data-wrangling.html#remove-duplicate-records",
+    "title": "2  Data Cleaning and Standardization",
+    "section": "2.9 Remove Duplicate Records",
+    "text": "2.9 Remove Duplicate Records\nDuplicate patient records are removed using ID as the unique patient identifier. When multiple records share the same ID, the last occurrence is retained. This assumes that later entries are more complete or more recently updated.\n\ndf.drop_duplicates(subset=\"ID\", keep=\"last\", inplace=True)\ndf.__len__()\n\n44136",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Data Cleaning and Standardization</span>"
+    ]
+  },
+  {
+    "objectID": "process/data-wrangling.html#update-the-original-dataset-with-cleaned-data",
+    "href": "process/data-wrangling.html#update-the-original-dataset-with-cleaned-data",
+    "title": "2  Data Cleaning and Standardization",
+    "section": "2.10 Update the Original Dataset with Cleaned Data",
+    "text": "2.10 Update the Original Dataset with Cleaned Data\nA supplementary dataset is loaded from the path stored in NEW_PATH. This file is used to update the Fasting column in the primary dataset.\nBefore merging, duplicate records are also removed from the supplementary dataset using the same ID-based rule. Copies of the ID and Fasting columns are created for comparison and verification purposes before the update is applied.\n\nnew_file = os.getenv(\"NEW_PATH\")\nnew_df = pd.read_excel(new_file)\nnew_df.drop_duplicates(subset=\"ID\", keep=\"last\", inplace=True)\n\n# Create index copies for comparison before merge\ndf_before_fasting = df[[\"ID\", \"Fasting\"]].copy()\nnew_df_fasting = new_df[[\"ID\", \"Fasting\"]].copy()\n\nThe update is performed by temporarily setting ID as the index in both datasets. The Fasting values in the primary dataset are then updated using matching ID values from the supplementary dataset. After the update, the index is reset so that ID returns to a regular column.\n\n# Perform merge using ID-based index\ndf.set_index(\"ID\", inplace=True)\nnew_df.set_index(\"ID\", inplace=True)\ndf.update(new_df[\"Fasting\"])\ndf.reset_index(inplace=True)",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Data Cleaning and Standardization</span>"
+    ]
+  },
+  {
+    "objectID": "process/data-wrangling.html#verify-merge-success",
+    "href": "process/data-wrangling.html#verify-merge-success",
+    "title": "2  Data Cleaning and Standardization",
+    "section": "2.11 Verify Merge Success",
+    "text": "2.11 Verify Merge Success\nThe following checks confirm whether the Fasting column contains values after the merge and how many records still have missing fasting values. This provides a simple quality-control checkpoint before further standardization.\n\n# Count records with Fasting values before and after merge\nprint(\"=== Fasting Column Update Verification ===\\n\")\nprint(f\"Records with Fasting values (after merge): {df['Fasting'].notna().sum()}\")\nprint(f\"Records with missing Fasting: {df['Fasting'].isna().sum()}\")\nprint(f\"\\nTotal records: {len(df)}\")\n\n=== Fasting Column Update Verification ===\n\nRecords with Fasting values (after merge): 43783\nRecords with missing Fasting: 353\n\nTotal records: 44136\n\n\nA small sample of the updated ID and Fasting values is displayed to visually inspect whether the merged column appears correctly aligned with patient records.\n\n# Show sample of merged data to verify alignment\nmerge_sample = df[[\"ID\", \"Fasting\"]].head(10)\nprint(\"\\nSample of merged Fasting column:\")\nprint(merge_sample)\n\n\nSample of merged Fasting column:\n         ID    Fasting\n0  K-225859   17.0MMOL\n1  K-225401  10.0 MMOL\n2  K-225407   15.5MMOL\n3  K-225413   22.7MMOL\n4  K-225655    7.6MMOL\n5  K-225638    5.5MMOL\n6  K-225634   24.8MMOL\n7  K-225642   14.0MMOL\n8  K-225632   11.5MMOL\n9  K-225636    9.3MMOL",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Data Cleaning and Standardization</span>"
+    ]
+  },
+  {
+    "objectID": "process/data-wrangling.html#define-export-path",
+    "href": "process/data-wrangling.html#define-export-path",
+    "title": "2  Data Cleaning and Standardization",
+    "section": "2.12 Define Export Path",
+    "text": "2.12 Define Export Path\nThe cleaned dataset output path is retrieved from the CLEANED_DATASET_PATH environment variable. This path is used at the end of the workflow to save the final cleaned Excel file.\n\nclean_dataset_path = os.getenv(\"CLEANED_DATASET_PATH\")",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Data Cleaning and Standardization</span>"
+    ]
+  },
+  {
+    "objectID": "process/data-wrangling.html#check-dataset-size-after-initial-cleaning",
+    "href": "process/data-wrangling.html#check-dataset-size-after-initial-cleaning",
+    "title": "2  Data Cleaning and Standardization",
+    "section": "2.13 Check Dataset Size After Initial Cleaning",
+    "text": "2.13 Check Dataset Size After Initial Cleaning\nThe number of records remaining after duplicate removal and fasting-value update is checked before additional transformations are applied.\n\ndf.__len__()\n\n44136",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Data Cleaning and Standardization</span>"
+    ]
+  },
+  {
+    "objectID": "process/data-wrangling.html#preview-updated-dataset",
+    "href": "process/data-wrangling.html#preview-updated-dataset",
+    "title": "2  Data Cleaning and Standardization",
+    "section": "2.14 Preview Updated Dataset",
+    "text": "2.14 Preview Updated Dataset\nThe dataset is previewed again to inspect the current state after duplicate removal and fasting-value update.\n\ndf.head()\n\n\n\n\n\n\n\n\nID\nEntry Date\nAge\nSex\nAddress\nHeight (CM)\nWeight (KG)\nFasting\nABF\nUring Color Fasting\n...\nDiet\nHeight (CM).1\nWeight (KG).1\nBMI\nNormalized Address\nDivision\nDistrict\nCity Corporation\nSub-District\nThana\n\n\n\n\n0\nK-225859\n2025-02-25 00:00:00\n50.0\nF\nMIRESHARAI CTG\n147CM\n44 KG\n17.0MMOL\n21.1MMOL\nORANGE\n...\n4\n147.0\n44.0\n20.361886\nMirsharai, Chattogram\nChattogram\nChattogram\nNaN\nMirsharai\nMirsharai Thana\n\n\n1\nK-225401\n2025-02-11 00:00:00\n35.0\nM\nLOHAGORA CTG\n160CM\n62 KG\n10.0 MMOL\n16.2MMOL\nGREEN\n...\n6\n160.0\n62.0\n24.218750\nLohagara, Chattogram\nChattogram\nChattogram\nNaN\nLohagara\nLohagara\n\n\n2\nK-225407\n2025-02-11 00:00:00\n55.0\nM\nSANDWIP CTG\n164CM\n61KG\n15.5MMOL\n22.3MMOL\nYELLOW\n...\n6\n164.0\n61.0\n22.679952\nSandwip, Chattogram\nChattogram\nChattogram\nNaN\nSandwip\nSandwip\n\n\n3\nK-225413\n2025-02-11 00:00:00\n50.0\nM\nANOWARA CTG\n151CM\n52 KG\n22.7MMOL\n27.1\\nMMOL\nRED\n...\n5\n151.0\n52.0\n22.806017\nAnwara, Chattogram\nChattogram\nChattogram\nNaN\nAnwara\nAnwara\n\n\n4\nK-225655\n2025-02-19 00:00:00\n57.0\nM\nMIRESHARAI CTG\n168CM\n76KG\n7.6MMOL\n15.0MMOL\nNIL\n...\n5\n168.0\n76.0\n26.927438\nMirsharai, Chattogram\nChattogram\nChattogram\nNaN\nMirsharai\nMirsharai Thana\n\n\n\n\n5 rows × 23 columns",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Data Cleaning and Standardization</span>"
+    ]
+  },
+  {
+    "objectID": "process/data-wrangling.html#convert-anthropometric-columns-to-numeric-format",
+    "href": "process/data-wrangling.html#convert-anthropometric-columns-to-numeric-format",
+    "title": "2  Data Cleaning and Standardization",
+    "section": "2.15 Convert Anthropometric Columns to Numeric Format",
+    "text": "2.15 Convert Anthropometric Columns to Numeric Format\nThe columns BMI, Weight (KG), and Height (CM) are converted to numeric data types. Any non-convertible values are coerced to missing values using errors=\"coerce\".\nThis step ensures that these fields can be used reliably in later statistical analysis, visualization, or machine learning workflows.\n\ncols = [\"BMI\", \"Weight (KG)\", \"Height (CM)\"]\n\nfor col in cols:\n    df[col] = pd.to_numeric(df[col], errors=\"coerce\")",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Data Cleaning and Standardization</span>"
+    ]
+  },
+  {
+    "objectID": "process/data-wrangling.html#standardize-fasting-column-to-numerical-values",
+    "href": "process/data-wrangling.html#standardize-fasting-column-to-numerical-values",
+    "title": "2  Data Cleaning and Standardization",
+    "section": "2.16 Standardize Fasting Column to Numerical Values",
+    "text": "2.16 Standardize Fasting Column to Numerical Values\nThe original Fasting column may contain mixed-format values, such as numbers combined with units or text. A regular expression is used to extract the first numeric value from each entry.\nFor example, a value such as 10.0MMOL is converted to 10.0. Records without a valid numeric fasting value are treated as missing.\n\nimport re   \ndef extract_numerical_value(value):\n    if pd.isna(value):\n        return None\n    match = re.search(r\"(\\d+\\.?\\d*)\", str(value))\n    return float(match.group(1)) if match else None\ndf[\"Fasting\"] = df[\"Fasting\"].apply(extract_numerical_value)\ndf[\"Fasting\"] = df[\"Fasting\"].astype(float)\ndf.dropna(subset=[\"Fasting\"], inplace=True)",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Data Cleaning and Standardization</span>"
+    ]
+  },
+  {
+    "objectID": "process/data-wrangling.html#verify-numerical-standardization",
+    "href": "process/data-wrangling.html#verify-numerical-standardization",
+    "title": "2  Data Cleaning and Standardization",
+    "section": "2.17 Verify Numerical Standardization",
+    "text": "2.17 Verify Numerical Standardization\nThis verification step confirms how many records have valid numerical fasting values after extraction and type conversion. It also reports the number of missing fasting values and the remaining dataset size.\n\nprint(\"=== Fasting Column Standardization Verification ===\\n\")\nprint(f\"Records with numerical Fasting values: {df['Fasting'].notna().sum()}\")\nprint(f\"Records with missing Fasting: {df['Fasting'].isna().sum()}\")\nprint(f\"\\nTotal records: {len(df)}\")\n\n=== Fasting Column Standardization Verification ===\n\nRecords with numerical Fasting values: 43777\nRecords with missing Fasting: 0\n\nTotal records: 43777",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Data Cleaning and Standardization</span>"
+    ]
+  },
+  {
+    "objectID": "process/data-wrangling.html#remove-records-with-missing-age",
+    "href": "process/data-wrangling.html#remove-records-with-missing-age",
+    "title": "2  Data Cleaning and Standardization",
+    "section": "2.18 Remove Records with Missing Age",
+    "text": "2.18 Remove Records with Missing Age\nRecords with missing Age values are removed. Age is typically a key variable in diabetes-related analysis, and removing missing values here ensures that downstream analysis can rely on complete age information.\n\ndf.dropna(subset=[\"Age\"],inplace=True)",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Data Cleaning and Standardization</span>"
+    ]
+  },
+  {
+    "objectID": "process/data-wrangling.html#export-cleaned-dataset",
+    "href": "process/data-wrangling.html#export-cleaned-dataset",
+    "title": "2  Data Cleaning and Standardization",
+    "section": "2.19 Export Cleaned Dataset",
+    "text": "2.19 Export Cleaned Dataset\nThe final dataset is previewed and then exported as an Excel file to the path defined by CLEANED_DATASET_PATH.\n\ndf.head()\ndf.to_excel(clean_dataset_path, index=False)",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Data Cleaning and Standardization</span>"
+    ]
+  },
+  {
+    "objectID": "process/data-wrangling.html#cleaning-summary",
+    "href": "process/data-wrangling.html#cleaning-summary",
+    "title": "2  Data Cleaning and Standardization",
+    "section": "2.20 Cleaning Summary",
+    "text": "2.20 Cleaning Summary\nThis cleaning workflow performs the following transformations:\n\nLoads the primary diabetes patient dataset from an environment-defined path.\nRemoves duplicate columns from the raw dataset.\nRemoves duplicate patient records using ID, keeping the last occurrence.\nLoads a supplementary dataset and updates the primary Fasting values by matching on ID.\nVerifies the fasting-value update through count summaries and sample inspection.\nConverts BMI, Weight (KG), and Height (CM) to numeric format.\nExtracts numeric values from mixed-format fasting glucose entries.\nRemoves records missing valid fasting glucose values.\nRemoves records missing age values.\nSaves the cleaned dataset for downstream analysis.",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Data Cleaning and Standardization</span>"
+    ]
+  },
+  {
+    "objectID": "process/data-wrangling.html#reproducibility-notes",
+    "href": "process/data-wrangling.html#reproducibility-notes",
+    "title": "2  Data Cleaning and Standardization",
+    "section": "2.21 Reproducibility Notes",
+    "text": "2.21 Reproducibility Notes\nBefore rendering this document, ensure that:\n\nA .env file exists or the required environment variables are already available in the execution environment.\nDATASET_PATH points to the raw Excel dataset.\nNEW_PATH points to the supplementary Excel dataset used for fasting-value updates.\nCLEANED_DATASET_PATH points to the desired cleaned dataset output location.\nThe input datasets contain the required columns: ID, Fasting, Age, BMI, Weight (KG), and Height (CM).\nRequired Python packages are installed: pandas, python-dotenv, and an Excel engine such as openpyxl.",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Data Cleaning and Standardization</span>"
+    ]
+  },
+  {
+    "objectID": "process/data-wrangling.html#expected-output",
+    "href": "process/data-wrangling.html#expected-output",
+    "title": "2  Data Cleaning and Standardization",
+    "section": "2.22 Expected Output",
+    "text": "2.22 Expected Output\nAfter running this document successfully, the output should be a cleaned Excel dataset with:\n\nDuplicate columns removed.\nDuplicate patient IDs resolved.\nUpdated fasting glucose values merged from the supplementary dataset.\nNumeric values extracted from the Fasting column.\nAnthropometric variables converted to numeric format.\nRecords with missing Fasting or Age removed.\nFinal cleaned data saved to CLEANED_DATASET_PATH.",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Data Cleaning and Standardization</span>"
+    ]
+  },
+  {
+    "objectID": "process/initial_analysis.html",
+    "href": "process/initial_analysis.html",
+    "title": "3  Fasting, Body Composition, and Lifestyle Patterns by Age Group",
+    "section": "",
+    "text": "3.1 Analysis Objective\nThis report explores how fasting measurements, BMI, body size, sex, and lifestyle-related variables vary across two age groups:\nThe objective is to identify descriptive patterns, compare distributions, and examine how anthropometric and metabolic variables behave across these two age-based segments.",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Fasting, Body Composition, and Lifestyle Patterns by Age Group</span>"
+    ]
+  },
+  {
+    "objectID": "process/initial_analysis.html#analysis-objective",
+    "href": "process/initial_analysis.html#analysis-objective",
+    "title": "3  Fasting, Body Composition, and Lifestyle Patterns by Age Group",
+    "section": "",
+    "text": "Age &lt;= 30\nAge &gt; 30",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Fasting, Body Composition, and Lifestyle Patterns by Age Group</span>"
+    ]
+  },
+  {
+    "objectID": "process/initial_analysis.html#import-necessary-libraries",
+    "href": "process/initial_analysis.html#import-necessary-libraries",
+    "title": "3  Fasting, Body Composition, and Lifestyle Patterns by Age Group",
+    "section": "3.2 Import necessary libraries",
+    "text": "3.2 Import necessary libraries\n\n\nShow Code\nimport os\nimport numpy as np\nimport pandas as pd\nimport seaborn as sns\nfrom dotenv import load_dotenv",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Fasting, Body Composition, and Lifestyle Patterns by Age Group</span>"
+    ]
+  },
+  {
+    "objectID": "process/initial_analysis.html#set-the-visual-theme",
+    "href": "process/initial_analysis.html#set-the-visual-theme",
+    "title": "3  Fasting, Body Composition, and Lifestyle Patterns by Age Group",
+    "section": "3.3 Set the visual theme",
+    "text": "3.3 Set the visual theme\n\n\nShow Code\nsns.set_theme(\n    style=\"whitegrid\",\n    context=\"notebook\",\n    rc={\"figure.figsize\": (8, 5)}\n)",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Fasting, Body Composition, and Lifestyle Patterns by Age Group</span>"
+    ]
+  },
+  {
+    "objectID": "process/initial_analysis.html#load-the-dataset",
+    "href": "process/initial_analysis.html#load-the-dataset",
+    "title": "3  Fasting, Body Composition, and Lifestyle Patterns by Age Group",
+    "section": "3.4 Load the dataset",
+    "text": "3.4 Load the dataset\n\n\nShow Code\nload_dotenv()\n\ndataset_path = os.getenv(\"CLEANED_DATASET_PATH\")\nif dataset_path is None:\n    raise ValueError(\"CLEANED_DATASET_PATH is not set in the environment.\")\n\ndf = pd.read_excel(dataset_path)\ndf.head()\n\n\n\n\n\n\n\n\n\nID\nEntry Date\nAge\nSex\nAddress\nHeight (CM)\nWeight (KG)\nFasting\nABF\nUring Color Fasting\n...\nDiet\nHeight (CM).1\nWeight (KG).1\nBMI\nNormalized Address\nDivision\nDistrict\nCity Corporation\nSub-District\nThana\n\n\n\n\n0\nK-225859\n2025-02-25 00:00:00\n50.0\nF\nMIRESHARAI CTG\nNaN\nNaN\n17.0\n21.1MMOL\nORANGE\n...\n4\n147.0\n44.0\n20.361886\nMirsharai, Chattogram\nChattogram\nChattogram\nNaN\nMirsharai\nMirsharai Thana\n\n\n1\nK-225401\n2025-02-11 00:00:00\n35.0\nM\nLOHAGORA CTG\nNaN\nNaN\n10.0\n16.2MMOL\nGREEN\n...\n6\n160.0\n62.0\n24.218750\nLohagara, Chattogram\nChattogram\nChattogram\nNaN\nLohagara\nLohagara\n\n\n2\nK-225407\n2025-02-11 00:00:00\n55.0\nM\nSANDWIP CTG\nNaN\nNaN\n15.5\n22.3MMOL\nYELLOW\n...\n6\n164.0\n61.0\n22.679952\nSandwip, Chattogram\nChattogram\nChattogram\nNaN\nSandwip\nSandwip\n\n\n3\nK-225413\n2025-02-11 00:00:00\n50.0\nM\nANOWARA CTG\nNaN\nNaN\n22.7\n27.1\\nMMOL\nRED\n...\n5\n151.0\n52.0\n22.806017\nAnwara, Chattogram\nChattogram\nChattogram\nNaN\nAnwara\nAnwara\n\n\n4\nK-225655\n2025-02-19 00:00:00\n57.0\nM\nMIRESHARAI CTG\nNaN\nNaN\n7.6\n15.0MMOL\nNIL\n...\n5\n168.0\n76.0\n26.927438\nMirsharai, Chattogram\nChattogram\nChattogram\nNaN\nMirsharai\nMirsharai Thana\n\n\n\n\n5 rows × 23 columns",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Fasting, Body Composition, and Lifestyle Patterns by Age Group</span>"
+    ]
+  },
+  {
+    "objectID": "process/initial_analysis.html#initial-data-overview",
+    "href": "process/initial_analysis.html#initial-data-overview",
+    "title": "3  Fasting, Body Composition, and Lifestyle Patterns by Age Group",
+    "section": "3.5 Initial data overview",
+    "text": "3.5 Initial data overview\n\n3.5.1 Shape of the dataset\n\n\nShow Code\ndf.shape\n\n\n(43777, 23)\n\n\n\n\n3.5.2 Column names\n\n\nShow Code\ndf.columns.tolist()\n\n\n['ID',\n 'Entry Date',\n 'Age',\n 'Sex',\n 'Address',\n 'Height (CM)',\n 'Weight (KG)',\n 'Fasting',\n 'ABF',\n 'Uring Color Fasting',\n 'Uring Color ABF',\n 'Acitone',\n 'Albumin',\n 'Diet',\n 'Height (CM).1',\n 'Weight (KG).1',\n 'BMI',\n 'Normalized Address',\n 'Division',\n 'District',\n 'City Corporation',\n 'Sub-District',\n 'Thana']\n\n\n\n\n3.5.3 Check required columns\n\n\nShow Code\nrequired_columns = [\n    \"Age\",\n    \"Sex\",\n    \"Height (CM)\",\n    \"Weight (KG)\",\n    \"BMI\",\n    \"Fasting\"\n]\n\nmissing_columns = [col for col in required_columns if col not in df.columns]\n\nif missing_columns:\n    raise ValueError(f\"Missing required columns: {missing_columns}\")\nelse:\n    print(\"All required columns are present.\")\n\n\nAll required columns are present.\n\n\n\n\n3.5.4 Data types\n\n\nShow Code\ndf.dtypes\n\n\nID                      object\nEntry Date              object\nAge                    float64\nSex                        str\nAddress                    str\nHeight (CM)            float64\nWeight (KG)            float64\nFasting                float64\nABF                     object\nUring Color Fasting     object\nUring Color ABF         object\nAcitone                 object\nAlbumin                 object\nDiet                    object\nHeight (CM).1          float64\nWeight (KG).1          float64\nBMI                    float64\nNormalized Address         str\nDivision                   str\nDistrict                   str\nCity Corporation           str\nSub-District               str\nThana                      str\ndtype: object\n\n\n\n\n3.5.5 Missing values summary\n\n\nShow Code\ndf[required_columns].isnull().sum().sort_values(ascending=False)\n\n\nHeight (CM)    32743\nWeight (KG)    32652\nBMI                9\nAge                0\nSex                0\nFasting            0\ndtype: int64\n\n\n\n\n3.5.6 Duplicate rows\n\n\nShow Code\ndf.duplicated().sum()\n\n\nnp.int64(0)",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Fasting, Body Composition, and Lifestyle Patterns by Age Group</span>"
+    ]
+  },
+  {
+    "objectID": "process/initial_analysis.html#descriptive-statistics",
+    "href": "process/initial_analysis.html#descriptive-statistics",
+    "title": "3  Fasting, Body Composition, and Lifestyle Patterns by Age Group",
+    "section": "3.6 Descriptive statistics",
+    "text": "3.6 Descriptive statistics\n\n3.6.1 Numerical summary\n\n\nShow Code\ndf[[\"Age\", \"Height (CM)\", \"Weight (KG)\", \"BMI\", \"Fasting\"]].describe()\n\n\n\n\n\n\n\n\n\nAge\nHeight (CM)\nWeight (KG)\nBMI\nFasting\n\n\n\n\ncount\n43777.000000\n11034.000000\n11125.000000\n43768.000000\n43777.000000\n\n\nmean\n47.598006\n158.110413\n64.855092\n41.582140\n11.537003\n\n\nstd\n12.155562\n27.258622\n60.133519\n2868.743566\n22.558498\n\n\nmin\n3.000000\n5.300000\n0.067000\n0.000000\n0.000000\n\n\n25%\n39.000000\n151.000000\n56.000000\n23.111111\n7.500000\n\n\n50%\n48.000000\n158.000000\n64.000000\n25.566107\n9.900000\n\n\n75%\n55.000000\n165.000000\n72.000000\n28.344671\n14.000000\n\n\nmax\n110.000000\n1688.000000\n6210.700000\n600000.000000\n3407.000000\n\n\n\n\n\n\n\n\n\n3.6.2 Categorical summary\n\n\nShow Code\ncategorical_columns = [\"Sex\"] + ([\"Diet\"] if \"Diet\" in df.columns else [])\n\nfor col in categorical_columns:\n    print(f\"\\nValue counts for: {col}\")\n    print(df[col].value_counts(dropna=False))\n\n\n\nValue counts for: Sex\nSex\nF    23230\nM    20545\nO        2\nName: count, dtype: int64\n\nValue counts for: Diet\nDiet\nNaN          32008\n6             2788\n3             2659\n4             2516\n5             2131\n2             1172\n7              418\n1               34\nREGNANC          5\n8                5\n06 (P.D)         3\nN/S              3\n07 (P.D)         3\n02NEW PA         2\n07(P.D)          2\n9                2\n06  PPREG        1\n04NEW PA         1\n0595/60          1\n6-               1\n03(P.D)          1\n....             1\n........         1\n2000             1\n1400             1\n2200             1\nK                1\n47               1\n35               1\n04-              1\n6.1              1\n06160/100        1\n53               1\n120/80           1\n6(P.D)           1\n-------          1\nNEXT TIME        1\n58               1\n06 (PD)          1\n04\\              1\n39               1\n16               1\nName: count, dtype: int64",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Fasting, Body Composition, and Lifestyle Patterns by Age Group</span>"
+    ]
+  },
+  {
+    "objectID": "process/initial_analysis.html#data-cleaning-and-outlier-handling",
+    "href": "process/initial_analysis.html#data-cleaning-and-outlier-handling",
+    "title": "3  Fasting, Body Composition, and Lifestyle Patterns by Age Group",
+    "section": "3.7 Data cleaning and outlier handling",
+    "text": "3.7 Data cleaning and outlier handling\nThe goal here is to remove implausible or extreme records that may distort the analysis.\n\n\nShow Code\ndf = df.drop_duplicates().copy()\n\ndf = df[\n    ~(\n        (df[\"BMI\"] &gt;= 60) |\n        (df[\"BMI\"] &lt;= 15) |\n        (df[\"Weight (KG)\"] &gt;= 500) |\n        (df[\"Weight (KG)\"] &lt;= 30) |\n        (df[\"Height (CM)\"] &gt; 250) |\n        (df[\"Height (CM)\"] &lt;= 100) |\n        (df[\"Fasting\"] &gt; 50)\n    )\n].copy()\n\n\n\n3.7.1 Quick sanity check after filtering\n\n\nShow Code\ndf[[\"Age\", \"Height (CM)\", \"Weight (KG)\", \"BMI\", \"Fasting\"]].describe()\n\n\n\n\n\n\n\n\n\nAge\nHeight (CM)\nWeight (KG)\nBMI\nFasting\n\n\n\n\ncount\n43517.000000\n10945.000000\n11027.000000\n43508.000000\n43517.000000\n\n\nmean\n47.618561\n158.030882\n64.392128\n25.945947\n11.162435\n\n\nstd\n12.127001\n8.886475\n11.665086\n4.197449\n4.606895\n\n\nmin\n3.000000\n121.000000\n31.000000\n15.010751\n0.000000\n\n\n25%\n39.000000\n151.000000\n56.000000\n23.138507\n7.500000\n\n\n50%\n48.000000\n158.000000\n64.000000\n25.593737\n9.800000\n\n\n75%\n55.000000\n165.000000\n72.000000\n28.326580\n13.900000\n\n\nmax\n110.000000\n189.000000\n135.000000\n57.471264\n38.000000",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Fasting, Body Composition, and Lifestyle Patterns by Age Group</span>"
+    ]
+  },
+  {
+    "objectID": "process/initial_analysis.html#feature-engineering",
+    "href": "process/initial_analysis.html#feature-engineering",
+    "title": "3  Fasting, Body Composition, and Lifestyle Patterns by Age Group",
+    "section": "3.8 Feature engineering",
+    "text": "3.8 Feature engineering\n\n3.8.1 Create age group labels\n\n\nShow Code\ndf[\"Age Group\"] = np.where(df[\"Age\"] &lt;= 30, \"&lt;=30\", \"&gt;30\")\ndf[\"Age Group\"].value_counts()\n\n\nAge Group\n&gt;30     39893\n&lt;=30     3624\nName: count, dtype: int64\n\n\n\n\n3.8.2 Create BMI category\n\n\nShow Code\nbmi_bins = [0, 18.5, 25, 30, np.inf]\nbmi_labels = [\"Underweight\", \"Normal\", \"Overweight\", \"Obese\"]\n\ndf[\"BMI Category\"] = pd.cut(\n    df[\"BMI\"],\n    bins=bmi_bins,\n    labels=bmi_labels,\n    right=False\n)\n\ndf[\"BMI Category\"].value_counts(dropna=False)\n\n\nBMI Category\nNormal         18123\nOverweight     17763\nObese           6639\nUnderweight      983\nNaN                9\nName: count, dtype: int64",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Fasting, Body Composition, and Lifestyle Patterns by Age Group</span>"
+    ]
+  },
+  {
+    "objectID": "process/initial_analysis.html#sample-composition",
+    "href": "process/initial_analysis.html#sample-composition",
+    "title": "3  Fasting, Body Composition, and Lifestyle Patterns by Age Group",
+    "section": "3.9 Sample composition",
+    "text": "3.9 Sample composition\n\n3.9.1 Participant count by age group\n\n\nShow Code\nax = sns.countplot(data=df, x=\"Age Group\", hue=\"Age Group\", palette=\"Set2\", legend=False)\nax.set(\n    xlabel=\"Age Group\",\n    ylabel=\"Count\",\n    title=\"Participant Distribution by Age Group\"\n)\n\n\n[Text(0.5, 0, 'Age Group'),\n Text(0, 0.5, 'Count'),\n Text(0.5, 1.0, 'Participant Distribution by Age Group')]\n\n\n\n\n\n\n\n\n\n\n\n3.9.2 Sex distribution across age groups\n\n\nShow Code\nax = sns.countplot(data=df, x=\"Age Group\", hue=\"Sex\", palette=\"Set1\")\nax.set(\n    xlabel=\"Age Group\",\n    ylabel=\"Count\",\n    title=\"Sex Distribution Across Age Groups\"\n)\n\n\n[Text(0.5, 0, 'Age Group'),\n Text(0, 0.5, 'Count'),\n Text(0.5, 1.0, 'Sex Distribution Across Age Groups')]\n\n\n\n\n\n\n\n\n\n\n\n3.9.3 BMI category distribution by age group\n\n\nShow Code\ng = sns.catplot(\n    data=df,\n    x=\"BMI Category\",\n    hue=\"Age Group\",\n    kind=\"count\",\n    palette=\"Set2\",\n    height=5,\n    aspect=1.6\n)\n\ng.set_axis_labels(\"BMI Category\", \"Count\")\ng.set_titles(\"BMI Category Distribution by Age Group\")\ng.ax.tick_params(axis=\"x\", rotation=15)",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Fasting, Body Composition, and Lifestyle Patterns by Age Group</span>"
+    ]
+  },
+  {
+    "objectID": "process/initial_analysis.html#grouped-descriptive-analytics",
+    "href": "process/initial_analysis.html#grouped-descriptive-analytics",
+    "title": "3  Fasting, Body Composition, and Lifestyle Patterns by Age Group",
+    "section": "3.10 Grouped descriptive analytics",
+    "text": "3.10 Grouped descriptive analytics\n\n3.10.1 Summary statistics by age group\n\n\nShow Code\ngroup_summary = (\n    df.groupby(\"Age Group\")[[\"Age\", \"Height (CM)\", \"Weight (KG)\", \"BMI\", \"Fasting\"]]\n    .agg([\"count\", \"mean\", \"median\", \"std\", \"min\", \"max\"])\n    .round(2)\n)\n\ngroup_summary\n\n\n\n\n\n\n\n\n\nAge\nHeight (CM)\n...\nBMI\nFasting\n\n\n\ncount\nmean\nmedian\nstd\nmin\nmax\ncount\nmean\nmedian\nstd\n...\nmedian\nstd\nmin\nmax\ncount\nmean\nmedian\nstd\nmin\nmax\n\n\nAge Group\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n&lt;=30\n3624\n26.72\n28.0\n3.57\n3.0\n30.0\n896\n156.88\n155.0\n8.53\n...\n25.61\n4.80\n15.01\n57.47\n3624\n10.96\n9.5\n4.96\n3.3\n34.1\n\n\n&gt;30\n39893\n49.52\n49.0\n10.77\n31.0\n110.0\n10049\n158.13\n158.0\n8.91\n...\n25.59\n4.14\n15.01\n53.33\n39893\n11.18\n9.9\n4.57\n0.0\n38.0\n\n\n\n\n2 rows × 30 columns\n\n\n\n\n\n3.10.2 Summary statistics by age group and sex\n\n\nShow Code\ngroup_sex_summary = (\n    df.groupby([\"Age Group\", \"Sex\"])[[\"Height (CM)\", \"Weight (KG)\", \"BMI\", \"Fasting\"]]\n    .agg([\"count\", \"mean\", \"median\", \"std\"])\n    .round(2)\n)\n\ngroup_sex_summary\n\n\n\n\n\n\n\n\n\n\nHeight (CM)\nWeight (KG)\nBMI\nFasting\n\n\n\n\ncount\nmean\nmedian\nstd\ncount\nmean\nmedian\nstd\ncount\nmean\nmedian\nstd\ncount\nmean\nmedian\nstd\n\n\nAge Group\nSex\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n&lt;=30\nF\n623\n153.20\n153.0\n5.62\n631\n62.66\n61.0\n13.08\n2614\n26.66\n26.25\n4.75\n2614\n10.13\n8.70\n4.56\n\n\nM\n273\n165.27\n166.0\n8.09\n278\n66.84\n66.0\n13.75\n1010\n24.43\n24.17\n4.58\n1010\n13.13\n12.80\n5.29\n\n\n&gt;30\nF\n5002\n151.73\n152.0\n5.76\n5055\n61.54\n61.0\n11.13\n20485\n26.82\n26.48\n4.41\n20487\n11.07\n9.70\n4.56\n\n\nM\n5047\n164.48\n165.0\n6.65\n5063\n67.32\n67.0\n11.12\n19397\n25.00\n24.80\n3.60\n19404\n11.29\n10.00\n4.58\n\n\nO\n0\nNaN\nNaN\nNaN\n0\nNaN\nNaN\nNaN\n2\n25.58\n25.58\n4.40\n2\n6.45\n6.45\n1.48",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Fasting, Body Composition, and Lifestyle Patterns by Age Group</span>"
+    ]
+  },
+  {
+    "objectID": "process/initial_analysis.html#correlation-analysis",
+    "href": "process/initial_analysis.html#correlation-analysis",
+    "title": "3  Fasting, Body Composition, and Lifestyle Patterns by Age Group",
+    "section": "3.11 Correlation analysis",
+    "text": "3.11 Correlation analysis\n\n3.11.1 Overall correlation heatmap\n\n\nShow Code\ncorr = df[[\"Age\", \"Height (CM)\", \"Weight (KG)\", \"BMI\", \"Fasting\"]].corr(numeric_only=True)\n\nax = sns.heatmap(\n    corr,\n    annot=True,\n    cmap=\"coolwarm\",\n    fmt=\".2f\",\n    linewidths=0.5\n)\n\nax.set_title(\"Correlation Heatmap of Core Numerical Variables\")\n\n\nText(0.5, 1.0, 'Correlation Heatmap of Core Numerical Variables')\n\n\n\n\n\n\n\n\n\n\n\n3.11.2 Correlation heatmap for Age &lt;= 30\n\n\nShow Code\ncorr_young = (\n    df.loc[df[\"Age Group\"] == \"&lt;=30\", [\"Age\", \"Height (CM)\", \"Weight (KG)\", \"BMI\", \"Fasting\"]]\n    .corr(numeric_only=True)\n)\n\nax = sns.heatmap(\n    corr_young,\n    annot=True,\n    cmap=\"coolwarm\",\n    fmt=\".2f\",\n    linewidths=0.5\n)\n\nax.set_title(\"Correlation Heatmap for Age &lt;= 30\")\n\n\nText(0.5, 1.0, 'Correlation Heatmap for Age &lt;= 30')\n\n\n\n\n\n\n\n\n\n\n\n3.11.3 Correlation heatmap for Age &gt; 30\n\n\nShow Code\ncorr_older = (\n    df.loc[df[\"Age Group\"] == \"&gt;30\", [\"Age\", \"Height (CM)\", \"Weight (KG)\", \"BMI\", \"Fasting\"]]\n    .corr(numeric_only=True)\n)\n\nax = sns.heatmap(\n    corr_older,\n    annot=True,\n    cmap=\"coolwarm\",\n    fmt=\".2f\",\n    linewidths=0.5\n)\n\nax.set_title(\"Correlation Heatmap for Age &gt; 30\")\n\n\nText(0.5, 1.0, 'Correlation Heatmap for Age &gt; 30')",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Fasting, Body Composition, and Lifestyle Patterns by Age Group</span>"
+    ]
+  },
+  {
+    "objectID": "process/initial_analysis.html#distribution-analysis",
+    "href": "process/initial_analysis.html#distribution-analysis",
+    "title": "3  Fasting, Body Composition, and Lifestyle Patterns by Age Group",
+    "section": "3.12 Distribution analysis",
+    "text": "3.12 Distribution analysis\n\n3.12.1 Fasting distribution overall\n\n\nShow Code\nax = sns.histplot(\n    data=df,\n    x=\"Fasting\",\n    kde=True,\n    bins=30\n)\n\nax.set(\n    xlabel=\"Fasting\",\n    ylabel=\"Count\",\n    title=\"Overall Distribution of Fasting\"\n)\n\n\n[Text(0.5, 0, 'Fasting'),\n Text(0, 0.5, 'Count'),\n Text(0.5, 1.0, 'Overall Distribution of Fasting')]\n\n\n\n\n\n\n\n\n\n\n\n3.12.2 Fasting distribution by age group\n\n\nShow Code\nax = sns.histplot(\n    data=df,\n    x=\"Fasting\",\n    hue=\"Age Group\",\n    kde=True,\n    bins=30,\n    element=\"step\",\n    stat=\"count\",\n    common_norm=False\n)\n\nax.set(\n    xlabel=\"Fasting\",\n    ylabel=\"Count\",\n    title=\"Fasting Distribution by Age Group\"\n)\n\n\n[Text(0.5, 0, 'Fasting'),\n Text(0, 0.5, 'Count'),\n Text(0.5, 1.0, 'Fasting Distribution by Age Group')]\n\n\n\n\n\n\n\n\n\n\n\n3.12.3 BMI distribution overall\n\n\nShow Code\nax = sns.histplot(\n    data=df,\n    x=\"BMI\",\n    kde=True,\n    bins=30\n)\n\nax.set(\n    xlabel=\"BMI\",\n    ylabel=\"Count\",\n    title=\"Overall Distribution of BMI\"\n)\n\n\n[Text(0.5, 0, 'BMI'),\n Text(0, 0.5, 'Count'),\n Text(0.5, 1.0, 'Overall Distribution of BMI')]\n\n\n\n\n\n\n\n\n\n\n\n3.12.4 BMI distribution by age group\n\n\nShow Code\nax = sns.histplot(\n    data=df,\n    x=\"BMI\",\n    hue=\"Age Group\",\n    kde=True,\n    bins=30,\n    element=\"step\",\n    stat=\"count\",\n    common_norm=False\n)\n\nax.set(\n    xlabel=\"BMI\",\n    ylabel=\"Count\",\n    title=\"BMI Distribution by Age Group\"\n)\n\n\n[Text(0.5, 0, 'BMI'),\n Text(0, 0.5, 'Count'),\n Text(0.5, 1.0, 'BMI Distribution by Age Group')]\n\n\n\n\n\n\n\n\n\n\n\n3.12.5 Density comparison of fasting by age group\n\n\nShow Code\nax = sns.kdeplot(\n    data=df,\n    x=\"Fasting\",\n    hue=\"Age Group\",\n    fill=True,\n    common_norm=False,\n    alpha=0.4\n)\n\nax.set(\n    xlabel=\"Fasting\",\n    ylabel=\"Density\",\n    title=\"Density of Fasting by Age Group\"\n)\n\n\n[Text(0.5, 0, 'Fasting'),\n Text(0, 0.5, 'Density'),\n Text(0.5, 1.0, 'Density of Fasting by Age Group')]",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Fasting, Body Composition, and Lifestyle Patterns by Age Group</span>"
+    ]
+  },
+  {
+    "objectID": "process/initial_analysis.html#core-relationship-analysis",
+    "href": "process/initial_analysis.html#core-relationship-analysis",
+    "title": "3  Fasting, Body Composition, and Lifestyle Patterns by Age Group",
+    "section": "3.13 Core relationship analysis",
+    "text": "3.13 Core relationship analysis\n\n3.13.1 Age vs fasting\n\n3.13.1.1 Scatter plot\n\n\nShow Code\nax = sns.scatterplot(\n    data=df,\n    x=\"Age\",\n    y=\"Fasting\",\n    hue=\"Age Group\",\n    palette=\"Set1\",\n    alpha=0.7\n)\n\nax.set(\n    xlabel=\"Age\",\n    ylabel=\"Fasting\",\n    title=\"Age vs Fasting\"\n)\n\n\n[Text(0.5, 0, 'Age'),\n Text(0, 0.5, 'Fasting'),\n Text(0.5, 1.0, 'Age vs Fasting')]\n\n\n\n\n\n\n\n\n\n\n\n3.13.1.2 Mean fasting by age\n\n\nShow Code\nage_fasting = (\n    df.groupby([\"Age\", \"Age Group\"], as_index=False)[\"Fasting\"]\n    .mean()\n)\n\nax = sns.lineplot(\n    data=age_fasting,\n    x=\"Age\",\n    y=\"Fasting\",\n    hue=\"Age Group\",\n    marker=\"o\"\n)\n\nax.set(\n    xlabel=\"Age\",\n    ylabel=\"Mean Fasting\",\n    title=\"Mean Fasting by Age\"\n)\n\n\n[Text(0.5, 0, 'Age'),\n Text(0, 0.5, 'Mean Fasting'),\n Text(0.5, 1.0, 'Mean Fasting by Age')]\n\n\n\n\n\n\n\n\n\n\n\n\n3.13.2 BMI vs fasting\n\n3.13.2.1 Scatter plot by age group\n\n\nShow Code\nax = sns.scatterplot(\n    data=df,\n    x=\"BMI\",\n    y=\"Fasting\",\n    hue=\"Age Group\",\n    alpha=0.7,\n    palette=\"Set2\"\n)\n\nax.set(\n    xlabel=\"BMI\",\n    ylabel=\"Fasting\",\n    title=\"BMI vs Fasting by Age Group\"\n)\n\n\n[Text(0.5, 0, 'BMI'),\n Text(0, 0.5, 'Fasting'),\n Text(0.5, 1.0, 'BMI vs Fasting by Age Group')]\n\n\n\n\n\n\n\n\n\n\n\n3.13.2.2 Regression view\n\n\nShow Code\ng = sns.lmplot(\n    data=df,\n    x=\"BMI\",\n    y=\"Fasting\",\n    hue=\"Age Group\",\n    height=5,\n    aspect=1.4,\n    scatter_kws={\"alpha\": 0.6}\n)\n\ng.set_axis_labels(\"BMI\", \"Fasting\")\n\n\n\n\n\n\n\n\n\n\n\n\n3.13.3 Weight vs fasting\n\n\nShow Code\nax = sns.scatterplot(\n    data=df,\n    x=\"Weight (KG)\",\n    y=\"Fasting\",\n    hue=\"Age Group\",\n    alpha=0.7,\n    palette=\"Set1\"\n)\n\nax.set(\n    xlabel=\"Weight (KG)\",\n    ylabel=\"Fasting\",\n    title=\"Weight vs Fasting by Age Group\"\n)\n\n\n[Text(0.5, 0, 'Weight (KG)'),\n Text(0, 0.5, 'Fasting'),\n Text(0.5, 1.0, 'Weight vs Fasting by Age Group')]\n\n\n\n\n\n\n\n\n\n\n\n3.13.4 Height vs fasting\n\n\nShow Code\nax = sns.scatterplot(\n    data=df,\n    x=\"Height (CM)\",\n    y=\"Fasting\",\n    hue=\"Age Group\",\n    alpha=0.7,\n    palette=\"Set2\"\n)\n\nax.set(\n    xlabel=\"Height (CM)\",\n    ylabel=\"Fasting\",\n    title=\"Height vs Fasting by Age Group\"\n)\n\n\n[Text(0.5, 0, 'Height (CM)'),\n Text(0, 0.5, 'Fasting'),\n Text(0.5, 1.0, 'Height vs Fasting by Age Group')]",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Fasting, Body Composition, and Lifestyle Patterns by Age Group</span>"
+    ]
+  },
+  {
+    "objectID": "process/initial_analysis.html#categorical-comparisons",
+    "href": "process/initial_analysis.html#categorical-comparisons",
+    "title": "3  Fasting, Body Composition, and Lifestyle Patterns by Age Group",
+    "section": "3.14 Categorical comparisons",
+    "text": "3.14 Categorical comparisons\n\n3.14.1 Sex vs fasting\n\n\nShow Code\nax = sns.boxplot(\n    data=df,\n    x=\"Sex\",\n    y=\"Fasting\",\n    hue=\"Age Group\",\n    palette=\"Set2\"\n)\n\nax.set(\n    xlabel=\"Sex\",\n    ylabel=\"Fasting\",\n    title=\"Fasting by Sex and Age Group\"\n)\n\n\n[Text(0.5, 0, 'Sex'),\n Text(0, 0.5, 'Fasting'),\n Text(0.5, 1.0, 'Fasting by Sex and Age Group')]\n\n\n\n\n\n\n\n\n\n\n\n3.14.2 Sex vs BMI\n\n\nShow Code\nax = sns.boxplot(\n    data=df,\n    x=\"Sex\",\n    y=\"BMI\",\n    hue=\"Age Group\",\n    palette=\"Set1\"\n)\n\nax.set(\n    xlabel=\"Sex\",\n    ylabel=\"BMI\",\n    title=\"BMI by Sex and Age Group\"\n)\n\n\n[Text(0.5, 0, 'Sex'),\n Text(0, 0.5, 'BMI'),\n Text(0.5, 1.0, 'BMI by Sex and Age Group')]\n\n\n\n\n\n\n\n\n\n\n\n3.14.3 Age group vs fasting\n\n\nShow Code\nax = sns.boxplot(\n    data=df,\n    x=\"Age Group\",\n    y=\"Fasting\",\n    hue=\"Age Group\",\n    palette=\"Set2\",\n    legend=False\n)\n\nax.set(\n    xlabel=\"Age Group\",\n    ylabel=\"Fasting\",\n    title=\"Fasting by Age Group\"\n)\n\n\n[Text(0.5, 0, 'Age Group'),\n Text(0, 0.5, 'Fasting'),\n Text(0.5, 1.0, 'Fasting by Age Group')]\n\n\n\n\n\n\n\n\n\n\n\n3.14.4 Age group vs BMI\n\n\nShow Code\nax = sns.boxplot(\n    data=df,\n    x=\"Age Group\",\n    y=\"BMI\",\n    hue=\"Age Group\",\n    palette=\"Set1\",\n    legend=False\n)\n\nax.set(\n    xlabel=\"Age Group\",\n    ylabel=\"BMI\",\n    title=\"BMI by Age Group\"\n)\n\n\n[Text(0.5, 0, 'Age Group'),\n Text(0, 0.5, 'BMI'),\n Text(0.5, 1.0, 'BMI by Age Group')]\n\n\n\n\n\n\n\n\n\n\n\n3.14.5 Violin plot of fasting by age group\n\n\nShow Code\nax = sns.violinplot(\n    data=df,\n    x=\"Age Group\",\n    y=\"Fasting\",\n    hue=\"Age Group\",\n    palette=\"Pastel1\",\n    legend=False\n)\n\nax.set(\n    xlabel=\"Age Group\",\n    ylabel=\"Fasting\",\n    title=\"Fasting Distribution Shape by Age Group\"\n)\n\n\n[Text(0.5, 0, 'Age Group'),\n Text(0, 0.5, 'Fasting'),\n Text(0.5, 1.0, 'Fasting Distribution Shape by Age Group')]",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Fasting, Body Composition, and Lifestyle Patterns by Age Group</span>"
+    ]
+  },
+  {
+    "objectID": "process/initial_analysis.html#diet-related-analysis",
+    "href": "process/initial_analysis.html#diet-related-analysis",
+    "title": "3  Fasting, Body Composition, and Lifestyle Patterns by Age Group",
+    "section": "3.15 Diet-related analysis",
+    "text": "3.15 Diet-related analysis\nThis section runs only if the Diet column exists.\n\n3.15.1 Diet frequency table\n\n\nShow Code\nif \"Diet\" in df.columns:\n    df[\"Diet\"].value_counts(dropna=False)\nelse:\n    print(\"Diet column not found in the dataset.\")\n\n\n\n\n3.15.2 Diet vs BMI\n\n\nShow Code\nif \"Diet\" in df.columns:\n    g = sns.catplot(\n        data=df,\n        x=\"Diet\",\n        y=\"BMI\",\n        hue=\"Age Group\",\n        kind=\"box\",\n        height=5,\n        aspect=1.8\n    )\n\n    g.set_axis_labels(\"Diet\", \"BMI\")\n    g.ax.tick_params(axis=\"x\", rotation=20)\nelse:\n    print(\"Diet column not found in the dataset.\")\n\n\n\n\n\n\n\n\n\n\n\n3.15.3 Diet vs fasting\n\n\nShow Code\nif \"Diet\" in df.columns:\n    g = sns.catplot(\n        data=df,\n        x=\"Diet\",\n        y=\"Fasting\",\n        hue=\"Age Group\",\n        kind=\"box\",\n        height=5,\n        aspect=1.8\n    )\n\n    g.set_axis_labels(\"Diet\", \"Fasting\")\n    g.ax.tick_params(axis=\"x\", rotation=20)\nelse:\n    print(\"Diet column not found in the dataset.\")\n\n\n\n\n\n\n\n\n\n\n\n3.15.4 Diet composition across age groups\n\n\nShow Code\nif \"Diet\" in df.columns:\n    g = sns.catplot(\n        data=df,\n        x=\"Diet\",\n        hue=\"Age Group\",\n        kind=\"count\",\n        height=5,\n        aspect=1.8\n    )\n\n    g.set_axis_labels(\"Diet\", \"Count\")\n    g.ax.tick_params(axis=\"x\", rotation=20)\nelse:\n    print(\"Diet column not found in the dataset.\")",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Fasting, Body Composition, and Lifestyle Patterns by Age Group</span>"
+    ]
+  },
+  {
+    "objectID": "process/initial_analysis.html#multivariable-relationship-analysis",
+    "href": "process/initial_analysis.html#multivariable-relationship-analysis",
+    "title": "3  Fasting, Body Composition, and Lifestyle Patterns by Age Group",
+    "section": "3.16 Multivariable relationship analysis",
+    "text": "3.16 Multivariable relationship analysis\n\n3.16.1 Age and sex to fasting\n\n\nShow Code\nax = sns.lineplot(\n    data=df,\n    x=\"Age\",\n    y=\"Fasting\",\n    hue=\"Sex\",\n    style=\"Age Group\",\n    estimator=\"mean\"\n)\n\nax.set(\n    xlabel=\"Age\",\n    ylabel=\"Mean Fasting\",\n    title=\"Mean Fasting by Age, Sex, and Age Group\"\n)\n\n\n[Text(0.5, 0, 'Age'),\n Text(0, 0.5, 'Mean Fasting'),\n Text(0.5, 1.0, 'Mean Fasting by Age, Sex, and Age Group')]\n\n\n\n\n\n\n\n\n\n\n\n3.16.2 BMI vs fasting faceted by age group\n\n\nShow Code\ng = sns.relplot(\n    data=df,\n    x=\"BMI\",\n    y=\"Fasting\",\n    col=\"Age Group\",\n    hue=\"Sex\",\n    kind=\"scatter\",\n    alpha=0.7,\n    height=5,\n    aspect=1.1\n)\n\ng.set_axis_labels(\"BMI\", \"Fasting\")\ng.set_titles(\"Age Group: {col_name}\")\n\n\n\n\n\n\n\n\n\n\n\n3.16.3 Weight vs fasting faceted by age group\n\n\nShow Code\ng = sns.relplot(\n    data=df,\n    x=\"Weight (KG)\",\n    y=\"Fasting\",\n    col=\"Age Group\",\n    hue=\"Sex\",\n    kind=\"scatter\",\n    alpha=0.7,\n    height=5,\n    aspect=1.1\n)\n\ng.set_axis_labels(\"Weight (KG)\", \"Fasting\")\ng.set_titles(\"Age Group: {col_name}\")\n\n\n\n\n\n\n\n\n\n\n\n3.16.4 Pairwise view of core variables\n\n\nShow Code\npairplot_df = df[\n    [\"Age\", \"Height (CM)\", \"Weight (KG)\", \"BMI\", \"Fasting\", \"Age Group\"]\n].dropna()\n\nsns.pairplot(\n    pairplot_df,\n    hue=\"Age Group\",\n    corner=True,\n    diag_kind=\"hist\"\n)",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Fasting, Body Composition, and Lifestyle Patterns by Age Group</span>"
+    ]
+  },
+  {
+    "objectID": "process/initial_analysis.html#group-comparison-tables",
+    "href": "process/initial_analysis.html#group-comparison-tables",
+    "title": "3  Fasting, Body Composition, and Lifestyle Patterns by Age Group",
+    "section": "3.17 Group comparison tables",
+    "text": "3.17 Group comparison tables\n\n3.17.1 Mean comparison across age groups\n\n\nShow Code\nmean_comparison = (\n    df.groupby(\"Age Group\")[[\"Height (CM)\", \"Weight (KG)\", \"BMI\", \"Fasting\"]]\n    .mean()\n    .round(2)\n    .sort_index()\n)\n\nmean_comparison\n\n\n\n\n\n\n\n\n\nHeight (CM)\nWeight (KG)\nBMI\nFasting\n\n\nAge Group\n\n\n\n\n\n\n\n\n&lt;=30\n156.88\n63.94\n26.04\n10.96\n\n\n&gt;30\n158.13\n64.43\n25.94\n11.18\n\n\n\n\n\n\n\n\n\n3.17.2 Median comparison across age groups\n\n\nShow Code\nmedian_comparison = (\n    df.groupby(\"Age Group\")[[\"Height (CM)\", \"Weight (KG)\", \"BMI\", \"Fasting\"]]\n    .median()\n    .round(2)\n    .sort_index()\n)\n\nmedian_comparison\n\n\n\n\n\n\n\n\n\nHeight (CM)\nWeight (KG)\nBMI\nFasting\n\n\nAge Group\n\n\n\n\n\n\n\n\n&lt;=30\n155.0\n63.0\n25.61\n9.5\n\n\n&gt;30\n158.0\n64.0\n25.59\n9.9\n\n\n\n\n\n\n\n\n\n3.17.3 Sex-wise mean fasting within each age group\n\n\nShow Code\nsex_age_fasting = (\n    df.groupby([\"Age Group\", \"Sex\"])[\"Fasting\"]\n    .mean()\n    .round(2)\n    .unstack()\n)\n\nsex_age_fasting\n\n\n\n\n\n\n\n\nSex\nF\nM\nO\n\n\nAge Group\n\n\n\n\n\n\n\n&lt;=30\n10.13\n13.13\nNaN\n\n\n&gt;30\n11.07\n11.29\n6.45\n\n\n\n\n\n\n\n\n\n3.17.4 BMI category by age group\n\n\nShow Code\nbmi_age_table = pd.crosstab(df[\"BMI Category\"], df[\"Age Group\"])\nbmi_age_table\n\n\n\n\n\n\n\n\nAge Group\n&lt;=30\n&gt;30\n\n\nBMI Category\n\n\n\n\n\n\nUnderweight\n156\n827\n\n\nNormal\n1465\n16658\n\n\nOverweight\n1340\n16423\n\n\nObese\n663\n5976",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Fasting, Body Composition, and Lifestyle Patterns by Age Group</span>"
+    ]
+  },
+  {
+    "objectID": "process/map_creation.html",
+    "href": "process/map_creation.html",
+    "title": "4  Data Exploration and Fasting Glucose Quality Assessment",
+    "section": "",
+    "text": "4.1 Data Loading and Preparation\nShow Code\nimport os\nimport pandas as pd\nimport geopandas as gpd\nfrom dotenv import load_dotenv\nload_dotenv()\n\n\nTrue\nShow Code\n# Show all rows\npd.set_option('display.max_rows', None)\n\n# Show all columns\npd.set_option('display.max_columns', None)\n\n# Show full cell content (stops long text from getting cut off)\npd.set_option('display.max_colwidth', None)\nShow Code\nload_dotenv()\n\ndataset_path = os.getenv(\"CLEANED_DATASET_PATH\")\nif dataset_path is None:\n    raise ValueError(\"CLEANED_DATASET_PATH is not set in the environment.\")\n\ndf = pd.read_excel(dataset_path)\ndf.head()\n\n\n\n\n\n\n\n\n\nID\nEntry Date\nAge\nSex\nAddress\nHeight (CM)\nWeight (KG)\nFasting\nABF\nUring Color Fasting\nUring Color ABF\nAcitone\nAlbumin\nDiet\nHeight (CM).1\nWeight (KG).1\nBMI\nNormalized Address\nDivision\nDistrict\nCity Corporation\nSub-District\nThana\n\n\n\n\n0\nK-225859\n2025-02-25 00:00:00\n50.0\nF\nMIRESHARAI CTG\nNaN\nNaN\n17.0\n21.1MMOL\nORANGE\nRED\nNIL\nNIL\n4\n147.0\n44.0\n20.361886\nMirsharai, Chattogram\nChattogram\nChattogram\nNaN\nMirsharai\nMirsharai Thana\n\n\n1\nK-225401\n2025-02-11 00:00:00\n35.0\nM\nLOHAGORA CTG\nNaN\nNaN\n10.0\n16.2MMOL\nGREEN\nORANGE\nNaN\nNIL\n6\n160.0\n62.0\n24.218750\nLohagara, Chattogram\nChattogram\nChattogram\nNaN\nLohagara\nLohagara\n\n\n2\nK-225407\n2025-02-11 00:00:00\n55.0\nM\nSANDWIP CTG\nNaN\nNaN\n15.5\n22.3MMOL\nYELLOW\nRED\nNIL\nNIL\n6\n164.0\n61.0\n22.679952\nSandwip, Chattogram\nChattogram\nChattogram\nNaN\nSandwip\nSandwip\n\n\n3\nK-225413\n2025-02-11 00:00:00\n50.0\nM\nANOWARA CTG\nNaN\nNaN\n22.7\n27.1\\nMMOL\nRED\nRED\nNIL\nNIL\n5\n151.0\n52.0\n22.806017\nAnwara, Chattogram\nChattogram\nChattogram\nNaN\nAnwara\nAnwara\n\n\n4\nK-225655\n2025-02-19 00:00:00\n57.0\nM\nMIRESHARAI CTG\nNaN\nNaN\n7.6\n15.0MMOL\nNIL\nYELLOW\nNaN\nNIL\n5\n168.0\n76.0\n26.927438\nMirsharai, Chattogram\nChattogram\nChattogram\nNaN\nMirsharai\nMirsharai Thana\nShow Code\ntotal_population = len(df)\ntotal_population_in_cc = df.groupby(\"City Corporation\").count()['ID']['Chattogram City Corporation']\nShow Code\ndf.groupby(\"Thana\")[\"ID\"].count().reset_index(name=\"Total_IDs\")\n\n\n\n\n\n\n\n\n\nThana\nTotal_IDs\n\n\n\n\n0\nAgrabad\n1\n\n\n1\nAkbar Shah\n426\n\n\n2\nAkbarshah\n1020\n\n\n3\nAkbarshah Thana\n10\n\n\n4\nAnowara\n634\n\n\n5\nAnwara\n1041\n\n\n6\nAnwara Thana\n2\n\n\n7\nBaizid\n16\n\n\n8\nBaizid Bostami\n372\n\n\n9\nBaizid Bostami Thana\n7\n\n\n10\nBakalia\n491\n\n\n11\nBakalia Thana\n47\n\n\n12\nBakolia\n68\n\n\n13\nBandar\n422\n\n\n14\nBandar Thana\n1\n\n\n15\nBandarban Sadar\n3\n\n\n16\nBanshkhali\n1736\n\n\n17\nBanshkhali Thana\n70\n\n\n18\nBarkal\n1\n\n\n19\nBashkhali\n11\n\n\n20\nBayazid\n92\n\n\n21\nBayazid Bostami\n245\n\n\n22\nBayezid Bostami\n330\n\n\n23\nBhujpur\n149\n\n\n24\nBoalkhali\n1686\n\n\n25\nBoalkhali Thana\n17\n\n\n26\nChakaria\n5\n\n\n27\nChandanaish\n994\n\n\n28\nChandanaish Thana\n5\n\n\n29\nChandgaon\n1298\n\n\n30\nChandgaon Thana\n8\n\n\n31\nChandina\n1\n\n\n32\nChatkhil\n1\n\n\n33\nChawkbazar\n115\n\n\n34\nChokoria\n7\n\n\n35\nChouddagram\n1\n\n\n36\nChowkbazar\n10\n\n\n37\nCompanyganj\n1\n\n\n38\nCox's Bazar Sadar\n2\n\n\n39\nCumilla Adarsha Sadar\n1\n\n\n40\nDouble Mooring\n1050\n\n\n41\nDouble Mooring Thana\n55\n\n\n42\nDoublemooring\n69\n\n\n43\nEPZ\n23\n\n\n44\nEPZ Thana\n3\n\n\n45\nFatickchori\n225\n\n\n46\nFatikchari\n254\n\n\n47\nFatikchhari\n1415\n\n\n48\nFatikchhari Thana\n5\n\n\n49\nFiringibazar\n1\n\n\n50\nFouzdarhat\n1\n\n\n51\nHalisahar\n458\n\n\n52\nHalishahar\n1278\n\n\n53\nHalishahar Thana\n9\n\n\n54\nHathazari\n1832\n\n\n55\nHathazari Thana\n4\n\n\n56\nHatia\n1\n\n\n57\nJorarganj\n55\n\n\n58\nJorargonj\n53\n\n\n59\nJorargonj Thana\n19\n\n\n60\nKaptai\n4\n\n\n61\nKarnafuli\n145\n\n\n62\nKarnafuly\n21\n\n\n63\nKarnaphuli\n932\n\n\n64\nKarnaphuli Thana\n10\n\n\n65\nKawkhali\n1\n\n\n66\nKhagrachari Sadar\n5\n\n\n67\nKhagrachhari Sadar\n2\n\n\n68\nKhulshi\n1391\n\n\n69\nKhulshi Thana\n11\n\n\n70\nKobirhat\n1\n\n\n71\nKotwali\n1145\n\n\n72\nKotwali Thana\n104\n\n\n73\nLalkhan Bazar\n5\n\n\n74\nLohagara\n761\n\n\n75\nLohagara Thana\n4\n\n\n76\nManikchhari\n2\n\n\n77\nMatiranga Thana\n1\n\n\n78\nMirsarai\n691\n\n\n79\nMirsharai\n1693\n\n\n80\nMirsharai Thana\n49\n\n\n81\nMoheshkhali\n8\n\n\n82\nMuradnagar\n1\n\n\n83\nNabinagar\n1\n\n\n84\nNew Mooring\n1\n\n\n85\nNoakhali Sadar\n9\n\n\n86\nPahartali\n1739\n\n\n87\nPahartali Thana\n6\n\n\n88\nPahartoli\n75\n\n\n89\nPanchlaish\n947\n\n\n90\nPanchlaish Thana\n9\n\n\n91\nPatenga\n243\n\n\n92\nPatharghata\n1\n\n\n93\nPatiya\n2027\n\n\n94\nPatiya Thana\n23\n\n\n95\nPotenga\n10\n\n\n96\nRamgarh\n1\n\n\n97\nRangamati Sadar\n2\n\n\n98\nRangunia\n2072\n\n\n99\nRangunia Thana\n9\n\n\n100\nRaozan\n1801\n\n\n101\nRaozan Thana\n376\n\n\n102\nSadarghat\n132\n\n\n103\nSadarghat Thana\n1\n\n\n104\nSandwip\n2061\n\n\n105\nSandwip Thana\n20\n\n\n106\nSatkania\n1276\n\n\n107\nSatkania Thana\n167\n\n\n108\nSenbag\n1\n\n\n109\nShahjadpur\n1\n\n\n110\nShahrasti\n1\n\n\n111\nSitakunda\n4655\n\n\n112\nSitakunda Thana\n20\n\n\n113\nSitakundu\n32\n\n\n114\nSonagazi\n1\n\n\n115\nUkhia\n2\n\n\n116\nZorargonj\n5\nShow Code\ndf[\"Thana_clean\"] = (\n    df[\"Thana\"]\n    .str.strip()\n    .str.lower()\n    .str.replace(r\"\\s*thana$\", \"\", regex=True)\n)\nShow Code\nmapping = {\n    # Fatikchhari\n    \"fatikchari\": \"Fatikchhari\",\n    \"fatickchori\": \"Fatikchhari\",\n    \"fatikchhari\": \"Fatikchhari\",\n\n    # Banshkhali\n    \"bashkhali\": \"Banshkhali\",\n    \"banshkhali\": \"Banshkhali\",\n\n    # Bakalia\n    \"bakolia\": \"Bakalia\",\n    \"bakalia\": \"Bakalia\",\n\n    # Bayazid Bostami\n    \"baizid\": \"Bayazid Bostami\",\n    \"bayazid\": \"Bayazid Bostami\",\n    \"baizid bostami\": \"Bayazid Bostami\",\n    \"bayezid bostami\": \"Bayazid Bostami\",\n    \"bayazid bostami\": \"Bayazid Bostami\",\n\n    # Double Mooring\n    \"doublemooring\": \"Double Mooring\",\n    \"double mooring\": \"Double Mooring\",\n\n    # Chawk Bazar\n    \"chowkbazar\": \"Chawk Bazar\",\n    \"chawkbazar\": \"Chawk Bazar\",\n\n    # Pahartali\n    \"pahartoli\": \"Pahartali\",\n    \"pahartali\": \"Pahartali\",\n\n    # Sitakunda\n    \"sitakundu\": \"Sitakunda\",\n    \"sitakunda\": \"Sitakunda\",\n\n    # Chakaria\n    \"chokoria\": \"Chakaria\",\n    \"chakaria\": \"Chakaria\",\n\n    # Mirsharai\n    \"mirsarai\": \"Mirsharai\",\n    \"mirsharai\": \"Mirsharai\",\n\n    # Karnaphuli\n    \"karnafuly\": \"Karnaphuli\",\n    \"karnafuli\": \"Karnaphuli\",\n    \"karnaphuli\": \"Karnaphuli\",\n\n    # Halishahar\n    \"halisahar\": \"Halishahar\",\n    \"halishahar\": \"Halishahar\",\n\n    # Jorargonj\n    \"jorarganj\": \"Jorargonj\",\n    \"zorargonj\": \"Jorargonj\",\n    \"jorargonj\": \"Jorargonj\",\n\n    # Akbar Shah\n    \"akbarshah\": \"Akbar Shah\",\n    \"akbar shah\": \"Akbar Shah\",\n\n    # Patenga\n    \"potenga\": \"Patenga\",\n    \"patenga\": \"Patenga\",\n\n    # EPZ\n    \"epz\": \"EPZ\",\n\n    # Khulshi\n    \"khulshi\": \"Khulshi\",\n\n    # Kotwali\n    \"kotwali\": \"Kotwali\",\n\n    # Panchlaish\n    \"panchlaish\": \"Panchlaish\",\n\n    # Chandgaon\n    \"chandgaon\": \"Chandgaon\",\n\n    # Bandor / Bandar\n    \"bandar\": \"Bandar\",\n\n    # Anwara\n    \"anowara\": \"Anwara\",\n    \"anwara\": \"Anwara\",\n\n    # Sitakunda duplicate handled already\n    # Raozan\n    \"raozan\": \"Raozan\",\n\n    # Rangunia\n    \"rangunia\": \"Rangunia\",\n\n    # Boalkhali\n    \"boalkhali\": \"Boalkhali\",\n\n    # Sandwip\n    \"sandwip\": \"Sandwip\",\n\n    # Lohagara\n    \"lohagara\": \"Lohagara\",\n\n    # Hathazari\n    \"hathazari\": \"Hathazari\",\n\n    # Cox's Bazar Sadar\n    \"cox's bazar sadar\": \"Cox's Bazar Sadar\",\n\n    # Khagrachhari Sadar\n    \"khagrachari sadar\": \"Khagrachhari Sadar\",\n    \"khagrachhari sadar\": \"Khagrachhari Sadar\",\n}\nShow Code\ndf[\"Thana_normalized\"] = df[\"Thana_clean\"].map(mapping)\nShow Code\ndf[\"Thana_normalized\"] = df[\"Thana_normalized\"].fillna(\n    df[\"Thana_clean\"].str.title()\n)\nShow Code\n# overwrite original column with normalized values\ndf[\"Thana\"] = df[\"Thana_normalized\"]\n\n# drop helper columns\ndf = df.drop(columns=[\"Thana_clean\", \"Thana_normalized\"])\nShow Code\ndf.groupby(\"Thana\")[\"ID\"].count().reset_index(name=\"Total_IDs\")\n\n\n\n\n\n\n\n\n\nThana\nTotal_IDs\n\n\n\n\n0\nAgrabad\n1\n\n\n1\nAkbar Shah\n1456\n\n\n2\nAnwara\n1677\n\n\n3\nBakalia\n606\n\n\n4\nBandar\n423\n\n\n5\nBandarban Sadar\n3\n\n\n6\nBanshkhali\n1817\n\n\n7\nBarkal\n1\n\n\n8\nBayazid Bostami\n1062\n\n\n9\nBhujpur\n149\n\n\n10\nBoalkhali\n1703\n\n\n11\nChakaria\n12\n\n\n12\nChandanaish\n999\n\n\n13\nChandgaon\n1306\n\n\n14\nChandina\n1\n\n\n15\nChatkhil\n1\n\n\n16\nChawk Bazar\n125\n\n\n17\nChouddagram\n1\n\n\n18\nCompanyganj\n1\n\n\n19\nCox's Bazar Sadar\n2\n\n\n20\nCumilla Adarsha Sadar\n1\n\n\n21\nDouble Mooring\n1174\n\n\n22\nEPZ\n26\n\n\n23\nFatikchhari\n1899\n\n\n24\nFiringibazar\n1\n\n\n25\nFouzdarhat\n1\n\n\n26\nHalishahar\n1745\n\n\n27\nHathazari\n1836\n\n\n28\nHatia\n1\n\n\n29\nJorargonj\n132\n\n\n30\nKaptai\n4\n\n\n31\nKarnaphuli\n1108\n\n\n32\nKawkhali\n1\n\n\n33\nKhagrachhari Sadar\n7\n\n\n34\nKhulshi\n1402\n\n\n35\nKobirhat\n1\n\n\n36\nKotwali\n1249\n\n\n37\nLalkhan Bazar\n5\n\n\n38\nLohagara\n765\n\n\n39\nManikchhari\n2\n\n\n40\nMatiranga\n1\n\n\n41\nMirsharai\n2433\n\n\n42\nMoheshkhali\n8\n\n\n43\nMuradnagar\n1\n\n\n44\nNabinagar\n1\n\n\n45\nNew Mooring\n1\n\n\n46\nNoakhali Sadar\n9\n\n\n47\nPahartali\n1820\n\n\n48\nPanchlaish\n956\n\n\n49\nPatenga\n253\n\n\n50\nPatharghata\n1\n\n\n51\nPatiya\n2050\n\n\n52\nRamgarh\n1\n\n\n53\nRangamati Sadar\n2\n\n\n54\nRangunia\n2081\n\n\n55\nRaozan\n2177\n\n\n56\nSadarghat\n133\n\n\n57\nSandwip\n2081\n\n\n58\nSatkania\n1443\n\n\n59\nSenbag\n1\n\n\n60\nShahjadpur\n1\n\n\n61\nShahrasti\n1\n\n\n62\nSitakunda\n4707\n\n\n63\nSonagazi\n1\n\n\n64\nUkhia\n2\nShow Code\nprint(\"Total Population:\", total_population)\nprint(\"Population in CC:\", total_population_in_cc)\nprint(\"Total Population outside CC:\", total_population-total_population_in_cc)\n\n\nTotal Population: 43777\nPopulation in CC: 13880\nTotal Population outside CC: 29897\nShow Code\ndf.to_excel(dataset_path)",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Data Exploration and Fasting Glucose Quality Assessment</span>"
+    ]
+  },
+  {
+    "objectID": "process/final_calculation.html",
+    "href": "process/final_calculation.html",
+    "title": "5  Thana-Level Population Distribution and Age Group Analysis",
+    "section": "",
+    "text": "5.1 Overview\nThis document presents a reproducible analysis workflow for examining population records by Thana, City Corporation classification, and Age Group. The experiment focuses on cleaning location labels, separating records into areas inside and outside the City Corporation, summarizing population counts, and calculating percentage distributions.\nThe analysis uses a cleaned Excel dataset loaded from an environment variable. The workflow is designed to support transparent reporting, verification, and future replication without hard-coding the input file path.",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Thana-Level Population Distribution and Age Group Analysis</span>"
+    ]
+  },
+  {
+    "objectID": "process/final_calculation.html#objectives",
+    "href": "process/final_calculation.html#objectives",
+    "title": "5  Thana-Level Population Distribution and Age Group Analysis",
+    "section": "5.2 Objectives",
+    "text": "5.2 Objectives\nThe main objectives of this experiment are to:\n\nLoad the cleaned dataset from a configured environment path.\nRemove records from Thanas that are outside the intended analysis scope.\nStandardize inconsistent or alternative Thana names through mapping.\nClassify Thanas into City Corporation and non-City Corporation groups.\nCreate an age-based grouping using a threshold of 30 years.\nProduce total population counts and Thana-wise summaries.\nCalculate percentage distributions for City Corporation, outside City Corporation, and overall dataset shares.\nRun a verification check to confirm whether all records are accounted for in the final grouping.",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Thana-Level Population Distribution and Age Group Analysis</span>"
+    ]
+  },
+  {
+    "objectID": "process/final_calculation.html#dataset-loading-and-environment-setup",
+    "href": "process/final_calculation.html#dataset-loading-and-environment-setup",
+    "title": "5  Thana-Level Population Distribution and Age Group Analysis",
+    "section": "5.3 Dataset Loading and Environment Setup",
+    "text": "5.3 Dataset Loading and Environment Setup\nThe workflow begins by importing the required Python libraries and loading environment variables. The dataset path is expected to be stored in the CLEANED_DATASET_PATH environment variable.\n\nimport os\nimport pandas as pd\nimport numpy as np\nfrom dotenv import load_dotenv\nload_dotenv()\n\nTrue",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Thana-Level Population Distribution and Age Group Analysis</span>"
+    ]
+  },
+  {
+    "objectID": "process/final_calculation.html#display-configuration",
+    "href": "process/final_calculation.html#display-configuration",
+    "title": "5  Thana-Level Population Distribution and Age Group Analysis",
+    "section": "5.4 Display Configuration",
+    "text": "5.4 Display Configuration\nThe following display settings are configured to make exploratory outputs easier to inspect. These options ensure that all rows, columns, and long cell values are visible when printed or displayed in the notebook output.\n\n# Show all rows\npd.set_option('display.max_rows', None)\n\n# Show all columns\npd.set_option('display.max_columns', None)\n\n# Show full cell content (stops long text from getting cut off)\npd.set_option('display.max_colwidth', None)",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Thana-Level Population Distribution and Age Group Analysis</span>"
+    ]
+  },
+  {
+    "objectID": "process/final_calculation.html#initial-data-loading-and-scope-filtering",
+    "href": "process/final_calculation.html#initial-data-loading-and-scope-filtering",
+    "title": "5  Thana-Level Population Distribution and Age Group Analysis",
+    "section": "5.5 Initial Data Loading and Scope Filtering",
+    "text": "5.5 Initial Data Loading and Scope Filtering\nThe cleaned dataset is loaded from the Excel file specified in the environment variable. A predefined list of Thanas is then excluded from the analysis. These excluded values represent locations that are not part of the intended analytical scope for this experiment.\nRecords with missing Thana values are also removed because the location field is essential for all subsequent grouping, classification, and percentage calculations.\n\npath = os.getenv(\"CLEANED_DATASET_PATH\")\nif path is None:\n    raise ValueError(\"CLEANED_DATASET_PATH not set\")\n\ndf = pd.read_excel(path)\n\nvalues = [\"Senbag\", \"Shahjadpur\", \"Barkal\", \"Chandina\", \"Chatkhil\",\n          \"Chouddagram\", \"Companyganj\", \"Cox's Bazar Sadar\",\n          \"Cumilla Adarsha Sadar\", \"Jorargonj\", \"Kawkhali\",\n          \"Khagrachhari Sadar\", \"Kobirhat\", \"Manikchhari\",\n          \"Matiranga\", \"Moheshkhali\", \"Muradnagar\", \"Nabinagar\",\n          \"Noakhali Sadar\", \"Ramgarh\", \"Rangamati Sadar\",\n          \"Shahrasti\", \"Sonagazi\", \"Ukhia\", \"Hatia\", \"Chakaria\"]\n\ndf = df.loc[~df['Thana'].isin(values)]\n\ndf.dropna(subset=[\"Thana\"], inplace=True)",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Thana-Level Population Distribution and Age Group Analysis</span>"
+    ]
+  },
+  {
+    "objectID": "process/final_calculation.html#city-corporation-and-outside-city-corporation-classification",
+    "href": "process/final_calculation.html#city-corporation-and-outside-city-corporation-classification",
+    "title": "5  Thana-Level Population Distribution and Age Group Analysis",
+    "section": "5.6 City Corporation and Outside City Corporation Classification",
+    "text": "5.6 City Corporation and Outside City Corporation Classification\nTwo reference lists are created to classify Thanas into two analytical groups:\n\nInside City Corporation, representing Thanas within the City Corporation area.\nOutside City Corporation, representing Thanas outside the City Corporation but still within the analysis boundary.\n\nThese lists are later used to split the dataset and calculate separate summaries for each group.\n\nthanas_outside_cc = [\"Mirsharai\", \"Fatikchhari\", \"Raozan\", \"Sitakunda\", \"Hathazari\", \"Boalkhali\", \"Patiya\", \"Chandanaish\", \"Sandwip\", \"Rangunia\", \"Anowara\", \"Satkania\", \"Banshkhali\", \"Lohagara\"]\nthanas_in_cc = [\"Bayejid Bostami\", \"Chandgaon\", \"Bakalia\", \"Kotwali\", \"Double Mooring\", \"Patenga\", \"Chittagong Port\", \"Halishahar\", \"Pahartali\", \"Khulshi\", \"Panchlaish\"]",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Thana-Level Population Distribution and Age Group Analysis</span>"
+    ]
+  },
+  {
+    "objectID": "process/final_calculation.html#standardizing-thana-names",
+    "href": "process/final_calculation.html#standardizing-thana-names",
+    "title": "5  Thana-Level Population Distribution and Age Group Analysis",
+    "section": "5.7 Standardizing Thana Names",
+    "text": "5.7 Standardizing Thana Names\nSome records contain alternative spellings, informal names, administrative variants, or localized labels for the same Thana. A mapping dictionary is used to standardize these names into the classification labels used in the analysis.\nThis step is important because inconsistent naming can split the same geographic area into multiple categories and distort count-based summaries.\n\nmapping = {\n    \"Firingibazar\": \"Kotwali\",\n    \"EPZ\": \"Chittagong Port\",\n    \"Lalkhan Bazar\": \"Khulshi\",\n    \"Patharghata\": \"Kotwali\",\n    \"Kaptai\": \"Rangunia\",\n    \"Fouzdarhat\": \"Sitakunda\",\n    \"New Mooring\": \"Chittagong Port\",\n    \"Agrabad\": \"Double Mooring\",\n    \"Karnaphuli\": \"Patiya\",\n    \"Bhujpur\": \"Fatikchhari\",\n    \"Chawk Bazar\": \"Panchlaish\",\n    \"Bandar\": \"Chittagong Port\",\n    \"Anwara\":\"Anowara\",\n    \"Sadarghat\": \"Patiya\",\n    \"Akbar Shah\":\"Pahartali\",\n    \"Bayazid Bostami\":\"Bayejid Bostami\",\n    \"Bandarban Sadar\":\"Satkania\"\n}\n\nThe mapping is applied to the Thana column. Any value not found in the mapping dictionary is retained as its original value.\n\ndf[\"Thana\"] = df[\"Thana\"].map(mapping).fillna(df[\"Thana\"])",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Thana-Level Population Distribution and Age Group Analysis</span>"
+    ]
+  },
+  {
+    "objectID": "process/final_calculation.html#reference-list-size-check",
+    "href": "process/final_calculation.html#reference-list-size-check",
+    "title": "5  Thana-Level Population Distribution and Age Group Analysis",
+    "section": "5.8 Reference List Size Check",
+    "text": "5.8 Reference List Size Check\nThe number of Thanas in each reference list is printed to confirm the expected coverage of the City Corporation and outside City Corporation groups.\n\nprint(thanas_in_cc.__len__())\nprint(thanas_outside_cc.__len__())\n\n11\n14",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Thana-Level Population Distribution and Age Group Analysis</span>"
+    ]
+  },
+  {
+    "objectID": "process/final_calculation.html#unique-thana-inspection",
+    "href": "process/final_calculation.html#unique-thana-inspection",
+    "title": "5  Thana-Level Population Distribution and Age Group Analysis",
+    "section": "5.9 Unique Thana Inspection",
+    "text": "5.9 Unique Thana Inspection\nThis step prints all unique Thana names available in the filtered and standardized dataset. It helps identify whether any unexpected, unmapped, misspelled, or out-of-scope Thana names remain after cleaning.\n\nthanas = set(df[\"Thana\"].tolist())\n\nfor thana in thanas:\n    print(thana)\n\nprint(f\"\\nTotal {thanas.__len__()} thanas\")\n\nRangunia\nBoalkhali\nMirsharai\nSitakunda\nRaozan\nHathazari\nSandwip\nAnowara\nSatkania\nFatikchhari\nPahartali\nPatiya\nLohagara\nBanshkhali\nBayejid Bostami\nBakalia\nChittagong Port\nKhulshi\nChandgaon\nChandanaish\nHalishahar\nKotwali\nPanchlaish\nPatenga\nDouble Mooring\n\nTotal 25 thanas",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Thana-Level Population Distribution and Age Group Analysis</span>"
+    ]
+  },
+  {
+    "objectID": "process/final_calculation.html#age-group-creation",
+    "href": "process/final_calculation.html#age-group-creation",
+    "title": "5  Thana-Level Population Distribution and Age Group Analysis",
+    "section": "5.10 Age Group Creation",
+    "text": "5.10 Age Group Creation\nA new categorical variable, Age Group, is created using the following rule:\n\n&lt;=30 for records where age is less than or equal to 30.\n&gt;30 for records where age is greater than 30.\n\nThis age grouping supports comparison of younger and older population segments across Thanas and City Corporation classifications.\n\ndf[\"Age Group\"] = np.where(df[\"Age\"] &lt;= 30, \"&lt;=30\", \"&gt;30\")\n\ndf[\"Age Group\"].value_counts()\n\ndf.groupby([\"Age Group\", \"Thana\"]).size()\n\nAge Group  Thana          \n&lt;=30       Anowara             141\n           Bakalia              58\n           Banshkhali          173\n           Bayejid Bostami     102\n           Boalkhali           129\n           Chandanaish          79\n           Chandgaon           111\n           Chittagong Port      38\n           Double Mooring       91\n           Fatikchhari         152\n           Halishahar          139\n           Hathazari           145\n           Khulshi             151\n           Kotwali              84\n           Lohagara             55\n           Mirsharai           173\n           Pahartali           331\n           Panchlaish           75\n           Patenga              25\n           Patiya              281\n           Rangunia            162\n           Raozan              147\n           Sandwip             133\n           Satkania            131\n           Sitakunda           478\n&gt;30        Anowara            1536\n           Bakalia             548\n           Banshkhali         1644\n           Bayejid Bostami     960\n           Boalkhali          1574\n           Chandanaish         920\n           Chandgaon          1195\n           Chittagong Port     412\n           Double Mooring     1084\n           Fatikchhari        1896\n           Halishahar         1606\n           Hathazari          1691\n           Khulshi            1256\n           Kotwali            1167\n           Lohagara            710\n           Mirsharai          2260\n           Pahartali          2945\n           Panchlaish         1006\n           Patenga             228\n           Patiya             3010\n           Rangunia           1923\n           Raozan             2030\n           Sandwip            1948\n           Satkania           1315\n           Sitakunda          4230\ndtype: int64",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Thana-Level Population Distribution and Age Group Analysis</span>"
+    ]
+  },
+  {
+    "objectID": "process/final_calculation.html#total-population-count",
+    "href": "process/final_calculation.html#total-population-count",
+    "title": "5  Thana-Level Population Distribution and Age Group Analysis",
+    "section": "5.11 Total Population Count",
+    "text": "5.11 Total Population Count\nThe total number of records remaining after filtering and standardization is calculated. This value acts as the denominator for global percentage calculations later in the workflow.\n\ntotal_records = len(df)\nprint(\"Total Population\",total_records)\n\nTotal Population 42678",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Thana-Level Population Distribution and Age Group Analysis</span>"
+    ]
+  },
+  {
+    "objectID": "process/final_calculation.html#creating-city-corporation-and-outside-city-corporation-subsets",
+    "href": "process/final_calculation.html#creating-city-corporation-and-outside-city-corporation-subsets",
+    "title": "5  Thana-Level Population Distribution and Age Group Analysis",
+    "section": "5.12 Creating City Corporation and Outside City Corporation Subsets",
+    "text": "5.12 Creating City Corporation and Outside City Corporation Subsets\nThe dataset is divided into two filtered DataFrames:\n\ndf_cc: records belonging to Thanas inside the City Corporation.\ndf_outside: records belonging to Thanas outside the City Corporation.\n\nCreating these subsets simplifies downstream calculations and keeps the analysis more readable.\n\n# Pre-filter DataFrames for cleaner execution\ndf_cc = df[df[\"Thana\"].isin(thanas_in_cc)]\ndf_outside = df[df[\"Thana\"].isin(thanas_outside_cc)]",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Thana-Level Population Distribution and Age Group Analysis</span>"
+    ]
+  },
+  {
+    "objectID": "process/final_calculation.html#record-counts-by-classification-and-thana",
+    "href": "process/final_calculation.html#record-counts-by-classification-and-thana",
+    "title": "5  Thana-Level Population Distribution and Age Group Analysis",
+    "section": "5.13 Record Counts by Classification and Thana",
+    "text": "5.13 Record Counts by Classification and Thana\nThis section calculates total records inside the City Corporation, total records outside the City Corporation, and individual Thana-level counts for both groups.\n\n# Total records in City Corporation\ntotal_cc_records = len(df_cc)\n\n# Total records for each individual thana in City Corporation\nthana_counts_in_cc = df_cc[\"Thana\"].value_counts()\n\n# Total records Outside City Corporation\ntotal_outside_cc_records = len(df_outside)\n\n# Total records for each individual thana outside City Corporation\nthana_counts_outside_cc = df_outside[\"Thana\"].value_counts()",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Thana-Level Population Distribution and Age Group Analysis</span>"
+    ]
+  },
+  {
+    "objectID": "process/final_calculation.html#age-group-counts-by-classification-and-thana",
+    "href": "process/final_calculation.html#age-group-counts-by-classification-and-thana",
+    "title": "5  Thana-Level Population Distribution and Age Group Analysis",
+    "section": "5.14 Age Group Counts by Classification and Thana",
+    "text": "5.14 Age Group Counts by Classification and Thana\nThe following grouped summaries are calculated:\n\nTotal City Corporation records by age group.\nCity Corporation Thana-level records by age group.\nOutside City Corporation Thana-level records by age group.\nTotal outside City Corporation records by age group.\n\nThese grouped outputs support both aggregate and location-specific demographic interpretation.\n\n# Total records in City Corporation grouped by Age Group\ncc_records_by_age = df_cc.groupby(\"Age Group\").size()\n\n# Total records for each thana in CC grouped by Age Group\ncc_thana_records_by_age = df_cc.groupby([\"Thana\", \"Age Group\"]).size()\n\n# Total records for each thana outside CC grouped by Age Group\noutside_thana_records_by_age = df_outside.groupby([\"Thana\", \"Age Group\"]).size()\n\n# Total records outside CC grouped by Age Group\noutside_cc_records_by_age = df_outside.groupby(\"Age Group\").size()",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Thana-Level Population Distribution and Age Group Analysis</span>"
+    ]
+  },
+  {
+    "objectID": "process/final_calculation.html#city-corporation-summary",
+    "href": "process/final_calculation.html#city-corporation-summary",
+    "title": "5  Thana-Level Population Distribution and Age Group Analysis",
+    "section": "5.15 City Corporation Summary",
+    "text": "5.15 City Corporation Summary\nThis section prints the total number of records inside the City Corporation and the distribution of those records by age group.\n\n# Total records in CC\ntotal_cc = len(df[df[\"Thana\"].isin(thanas_in_cc)])\nprint(f\"Total records in CC: {total_cc}\")\n\n# Total records in CC by Age Group\ncc_age_counts = df[df[\"Thana\"].isin(thanas_in_cc)][\"Age Group\"].value_counts()\nprint(\"\\nTotal records in CC for each age group:\")\nprint(cc_age_counts.to_string())\n\nTotal records in CC: 13612\n\nTotal records in CC for each age group:\nAge Group\n&gt;30     12407\n&lt;=30     1205",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Thana-Level Population Distribution and Age Group Analysis</span>"
+    ]
+  },
+  {
+    "objectID": "process/final_calculation.html#outside-city-corporation-summary",
+    "href": "process/final_calculation.html#outside-city-corporation-summary",
+    "title": "5  Thana-Level Population Distribution and Age Group Analysis",
+    "section": "5.16 Outside City Corporation Summary",
+    "text": "5.16 Outside City Corporation Summary\nThis section reports record counts for each Thana outside the City Corporation. It also creates a Thana-by-age-group table, where each row represents a Thana and each column represents an age group.\n\n# -------------------------------------------------------------\n# 1. Total records outside CC for each Thana\n# -------------------------------------------------------------\nprint(\"     TOTAL RECORDS OUTSIDE CC FOR EACH THANA      \")\nprint(thana_counts_outside_cc.to_string())\n\nprint(\"\\n\")\n\n# -------------------------------------------------------------\n# 2. Total records outside CC for each Thana by Age Group\n# -------------------------------------------------------------\n\nprint(\"    RECORDS OUTSIDE CC BY THANA AND AGE GROUP    \")\n# .unstack() moves the 'Age Group' index level into tidy columns\nthana_age_table = outside_thana_records_by_age.unstack(fill_value=0)\nprint(thana_age_table.to_string())\n\n     TOTAL RECORDS OUTSIDE CC FOR EACH THANA      \nThana\nSitakunda      4708\nPatiya         3291\nMirsharai      2433\nRaozan         2177\nRangunia       2085\nSandwip        2081\nFatikchhari    2048\nHathazari      1836\nBanshkhali     1817\nBoalkhali      1703\nAnowara        1677\nSatkania       1446\nChandanaish     999\nLohagara        765\n\n\n    RECORDS OUTSIDE CC BY THANA AND AGE GROUP    \nAge Group    &lt;=30   &gt;30\nThana                  \nAnowara       141  1536\nBanshkhali    173  1644\nBoalkhali     129  1574\nChandanaish    79   920\nFatikchhari   152  1896\nHathazari     145  1691\nLohagara       55   710\nMirsharai     173  2260\nPatiya        281  3010\nRangunia      162  1923\nRaozan        147  2030\nSandwip       133  1948\nSatkania      131  1315\nSitakunda     478  4230",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Thana-Level Population Distribution and Age Group Analysis</span>"
+    ]
+  },
+  {
+    "objectID": "process/final_calculation.html#city-corporation-percentage-breakdown",
+    "href": "process/final_calculation.html#city-corporation-percentage-breakdown",
+    "title": "5  Thana-Level Population Distribution and Age Group Analysis",
+    "section": "5.17 City Corporation Percentage Breakdown",
+    "text": "5.17 City Corporation Percentage Breakdown\nThis section calculates the share of City Corporation records relative to the full dataset. It also calculates the age group distribution within the City Corporation subset.\n\n# Calculate the total records across the entire dataset\ntotal_dataset_records = len(df)\n\nprint(\"              PERCENTAGE BREAKDOWNS               \")\n\n# 1. Total percentage in CC based on total number of records\nif total_dataset_records &gt; 0:\n    cc_percentage = (total_cc_records / total_dataset_records) * 100\n    print(f\"Total records in CC: {cc_percentage:.2f}% of the entire dataset\")\nelse:\n    print(\"Total records in CC: 0.00% (Dataset is empty)\")\n\nprint(\"-\" * 50)\n\n# 2. Percentage of each age group based on total records in CC\nprint(\"Percentage of each age group within CC:\")\nif total_cc_records &gt; 0:\n    cc_age_percentage = (cc_records_by_age / total_cc_records) * 100\n    for age_group, percentage in cc_age_percentage.items():\n        print(f\"  * Age Group {age_group}: {percentage:.2f}%\")\nelse:\n    print(\"  * No records available in CC to calculate age percentages.\")\n\n              PERCENTAGE BREAKDOWNS               \nTotal records in CC: 31.89% of the entire dataset\n--------------------------------------------------\nPercentage of each age group within CC:\n  * Age Group &lt;=30: 8.85%\n  * Age Group &gt;30: 91.15%",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Thana-Level Population Distribution and Age Group Analysis</span>"
+    ]
+  },
+  {
+    "objectID": "process/final_calculation.html#age-group-percentages-within-city-corporation-thanas",
+    "href": "process/final_calculation.html#age-group-percentages-within-city-corporation-thanas",
+    "title": "5  Thana-Level Population Distribution and Age Group Analysis",
+    "section": "5.18 Age Group Percentages Within City Corporation Thanas",
+    "text": "5.18 Age Group Percentages Within City Corporation Thanas\nThis section calculates the internal age distribution for each City Corporation Thana. Each row is normalized by its own total so that the percentages show the age group composition within that specific Thana.\n\nprint(\"   PERCENTAGE OF AGE GROUPS IN EACH THANA (CC)    \")\n\n# 1. Pivot the counts into a table (Thanas as rows, Age Groups as columns)\ncc_thana_age_table = cc_thana_records_by_age.unstack(fill_value=0)\n\n# 2. Divide each row by its total sum to get proportions, then multiply by 100\ncc_thana_age_pct = cc_thana_age_table.div(cc_thana_age_table.sum(axis=1), axis=0) * 100\n\n# 3. Print the formatted result rounded to 2 decimal places\nprint(cc_thana_age_pct.round(2).to_string())\n\n   PERCENTAGE OF AGE GROUPS IN EACH THANA (CC)    \nAge Group         &lt;=30    &gt;30\nThana                        \nBakalia           9.57  90.43\nBayejid Bostami   9.60  90.40\nChandgaon         8.50  91.50\nChittagong Port   8.44  91.56\nDouble Mooring    7.74  92.26\nHalishahar        7.97  92.03\nKhulshi          10.73  89.27\nKotwali           6.71  93.29\nPahartali        10.10  89.90\nPanchlaish        6.94  93.06\nPatenga           9.88  90.12",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Thana-Level Population Distribution and Age Group Analysis</span>"
+    ]
+  },
+  {
+    "objectID": "process/final_calculation.html#outside-city-corporation-percentage-breakdown",
+    "href": "process/final_calculation.html#outside-city-corporation-percentage-breakdown",
+    "title": "5  Thana-Level Population Distribution and Age Group Analysis",
+    "section": "5.19 Outside City Corporation Percentage Breakdown",
+    "text": "5.19 Outside City Corporation Percentage Breakdown\nThis section reports two types of Thana-level percentage calculations for areas outside the City Corporation:\n\nPercentage based on the total number of records outside the City Corporation.\nPercentage based on the total population of the entire dataset.\n\nIt then calculates age group percentages within each outside-City-Corporation Thana.\n\nprint(\"     THANA RECORD PERCENTAGES (OUTSIDE CC)        \")\n\n\nif total_outside_cc_records &gt; 0:\n    # Option A: Based on total records OUTSIDE CC\n    thana_pct_outside_total = (thana_counts_outside_cc / total_outside_cc_records) * 100\n    print(\"A. Percentage based on total records OUTSIDE CC:\")\n    print(thana_pct_outside_total.round(2).to_string())\n    \n    print(\"-\" * 50)\n    \n    # Option B: Based on the ENTIRE dataset's total records\n    thana_pct_global_total = (thana_counts_outside_cc / total_dataset_records) * 100\n    print(\"B. Percentage based on the ENTIRE dataset population:\")\n    print(thana_pct_global_total.round(2).to_string())\nelse:\n    print(\"No records found outside CC.\")\n\nprint(\"   PERCENTAGE OF AGE GROUPS IN EACH THANA (OUTSIDE)\")\n\n\n# Pivot, divide across rows (axis=0) to get internal distributions, and multiply by 100\noutside_thana_age_table = outside_thana_records_by_age.unstack(fill_value=0)\n\nif not outside_thana_age_table.empty:\n    outside_thana_age_pct = outside_thana_age_table.div(outside_thana_age_table.sum(axis=1), axis=0) * 100\n    print(outside_thana_age_pct.round(2).to_string())\nelse:\n    print(\"No age group records found outside CC.\")\n\n     THANA RECORD PERCENTAGES (OUTSIDE CC)        \nA. Percentage based on total records OUTSIDE CC:\nThana\nSitakunda      16.20\nPatiya         11.32\nMirsharai       8.37\nRaozan          7.49\nRangunia        7.17\nSandwip         7.16\nFatikchhari     7.05\nHathazari       6.32\nBanshkhali      6.25\nBoalkhali       5.86\nAnowara         5.77\nSatkania        4.97\nChandanaish     3.44\nLohagara        2.63\n--------------------------------------------------\nB. Percentage based on the ENTIRE dataset population:\nThana\nSitakunda      11.03\nPatiya          7.71\nMirsharai       5.70\nRaozan          5.10\nRangunia        4.89\nSandwip         4.88\nFatikchhari     4.80\nHathazari       4.30\nBanshkhali      4.26\nBoalkhali       3.99\nAnowara         3.93\nSatkania        3.39\nChandanaish     2.34\nLohagara        1.79\n   PERCENTAGE OF AGE GROUPS IN EACH THANA (OUTSIDE)\nAge Group     &lt;=30    &gt;30\nThana                    \nAnowara       8.41  91.59\nBanshkhali    9.52  90.48\nBoalkhali     7.57  92.43\nChandanaish   7.91  92.09\nFatikchhari   7.42  92.58\nHathazari     7.90  92.10\nLohagara      7.19  92.81\nMirsharai     7.11  92.89\nPatiya        8.54  91.46\nRangunia      7.77  92.23\nRaozan        6.75  93.25\nSandwip       6.39  93.61\nSatkania      9.06  90.94\nSitakunda    10.15  89.85",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Thana-Level Population Distribution and Age Group Analysis</span>"
+    ]
+  },
+  {
+    "objectID": "process/final_calculation.html#inside-city-corporation-thana-percentage-breakdown",
+    "href": "process/final_calculation.html#inside-city-corporation-thana-percentage-breakdown",
+    "title": "5  Thana-Level Population Distribution and Age Group Analysis",
+    "section": "5.20 Inside City Corporation Thana Percentage Breakdown",
+    "text": "5.20 Inside City Corporation Thana Percentage Breakdown\nThis section reports two types of percentage calculations for Thanas inside the City Corporation:\n\nPercentage based on total records inside the City Corporation.\nPercentage based on total records in the full dataset.\n\nThese outputs help distinguish between local distribution within the City Corporation and global contribution to the overall dataset.\n\nprint(\"      THANA RECORD PERCENTAGES (INSIDE CC)        \")\n\n\nif total_cc_records &gt; 0:\n    # Option A: Based on total records INSIDE CC\n    thana_pct_cc_total = (thana_counts_in_cc / total_cc_records) * 100\n    print(\"A. Percentage based on total records INSIDE CC:\")\n    print(thana_pct_cc_total.round(2).to_string())\n    \n    print(\"-\" * 50)\n    \n    # Option B: Based on the ENTIRE dataset's total records\n    thana_pct_global_total = (thana_counts_in_cc / total_dataset_records) * 100\n    print(\"B. Percentage based on the ENTIRE dataset population:\")\n    print(thana_pct_global_total.round(2).to_string())\nelse:\n    print(\"No records found inside CC.\")\n\n      THANA RECORD PERCENTAGES (INSIDE CC)        \nA. Percentage based on total records INSIDE CC:\nThana\nPahartali          24.07\nHalishahar         12.82\nKhulshi            10.34\nChandgaon           9.59\nKotwali             9.19\nDouble Mooring      8.63\nPanchlaish          7.94\nBayejid Bostami     7.80\nBakalia             4.45\nChittagong Port     3.31\nPatenga             1.86\n--------------------------------------------------\nB. Percentage based on the ENTIRE dataset population:\nThana\nPahartali          7.68\nHalishahar         4.09\nKhulshi            3.30\nChandgaon          3.06\nKotwali            2.93\nDouble Mooring     2.75\nPanchlaish         2.53\nBayejid Bostami    2.49\nBakalia            1.42\nChittagong Port    1.05\nPatenga            0.59",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Thana-Level Population Distribution and Age Group Analysis</span>"
+    ]
+  },
+  {
+    "objectID": "process/final_calculation.html#global-population-share-and-verification",
+    "href": "process/final_calculation.html#global-population-share-and-verification",
+    "title": "5  Thana-Level Population Distribution and Age Group Analysis",
+    "section": "5.21 Global Population Share and Verification",
+    "text": "5.21 Global Population Share and Verification\nThe final section calculates the City Corporation share of the total dataset and the individual outside-City-Corporation Thana shares. These percentages are then summed to verify whether the classification accounts for the entire filtered dataset.\nIf the combined percentage does not equal 100%, the output warns that some records may still contain missing, unmapped, or unclassified Thana values.\n\n# Ensure we have the global total\ntotal_population = len(df)\n\nprint(\"       GLOBAL POPULATION SHARE BREAKDOWN          \")\n\n\n# 1. Percentage of records in CC based on total population\ncc_pct_global = (len(df[df[\"Thana\"].isin(thanas_in_cc)]) / total_population) * 100\nprint(f\"Total City Corporation (CC) Share: {cc_pct_global:.2f}%\\n\")\n\nprint(\"--------------------------------------------------\")\nprint(\"Individual Thana Shares (Outside CC):\")\n# 2. Percentage of records in each thana outside CC based on total population\noutside_thana_pct_global = (df[df[\"Thana\"].isin(thanas_outside_cc)][\"Thana\"].value_counts() / total_population) * 100\nprint(outside_thana_pct_global.round(2).to_string())\n\n\nprint(\"                VERIFICATION CHECK                \")\n\n\n# Summing CC total + individual outside thana percentages\ngrand_total_percentage = cc_pct_global + outside_thana_pct_global.sum()\nprint(f\"Combined Sum of Percentages: {grand_total_percentage:.2f}%\")\n\nif round(grand_total_percentage, 2) == 100.00:\n    print(\" Check Passed: Perfect 100%! All data is accounted for.\")\nelse:\n    print(\"⚠️ Check Warning: Does not equal 100%. You may have missing (NaN) values or unmapped Thanas in your raw data.\")\n\n       GLOBAL POPULATION SHARE BREAKDOWN          \nTotal City Corporation (CC) Share: 31.89%\n\n--------------------------------------------------\nIndividual Thana Shares (Outside CC):\nThana\nSitakunda      11.03\nPatiya          7.71\nMirsharai       5.70\nRaozan          5.10\nRangunia        4.89\nSandwip         4.88\nFatikchhari     4.80\nHathazari       4.30\nBanshkhali      4.26\nBoalkhali       3.99\nAnowara         3.93\nSatkania        3.39\nChandanaish     2.34\nLohagara        1.79\n                VERIFICATION CHECK                \nCombined Sum of Percentages: 100.00%\n Check Passed: Perfect 100%! All data is accounted for.",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Thana-Level Population Distribution and Age Group Analysis</span>"
+    ]
+  },
+  {
+    "objectID": "process/final_calculation.html#interpretation-guide",
+    "href": "process/final_calculation.html#interpretation-guide",
+    "title": "5  Thana-Level Population Distribution and Age Group Analysis",
+    "section": "5.22 Interpretation Guide",
+    "text": "5.22 Interpretation Guide\nUse the generated outputs as follows:\n\nTotal Population shows the number of valid records after filtering and removing missing Thana values.\nTotal records in CC shows how many records fall inside the City Corporation classification.\nOutside CC Thana counts show how the non-City-Corporation records are distributed geographically.\nAge Group summaries show whether records are concentrated in the &lt;=30 or &gt;30 group.\nWithin-group percentages explain internal composition, such as the age distribution inside a specific Thana.\nGlobal percentages show how much each group contributes to the entire filtered dataset.\nVerification check confirms whether all standardized Thana records are covered by either the City Corporation list or the outside City Corporation list.",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Thana-Level Population Distribution and Age Group Analysis</span>"
+    ]
+  },
+  {
+    "objectID": "process/final_calculation.html#notes-for-reproducibility",
+    "href": "process/final_calculation.html#notes-for-reproducibility",
+    "title": "5  Thana-Level Population Distribution and Age Group Analysis",
+    "section": "5.23 Notes for Reproducibility",
+    "text": "5.23 Notes for Reproducibility\nBefore rendering this document, ensure that:\n\nThe .env file exists in the working directory or the environment variable is otherwise available.\nCLEANED_DATASET_PATH points to the cleaned Excel dataset.\nThe dataset contains the required columns: Thana and Age.\nRequired Python packages are installed: pandas, numpy, python-dotenv, and an Excel-reading engine such as openpyxl.",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Thana-Level Population Distribution and Age Group Analysis</span>"
+    ]
+  },
+  {
+    "objectID": "process/final_calculation.html#expected-output",
+    "href": "process/final_calculation.html#expected-output",
+    "title": "5  Thana-Level Population Distribution and Age Group Analysis",
+    "section": "5.24 Expected Output",
+    "text": "5.24 Expected Output\nAfter running the document, the analysis should produce:\n\nA cleaned and standardized Thana list.\nTotal population count after filtering.\nCounts for City Corporation and outside City Corporation areas.\nThana-wise record counts.\nAge group counts and percentages.\nCity Corporation and outside City Corporation percentage breakdowns.\nA final verification result indicating whether the grouped records sum to the full filtered dataset.",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Thana-Level Population Distribution and Age Group Analysis</span>"
+    ]
+  }
+]
