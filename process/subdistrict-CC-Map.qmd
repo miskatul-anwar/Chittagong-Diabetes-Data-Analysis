@@ -1,0 +1,1380 @@
+---
+title: "Spatial Distribution of Diabetes Patients and Age Group Composition in Chattogram"
+format:
+  html:
+    code-fold: true
+    code-tools: true
+execute:
+  warning: false
+  message: false
+---
+
+## Chattogram District and City Corporation
+
+This section visualizes the spatial distribution of diabetes patient shares across Chattogram. The map combines two spatial units:
+
+1. Outside-City Corporation upazilas.
+2. Chittagong City Corporation, represented as one merged polygon.
+
+The Chittagong City Corporation area is created by merging its component thanas into a single polygon. This allows comparison between the overall City Corporation share and the outside-CC upazila shares.
+
+The spatial boundary file path is loaded from the `.env` file using the `GPKG_PATH` environment variable.
+
+The latest diabetes patient share data used in this map are:
+
+- Total City Corporation share: `31.89%`
+- Outside-CC upazila shares:
+  - Sitakunda: `11.03%`
+  - Patiya: `7.71%`
+  - Mirsharai: `5.70%`
+  - Raozan: `5.10%`
+  - Rangunia: `4.89%`
+  - Sandwip: `4.88%`
+  - Fatikchhari: `4.80%`
+  - Hathazari: `4.30%`
+  - Banshkhali: `4.26%`
+  - Boalkhali: `3.99%`
+  - Anowara: `3.93%`
+  - Satkania: `3.39%`
+  - Chandanaish: `2.34%`
+  - Lohagara: `1.79%`
+
+The diabetes patient shares are classified into fixed classes:
+
+- `1–3%`
+- `3–5%`
+- `5–7%`
+- `7–9%`
+- `9–11%`
+- `11–13%`
+- `>13%`
+
+```{python}
+# ============================
+# Load Required Libraries
+# ============================
+
+import os
+import re
+import base64
+
+import geopandas as gpd
+import pandas as pd
+import seaborn as sns
+
+from dotenv import load_dotenv
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+from matplotlib.patches import Patch
+from IPython.display import HTML, display
+
+
+# ============================
+# Load Environment Variable
+# ============================
+
+load_dotenv()
+
+GPKG_PATH = os.getenv("GPKG_PATH")
+
+if GPKG_PATH is None:
+    raise ValueError("GPKG_PATH not found in .env file.")
+
+if not os.path.exists(GPKG_PATH):
+    raise FileNotFoundError(f"GPKG file not found at: {GPKG_PATH}")
+
+
+# ============================
+# Create Output Directory
+# ============================
+
+REPORT_DIR = "report"
+
+os.makedirs(REPORT_DIR, exist_ok=True)
+
+# ============================
+# Helper Functions
+# ============================
+
+def clean_key(x):
+    """
+    Standardize text for joining:
+    lowercase + remove all non-letter characters.
+    """
+    if pd.isna(x):
+        return None
+
+    return re.sub(r"[^a-z]", "", str(x).lower())
+
+
+def strip_admin_suffix(x):
+    """
+    Remove common administrative suffixes from place names.
+    """
+    if pd.isna(x):
+        return None
+
+    pattern = r"\s+(Sadar Upazila|Sadar|Upazila|Thana|PS)$"
+
+    return re.sub(pattern, "", str(x), flags=re.IGNORECASE).strip()
+
+
+def union_geometries(geometry_series):
+    """
+    Safely union geometries across GeoPandas/Shapely versions.
+    """
+    if hasattr(geometry_series, "union_all"):
+        return geometry_series.union_all()
+
+    return geometry_series.unary_union
+
+
+# ============================
+# Load Spatial Data
+# ============================
+
+bd_adm3 = gpd.read_file(GPKG_PATH)
+
+
+# ============================
+# Input Data: Diabetes Share
+# ============================
+
+diab_outside_cc = pd.DataFrame(
+    {
+        "upazila": [
+            "Sitakunda",
+            "Patiya",
+            "Mirsharai",
+            "Raozan",
+            "Rangunia",
+            "Sandwip",
+            "Fatikchhari",
+            "Hathazari",
+            "Banshkhali",
+            "Boalkhali",
+            "Anowara",
+            "Satkania",
+            "Chandanaish",
+            "Lohagara",
+        ],
+        "percent": [
+            11.03,
+            7.71,
+            5.70,
+            5.10,
+            4.89,
+            4.88,
+            4.80,
+            4.30,
+            4.26,
+            3.99,
+            3.93,
+            3.39,
+            2.34,
+            1.79,
+        ],
+    }
+)
+
+ccc_percent = 31.89
+
+
+# ============================
+# Name Harmonization
+# ============================
+
+name_fixes = {
+    "Anwara": "Anowara",
+    "Anowara": "Anowara",
+    "Mirsarai": "Mirsharai",
+    "Mirsharai": "Mirsharai",
+    "Fatikchari": "Fatikchhari",
+    "Fatickchari": "Fatikchhari",
+    "Fatikchhari": "Fatikchhari",
+    "Sitakunda": "Sitakunda",
+    "Sitakund": "Sitakunda",
+}
+
+
+# ============================
+# City Corporation Thana Names
+# ============================
+
+ccc_thanas_raw = [
+    "Pahartali",
+    "Patenga",
+    "Chittagong Port",
+    "Double Mooring",
+    "Halishahar",
+    "Khulshi",
+    "Panchaish",
+    "Panchlaish",
+    "Kotwali",
+    "Bayejid Bostami",
+    "Bayezid Bostami",
+    "Bayezid",
+    "Bayazid",
+    "Chandgaon",
+    "Bakalia",
+]
+
+ccc_keys = [
+    clean_key(strip_admin_suffix(name))
+    for name in ccc_thanas_raw
+]
+
+
+# ============================
+# Prepare Chattogram Spatial Dataset
+# ============================
+
+bd_ctg = bd_adm3.loc[
+    bd_adm3["NAME_2"].isin(["Chattogram", "Chittagong"])
+].copy()
+
+bd_ctg["upazila_gadm"] = bd_ctg["NAME_3"]
+bd_ctg["name3_simple"] = bd_ctg["NAME_3"].apply(strip_admin_suffix)
+bd_ctg["name3_fixed"] = bd_ctg["name3_simple"].replace(name_fixes)
+bd_ctg["join_key_gadm"] = bd_ctg["name3_fixed"].apply(clean_key)
+bd_ctg["is_ccc_thana"] = bd_ctg["join_key_gadm"].isin(ccc_keys)
+
+
+# ============================
+# Prepare Diabetes Dataset
+# ============================
+
+diab_join = diab_outside_cc.copy()
+
+diab_join["upazila_fixed"] = diab_join["upazila"].replace(name_fixes)
+diab_join["join_key_diab"] = diab_join["upazila_fixed"].apply(clean_key)
+
+
+# ============================
+# Join Spatial and Diabetes Data
+# ============================
+
+map_dat = bd_ctg.merge(
+    diab_join,
+    how="left",
+    left_on="join_key_gadm",
+    right_on="join_key_diab",
+)
+
+map_dat["label_name"] = map_dat["name3_fixed"]
+
+
+# ============================
+# Join Quality Check
+# ============================
+
+map_join_keys = set(map_dat["join_key_gadm"].dropna())
+
+missing_upazilas = diab_join.loc[
+    ~diab_join["join_key_diab"].isin(map_join_keys)
+].copy()
+
+if len(missing_upazilas) > 0:
+    unmatched = ", ".join(missing_upazilas["upazila"].unique())
+    raise ValueError(f"Unmatched outside-CC upazilas detected: {unmatched}")
+
+
+# ============================
+# Classification Setup
+# ============================
+
+available_percent = map_dat["percent"].dropna()
+
+if len(available_percent) == 0:
+    raise ValueError("No percentage values available for binning.")
+
+max_percent = max(
+    available_percent.max(),
+    ccc_percent,
+)
+
+breaks_viz = [
+    1,
+    3,
+    5,
+    7,
+    9,
+    11,
+    13,
+    max_percent,
+]
+
+diabetes_labels = [
+    "1–3%",
+    "3–5%",
+    "5–7%",
+    "7–9%",
+    "9–11%",
+    "11–13%",
+    ">13%",
+]
+
+
+# ============================
+# Prepare Non-CCC Upazilas
+# ============================
+
+map_non_ccc = map_dat.loc[
+    (~map_dat["is_ccc_thana"]) & (map_dat["percent"].notna())
+].copy()
+
+map_non_ccc["viz_bin"] = pd.cut(
+    map_non_ccc["percent"],
+    bins=breaks_viz,
+    labels=diabetes_labels,
+    right=True,
+    include_lowest=True,
+)
+
+map_non_ccc["viz_bin"] = pd.Categorical(
+    map_non_ccc["viz_bin"],
+    categories=diabetes_labels,
+    ordered=True,
+)
+
+
+# ============================
+# Merge CCC Thanas into One Polygon
+# ============================
+
+ccc_parts = bd_ctg.loc[
+    bd_ctg["is_ccc_thana"]
+].copy()
+
+if len(ccc_parts) == 0:
+    raise ValueError("No City Corporation thana polygons were found.")
+
+ccc_union_geometry = union_geometries(ccc_parts.geometry)
+
+ccc_union = gpd.GeoDataFrame(
+    {
+        "label_name": ["Chittagong City Corporation"],
+        "percent": [ccc_percent],
+        "geometry": [ccc_union_geometry],
+    },
+    crs=bd_ctg.crs,
+)
+
+ccc_union["viz_bin"] = pd.cut(
+    ccc_union["percent"],
+    bins=breaks_viz,
+    labels=diabetes_labels,
+    right=True,
+    include_lowest=True,
+)
+
+ccc_union["viz_bin"] = pd.Categorical(
+    ccc_union["viz_bin"],
+    categories=diabetes_labels,
+    ordered=True,
+)
+
+
+# ============================
+# Combine Non-CCC and CCC
+# ============================
+
+schema_cols = [
+    "label_name",
+    "percent",
+    "viz_bin",
+    "geometry",
+]
+
+plot_all = pd.concat(
+    [
+        map_non_ccc[schema_cols],
+        ccc_union[schema_cols],
+    ],
+    ignore_index=True,
+)
+
+plot_all = gpd.GeoDataFrame(
+    plot_all,
+    geometry="geometry",
+    crs=bd_ctg.crs,
+)
+
+plot_all = plot_all.loc[
+    plot_all["viz_bin"].notna()
+].copy()
+
+plot_all["viz_bin"] = pd.Categorical(
+    plot_all["viz_bin"],
+    categories=diabetes_labels,
+    ordered=True,
+)
+
+
+# ============================
+# Diabetes Choropleth Palette
+# ============================
+
+red_band = [
+    "#FCBBA1",
+    "#FC9272",
+    "#FB6A4A",
+    "#EF3B2C",
+    "#CB181D",
+    "#A50F15",
+    "#67000D",
+]
+
+diabetes_palette = sns.color_palette(
+    red_band,
+    n_colors=len(diabetes_labels),
+).as_hex()
+
+diabetes_color_map = dict(zip(diabetes_labels, diabetes_palette))
+
+plot_all["fill_color"] = plot_all["viz_bin"].map(diabetes_color_map)
+
+outline_col = "#737373"
+outline_lwd = 0.75
+
+
+# ============================
+# Render Map
+# ============================
+
+fig = Figure(figsize=(34, 40))
+canvas = FigureCanvas(fig)
+
+ax = fig.subplots()
+
+fig.subplots_adjust(
+    left=0.015,
+    right=0.82,
+    top=0.990,
+    bottom=0.010,
+)
+
+plot_all.plot(
+    ax=ax,
+    color=plot_all["fill_color"].tolist(),
+    edgecolor=outline_col,
+    linewidth=outline_lwd,
+    zorder=1,
+)
+
+
+# ============================
+# Add Labels
+# ============================
+
+for _, row in plot_all.iterrows():
+    point = row.geometry.representative_point()
+
+    label_text = row["label_name"]
+    label_fontsize = 22
+
+    if row["label_name"] == "Chittagong City Corporation":
+        label_text = "Chittagong City\nCorporation"
+        label_fontsize = 24
+
+    ax.text(
+        point.x,
+        point.y,
+        label_text,
+        fontsize=label_fontsize,
+        color="#1A1A1A",
+        ha="center",
+        va="center",
+        bbox={
+            "facecolor": "white",
+            "alpha": 0.82,
+            "edgecolor": "none",
+            "boxstyle": "round,pad=0.28",
+        },
+        zorder=5,
+    )
+
+
+# ============================
+# Diabetes Legend
+# ============================
+
+diabetes_legend_handles = [
+    Patch(
+        facecolor=diabetes_color_map[label],
+        edgecolor=outline_col,
+        label=label,
+    )
+    for label in diabetes_labels
+]
+
+diabetes_legend = ax.legend(
+    handles=diabetes_legend_handles,
+    title="Diabetes Patients\n(%)",
+    loc="center left",
+    bbox_to_anchor=(1.012, 0.52),
+    frameon=True,
+    fontsize=22,
+    title_fontsize=25,
+    borderaxespad=0.0,
+)
+
+diabetes_legend.get_frame().set_facecolor("white")
+diabetes_legend.get_frame().set_alpha(0.96)
+
+
+# ============================
+# Save PDF and PNG
+# ============================
+
+ax.set_title("")
+ax.set_axis_off()
+ax.set_aspect("equal")
+
+district_map_pdf = os.path.join(
+    REPORT_DIR,
+    "chattogram_diabetes_share_map.pdf",
+)
+
+district_map_png = os.path.join(
+    REPORT_DIR,
+    "chattogram_diabetes_share_map.png",
+)
+
+fig.savefig(
+    district_map_pdf,
+    format="pdf",
+    bbox_inches="tight",
+    pad_inches=0.20,
+)
+
+fig.savefig(
+    district_map_png,
+    format="png",
+    dpi=120,
+    bbox_inches="tight",
+    pad_inches=0.20,
+)
+
+display(fig)
+```
+
+Figure: Spatial distribution of diabetes patient shares across outside-CC upazilas and the merged Chittagong City Corporation area. Darker red indicates higher diabetes patient share.
+
+## Chattogram District and City Corporation with Age Group Composition
+
+This section extends the previous choropleth map by adding miniature pie charts showing age-group composition. Each pie chart represents the percentage of diabetes patients in two age groups:
+
+* `<=30 years`
+* `>30 years`
+
+For outside-CC upazilas, each pie chart uses the corresponding upazila-level age-group breakdown. For the merged City Corporation polygon, the pie chart uses the overall City Corporation age-group breakdown:
+
+* `<=30 years`: `8.85%`
+* `>30 years`: `91.15%`
+
+```{python}
+# ============================
+# Load Required Libraries
+# ============================
+
+import os
+import re
+import base64
+import numpy as np
+
+import geopandas as gpd
+import pandas as pd
+import seaborn as sns
+import matplotlib.patheffects as path_effects
+
+from dotenv import load_dotenv
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+from matplotlib.patches import Patch, Wedge, Circle
+from IPython.display import HTML, display
+
+
+# ============================
+# Load Environment Variable
+# ============================
+
+load_dotenv()
+
+GPKG_PATH = os.getenv("GPKG_PATH")
+
+if GPKG_PATH is None:
+    raise ValueError("GPKG_PATH not found in .env file.")
+
+if not os.path.exists(GPKG_PATH):
+    raise FileNotFoundError(f"GPKG file not found at: {GPKG_PATH}")
+
+
+# ============================
+# Create Output Directory
+# ============================
+
+REPORT_DIR = "report"
+
+os.makedirs(REPORT_DIR, exist_ok=True)
+
+# ============================
+# Helper Functions
+# ============================
+
+def clean_key(x):
+    """
+    Standardize text for joining:
+    lowercase + remove all non-letter characters.
+    """
+    if pd.isna(x):
+        return None
+
+    return re.sub(r"[^a-z]", "", str(x).lower())
+
+
+def strip_admin_suffix(x):
+    """
+    Remove common administrative suffixes from place names.
+    """
+    if pd.isna(x):
+        return None
+
+    pattern = r"\s+(Sadar Upazila|Sadar|Upazila|Thana|PS)$"
+
+    return re.sub(pattern, "", str(x), flags=re.IGNORECASE).strip()
+
+
+def union_geometries(geometry_series):
+    """
+    Safely union geometries across GeoPandas/Shapely versions.
+    """
+    if hasattr(geometry_series, "union_all"):
+        return geometry_series.union_all()
+
+    return geometry_series.unary_union
+
+
+def draw_pie_with_percentages(
+    ax,
+    x,
+    y,
+    values,
+    colors,
+    text_colors,
+    radius,
+    label_fontsize=18,
+    edgecolor="white",
+    linewidth=1.30,
+):
+    """
+    Draw a miniature pie chart at a map coordinate
+    and place percentage labels inside each slice.
+    """
+    total = sum(values)
+
+    if total <= 0:
+        return
+
+    start_angle = 90
+
+    for value, color, text_color in zip(values, colors, text_colors):
+        angle = 360 * value / total
+        end_angle = start_angle + angle
+
+        wedge = Wedge(
+            center=(x, y),
+            r=radius,
+            theta1=start_angle,
+            theta2=end_angle,
+            facecolor=color,
+            edgecolor=edgecolor,
+            linewidth=linewidth,
+            zorder=6,
+        )
+
+        ax.add_patch(wedge)
+
+        mid_angle = (start_angle + end_angle) / 2
+        mid_angle_rad = np.deg2rad(mid_angle)
+
+        label_x = x + radius * 0.58 * np.cos(mid_angle_rad)
+        label_y = y + radius * 0.58 * np.sin(mid_angle_rad)
+
+        label_text = f"{value:.1f}%"
+
+        stroke_color = "white" if text_color == "black" else "black"
+
+        ax.text(
+            label_x,
+            label_y,
+            label_text,
+            fontsize=label_fontsize,
+            color=text_color,
+            ha="center",
+            va="center",
+            weight="bold",
+            zorder=9,
+            path_effects=[
+                path_effects.withStroke(
+                    linewidth=3.2,
+                    foreground=stroke_color,
+                )
+            ],
+        )
+
+        start_angle = end_angle
+
+    outline = Circle(
+        xy=(x, y),
+        radius=radius,
+        facecolor="none",
+        edgecolor="#222222",
+        linewidth=1.30,
+        zorder=7,
+    )
+
+    ax.add_patch(outline)
+
+
+# ============================
+# Load Spatial Data
+# ============================
+
+bd_adm3 = gpd.read_file(GPKG_PATH)
+
+
+# ============================
+# Input Data: Diabetes Share
+# ============================
+
+diab_outside_cc = pd.DataFrame(
+    {
+        "upazila": [
+            "Sitakunda",
+            "Patiya",
+            "Mirsharai",
+            "Raozan",
+            "Rangunia",
+            "Sandwip",
+            "Fatikchhari",
+            "Hathazari",
+            "Banshkhali",
+            "Boalkhali",
+            "Anowara",
+            "Satkania",
+            "Chandanaish",
+            "Lohagara",
+        ],
+        "percent": [
+            11.03,
+            7.71,
+            5.70,
+            5.10,
+            4.89,
+            4.88,
+            4.80,
+            4.30,
+            4.26,
+            3.99,
+            3.93,
+            3.39,
+            2.34,
+            1.79,
+        ],
+    }
+)
+
+ccc_percent = 31.89
+
+
+# ============================
+# Input Data: Age Group Percentages
+# ============================
+
+age_outside_cc = pd.DataFrame(
+    {
+        "upazila": [
+            "Anowara",
+            "Banshkhali",
+            "Boalkhali",
+            "Chandanaish",
+            "Fatikchhari",
+            "Hathazari",
+            "Lohagara",
+            "Mirsharai",
+            "Patiya",
+            "Rangunia",
+            "Raozan",
+            "Sandwip",
+            "Satkania",
+            "Sitakunda",
+        ],
+        "age_le_30": [
+            8.41,
+            9.52,
+            7.57,
+            7.91,
+            7.42,
+            7.90,
+            7.19,
+            7.11,
+            8.54,
+            7.77,
+            6.75,
+            6.39,
+            9.06,
+            10.15,
+        ],
+        "age_gt_30": [
+            91.59,
+            90.48,
+            92.43,
+            92.09,
+            92.58,
+            92.10,
+            92.81,
+            92.89,
+            91.46,
+            92.23,
+            93.25,
+            93.61,
+            90.94,
+            89.85,
+        ],
+    }
+)
+
+ccc_age_le_30 = 8.85
+ccc_age_gt_30 = 91.15
+
+
+# ============================
+# Name Harmonization
+# ============================
+
+name_fixes = {
+    "Anwara": "Anowara",
+    "Anowara": "Anowara",
+    "Mirsarai": "Mirsharai",
+    "Mirsharai": "Mirsharai",
+    "Fatikchari": "Fatikchhari",
+    "Fatickchari": "Fatikchhari",
+    "Fatikchhari": "Fatikchhari",
+    "Sitakunda": "Sitakunda",
+    "Sitakund": "Sitakunda",
+}
+
+
+# ============================
+# City Corporation Thana Names
+# ============================
+
+ccc_thanas_raw = [
+    "Pahartali",
+    "Patenga",
+    "Chittagong Port",
+    "Double Mooring",
+    "Halishahar",
+    "Khulshi",
+    "Panchaish",
+    "Panchlaish",
+    "Kotwali",
+    "Bayejid Bostami",
+    "Bayezid Bostami",
+    "Bayezid",
+    "Bayazid",
+    "Chandgaon",
+    "Bakalia",
+]
+
+ccc_keys = [
+    clean_key(strip_admin_suffix(name))
+    for name in ccc_thanas_raw
+]
+
+
+# ============================
+# Prepare Chattogram Spatial Dataset
+# ============================
+
+bd_ctg = bd_adm3.loc[
+    bd_adm3["NAME_2"].isin(["Chattogram", "Chittagong"])
+].copy()
+
+bd_ctg["upazila_gadm"] = bd_ctg["NAME_3"]
+bd_ctg["name3_simple"] = bd_ctg["NAME_3"].apply(strip_admin_suffix)
+bd_ctg["name3_fixed"] = bd_ctg["name3_simple"].replace(name_fixes)
+bd_ctg["join_key_gadm"] = bd_ctg["name3_fixed"].apply(clean_key)
+bd_ctg["is_ccc_thana"] = bd_ctg["join_key_gadm"].isin(ccc_keys)
+
+
+# ============================
+# Prepare Diabetes Dataset
+# ============================
+
+diab_join = diab_outside_cc.copy()
+
+diab_join["upazila_fixed"] = diab_join["upazila"].replace(name_fixes)
+diab_join["join_key_diab"] = diab_join["upazila_fixed"].apply(clean_key)
+
+
+# ============================
+# Prepare Age Group Dataset
+# ============================
+
+age_join = age_outside_cc.copy()
+
+age_join["upazila_fixed"] = age_join["upazila"].replace(name_fixes)
+age_join["join_key_age"] = age_join["upazila_fixed"].apply(clean_key)
+
+
+# ============================
+# Join Spatial, Diabetes, and Age Data
+# ============================
+
+map_dat = bd_ctg.merge(
+    diab_join,
+    how="left",
+    left_on="join_key_gadm",
+    right_on="join_key_diab",
+)
+
+map_dat = map_dat.merge(
+    age_join[["join_key_age", "age_le_30", "age_gt_30"]],
+    how="left",
+    left_on="join_key_gadm",
+    right_on="join_key_age",
+)
+
+map_dat["label_name"] = map_dat["name3_fixed"]
+
+
+# ============================
+# Join Quality Checks
+# ============================
+
+map_join_keys = set(map_dat["join_key_gadm"].dropna())
+
+missing_upazilas = diab_join.loc[
+    ~diab_join["join_key_diab"].isin(map_join_keys)
+].copy()
+
+if len(missing_upazilas) > 0:
+    unmatched = ", ".join(missing_upazilas["upazila"].unique())
+    raise ValueError(f"Unmatched outside-CC upazilas detected: {unmatched}")
+
+
+missing_age_upazilas = age_join.loc[
+    ~age_join["join_key_age"].isin(map_join_keys)
+].copy()
+
+if len(missing_age_upazilas) > 0:
+    unmatched = ", ".join(missing_age_upazilas["upazila"].unique())
+    raise ValueError(f"Unmatched outside-CC age-group upazilas detected: {unmatched}")
+
+
+# ============================
+# Classification Setup
+# ============================
+
+available_percent = map_dat["percent"].dropna()
+
+if len(available_percent) == 0:
+    raise ValueError("No percentage values available for binning.")
+
+max_percent = max(
+    available_percent.max(),
+    ccc_percent,
+)
+
+breaks_viz = [
+    1,
+    3,
+    5,
+    7,
+    9,
+    11,
+    13,
+    max_percent,
+]
+
+diabetes_labels = [
+    "1–3%",
+    "3–5%",
+    "5–7%",
+    "7–9%",
+    "9–11%",
+    "11–13%",
+    ">13%",
+]
+
+
+# ============================
+# Prepare Non-CCC Upazilas
+# ============================
+
+map_non_ccc = map_dat.loc[
+    (~map_dat["is_ccc_thana"]) & (map_dat["percent"].notna())
+].copy()
+
+map_non_ccc["viz_bin"] = pd.cut(
+    map_non_ccc["percent"],
+    bins=breaks_viz,
+    labels=diabetes_labels,
+    right=True,
+    include_lowest=True,
+)
+
+map_non_ccc["viz_bin"] = pd.Categorical(
+    map_non_ccc["viz_bin"],
+    categories=diabetes_labels,
+    ordered=True,
+)
+
+
+# ============================
+# Merge CCC Thanas into One Polygon
+# ============================
+
+ccc_parts = bd_ctg.loc[
+    bd_ctg["is_ccc_thana"]
+].copy()
+
+if len(ccc_parts) == 0:
+    raise ValueError("No City Corporation thana polygons were found.")
+
+ccc_union_geometry = union_geometries(ccc_parts.geometry)
+
+ccc_union = gpd.GeoDataFrame(
+    {
+        "label_name": ["Chittagong City Corporation"],
+        "percent": [ccc_percent],
+        "age_le_30": [ccc_age_le_30],
+        "age_gt_30": [ccc_age_gt_30],
+        "geometry": [ccc_union_geometry],
+    },
+    crs=bd_ctg.crs,
+)
+
+ccc_union["viz_bin"] = pd.cut(
+    ccc_union["percent"],
+    bins=breaks_viz,
+    labels=diabetes_labels,
+    right=True,
+    include_lowest=True,
+)
+
+ccc_union["viz_bin"] = pd.Categorical(
+    ccc_union["viz_bin"],
+    categories=diabetes_labels,
+    ordered=True,
+)
+
+
+# ============================
+# Combine Non-CCC and CCC
+# ============================
+
+schema_cols = [
+    "label_name",
+    "percent",
+    "age_le_30",
+    "age_gt_30",
+    "viz_bin",
+    "geometry",
+]
+
+plot_all = pd.concat(
+    [
+        map_non_ccc[schema_cols],
+        ccc_union[schema_cols],
+    ],
+    ignore_index=True,
+)
+
+plot_all = gpd.GeoDataFrame(
+    plot_all,
+    geometry="geometry",
+    crs=bd_ctg.crs,
+)
+
+plot_all = plot_all.loc[
+    plot_all["viz_bin"].notna()
+].copy()
+
+plot_all["viz_bin"] = pd.Categorical(
+    plot_all["viz_bin"],
+    categories=diabetes_labels,
+    ordered=True,
+)
+
+
+# ============================
+# Diabetes Choropleth Palette
+# ============================
+
+red_band = [
+    "#FCBBA1",
+    "#FC9272",
+    "#FB6A4A",
+    "#EF3B2C",
+    "#CB181D",
+    "#A50F15",
+    "#67000D",
+]
+
+diabetes_palette = sns.color_palette(
+    red_band,
+    n_colors=len(diabetes_labels),
+).as_hex()
+
+diabetes_color_map = dict(zip(diabetes_labels, diabetes_palette))
+
+plot_all["fill_color"] = plot_all["viz_bin"].map(diabetes_color_map)
+
+outline_col = "#737373"
+outline_lwd = 0.75
+
+
+# ============================
+# Age Group Pie Chart Palette
+# ============================
+
+age_labels = ["<=30", ">30"]
+
+age_colors = sns.color_palette(
+    ["#FFD166", "#118AB2"],
+    n_colors=len(age_labels),
+).as_hex()
+
+age_color_map = dict(zip(age_labels, age_colors))
+
+age_text_color_map = {
+    "<=30": "black",
+    ">30": "white",
+}
+
+
+# ============================
+# Render Map
+# ============================
+
+fig = Figure(figsize=(38, 46))
+canvas = FigureCanvas(fig)
+
+ax = fig.subplots()
+
+fig.subplots_adjust(
+    left=0.015,
+    right=0.82,
+    top=0.990,
+    bottom=0.010,
+)
+
+plot_all.plot(
+    ax=ax,
+    color=plot_all["fill_color"].tolist(),
+    edgecolor=outline_col,
+    linewidth=outline_lwd,
+    zorder=1,
+)
+
+
+# ============================
+# Pie Chart Size
+# ============================
+
+minx, miny, maxx, maxy = plot_all.total_bounds
+
+map_width = maxx - minx
+map_height = maxy - miny
+
+pie_radius = min(map_width, map_height) * 0.047
+
+
+# ============================
+# Draw Age Group Pie Charts
+# ============================
+
+for _, row in plot_all.iterrows():
+    if pd.isna(row["age_le_30"]) or pd.isna(row["age_gt_30"]):
+        continue
+
+    point = row.geometry.representative_point()
+
+    draw_pie_with_percentages(
+        ax=ax,
+        x=point.x,
+        y=point.y,
+        values=[
+            row["age_le_30"],
+            row["age_gt_30"],
+        ],
+        colors=[
+            age_color_map["<=30"],
+            age_color_map[">30"],
+        ],
+        text_colors=[
+            age_text_color_map["<=30"],
+            age_text_color_map[">30"],
+        ],
+        radius=pie_radius,
+        label_fontsize=18,
+    )
+
+
+# ============================
+# Add Labels
+# ============================
+
+label_offsets = {
+    "Mirsharai": (0.00, 0.00),
+    "Fatikchhari": (0.00, 0.00),
+    "Sandwip": (0.00, 0.00),
+    "Sitakunda": (0.00, 0.00),
+    "Hathazari": (0.00, 0.00),
+    "Raozan": (0.00, 0.00),
+    "Rangunia": (0.00, 0.00),
+    "Boalkhali": (0.00, 0.00),
+    "Patiya": (0.00, 0.00),
+    "Anowara": (0.00, 0.00),
+    "Chandanaish": (0.00, 0.00),
+    "Satkania": (0.00, 0.00),
+    "Lohagara": (0.00, 0.00),
+    "Banshkhali": (0.00, 0.00),
+    "Chittagong City Corporation": (0.00, 0.00),
+}
+
+for _, row in plot_all.iterrows():
+    point = row.geometry.representative_point()
+
+    label_text = row["label_name"]
+    label_fontsize = 22
+    x_offset, y_offset = label_offsets.get(row["label_name"], (0.00, 0.00))
+    label_y = point.y - pie_radius * 1.55 + y_offset
+    label_x = point.x + x_offset
+
+    if row["label_name"] == "Chittagong City Corporation":
+        label_text = "Chittagong City\nCorporation"
+        label_fontsize = 23
+        label_y = point.y - pie_radius * 1.70 + y_offset
+
+    ax.text(
+        label_x,
+        label_y,
+        label_text,
+        fontsize=label_fontsize,
+        color="#1A1A1A",
+        ha="center",
+        va="top",
+        bbox={
+            "facecolor": "white",
+            "alpha": 0.84,
+            "edgecolor": "none",
+            "boxstyle": "round,pad=0.28",
+        },
+        zorder=10,
+    )
+
+
+# ============================
+# Diabetes Legend
+# ============================
+
+diabetes_legend_handles = [
+    Patch(
+        facecolor=diabetes_color_map[label],
+        edgecolor=outline_col,
+        label=label,
+    )
+    for label in diabetes_labels
+]
+
+diabetes_legend = ax.legend(
+    handles=diabetes_legend_handles,
+    title="Diabetes Patients\n(%)",
+    loc="center left",
+    bbox_to_anchor=(1.012, 0.64),
+    frameon=True,
+    fontsize=22,
+    title_fontsize=25,
+    borderaxespad=0.0,
+)
+
+diabetes_legend.get_frame().set_facecolor("white")
+diabetes_legend.get_frame().set_alpha(0.96)
+
+ax.add_artist(diabetes_legend)
+
+
+# ============================
+# Age Group Legend
+# ============================
+
+age_legend_handles = [
+    Patch(
+        facecolor=age_color_map["<=30"],
+        edgecolor="#333333",
+        label="<=30 years",
+    ),
+    Patch(
+        facecolor=age_color_map[">30"],
+        edgecolor="#333333",
+        label=">30 years",
+    ),
+]
+
+age_legend = ax.legend(
+    handles=age_legend_handles,
+    title="Age Group",
+    loc="center left",
+    bbox_to_anchor=(1.012, 0.42),
+    frameon=True,
+    fontsize=22,
+    title_fontsize=25,
+    borderaxespad=0.0,
+)
+
+age_legend.get_frame().set_facecolor("white")
+age_legend.get_frame().set_alpha(0.96)
+
+
+# ============================
+# Save PDF and PNG
+# ============================
+
+ax.set_title("")
+ax.set_axis_off()
+ax.set_aspect("equal")
+
+district_age_map_pdf = os.path.join(
+    REPORT_DIR,
+    "chattogram_diabetes_share_age_group_map.pdf",
+)
+
+district_age_map_png = os.path.join(
+    REPORT_DIR,
+    "chattogram_diabetes_share_age_group_map.png",
+)
+
+fig.savefig(
+    district_age_map_pdf,
+    format="pdf",
+    bbox_inches="tight",
+    pad_inches=0.20,
+)
+
+fig.savefig(
+    district_age_map_png,
+    format="png",
+    dpi=120,
+    bbox_inches="tight",
+    pad_inches=0.20,
+)
+
+display(fig)
+```
+
+Figure: Diabetes patient share and age-group composition across outside-CC upazilas and the merged Chittagong City Corporation area. The red choropleth background shows diabetes patient share classes, while miniature pie charts show the proportion of patients aged `<=30 years` and `>30 years`.
+

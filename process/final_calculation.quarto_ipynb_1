@@ -38,7 +38,7 @@
         "\n",
         "## Data Loading and Preparation"
       ],
-      "id": "a159bdc0"
+      "id": "f8b44a6e"
     },
     {
       "cell_type": "code",
@@ -50,7 +50,7 @@
         "from dotenv import load_dotenv\n",
         "load_dotenv()"
       ],
-      "id": "559be299",
+      "id": "f40a44a6",
       "execution_count": null,
       "outputs": []
     },
@@ -67,7 +67,7 @@
         "# Show full cell content (stops long text from getting cut off)\n",
         "pd.set_option('display.max_colwidth', None)"
       ],
-      "id": "dfd084f1",
+      "id": "738beed5",
       "execution_count": null,
       "outputs": []
     },
@@ -84,7 +84,7 @@
         "df = pd.read_excel(dataset_path)\n",
         "df.head()"
       ],
-      "id": "0d2e4a76",
+      "id": "c40a522c",
       "execution_count": null,
       "outputs": []
     },
@@ -95,7 +95,7 @@
         "total_population = len(df)\n",
         "total_population_in_cc = df.groupby(\"City Corporation\").count()['ID']['Chattogram City Corporation']"
       ],
-      "id": "fff11b87",
+      "id": "1d508d0b",
       "execution_count": null,
       "outputs": []
     },
@@ -105,7 +105,7 @@
       "source": [
         "df.groupby(\"Thana\")[\"ID\"].count().reset_index(name=\"Total_IDs\")"
       ],
-      "id": "839e7bcb",
+      "id": "edb90a79",
       "execution_count": null,
       "outputs": []
     },
@@ -120,7 +120,7 @@
         "    .str.replace(r\"\\s*thana$\", \"\", regex=True)\n",
         ")"
       ],
-      "id": "bd68f59f",
+      "id": "158247a1",
       "execution_count": null,
       "outputs": []
     },
@@ -244,7 +244,7 @@
         "    \"khagrachhari sadar\": \"Khagrachhari Sadar\",\n",
         "}"
       ],
-      "id": "1758cf61",
+      "id": "abeb0449",
       "execution_count": null,
       "outputs": []
     },
@@ -254,7 +254,7 @@
       "source": [
         "df[\"Thana_normalized\"] = df[\"Thana_clean\"].map(mapping)"
       ],
-      "id": "ea5e3451",
+      "id": "f106a9d0",
       "execution_count": null,
       "outputs": []
     },
@@ -266,7 +266,7 @@
         "    df[\"Thana_clean\"].str.title()\n",
         ")"
       ],
-      "id": "00f07c41",
+      "id": "8f4f203f",
       "execution_count": null,
       "outputs": []
     },
@@ -280,7 +280,7 @@
         "# drop helper columns\n",
         "df = df.drop(columns=[\"Thana_clean\", \"Thana_normalized\"])"
       ],
-      "id": "db6bb3fb",
+      "id": "a93ed638",
       "execution_count": null,
       "outputs": []
     },
@@ -290,7 +290,7 @@
       "source": [
         "df.groupby(\"Thana\")[\"ID\"].count().reset_index(name=\"Total_IDs\")"
       ],
-      "id": "ce31d910",
+      "id": "3d530c00",
       "execution_count": null,
       "outputs": []
     },
@@ -302,7 +302,7 @@
         "print(\"Population in CC:\", total_population_in_cc)\n",
         "print(\"Total Population outside CC:\", total_population-total_population_in_cc)"
       ],
-      "id": "e068e56b",
+      "id": "7f3ea7cf",
       "execution_count": null,
       "outputs": []
     },
@@ -312,7 +312,7 @@
       "source": [
         "df.to_excel(dataset_path)"
       ],
-      "id": "e900d947",
+      "id": "57651d5a",
       "execution_count": null,
       "outputs": []
     },
@@ -324,7 +324,7 @@
         "\n",
         "The following display settings are configured to make exploratory outputs easier to inspect. These options ensure that all rows, columns, and long cell values are visible when printed or displayed in the notebook output."
       ],
-      "id": "64ab0275"
+      "id": "ca7714f1"
     },
     {
       "cell_type": "code",
@@ -339,7 +339,7 @@
         "# Show full cell content (stops long text from getting cut off)\n",
         "pd.set_option('display.max_colwidth', None)"
       ],
-      "id": "52609606",
+      "id": "f404211e",
       "execution_count": null,
       "outputs": []
     },
@@ -353,7 +353,7 @@
         "\n",
         "Records with missing `Thana` values are also removed because the location field is essential for all subsequent grouping, classification, and percentage calculations."
       ],
-      "id": "f63a7f4a"
+      "id": "508f83d5"
     },
     {
       "cell_type": "code",
@@ -377,7 +377,7 @@
         "\n",
         "df.dropna(subset=[\"Thana\"], inplace=True)"
       ],
-      "id": "65f2babf",
+      "id": "699b3533",
       "execution_count": null,
       "outputs": []
     },
@@ -394,7 +394,7 @@
         "\n",
         "These lists are later used to split the dataset and calculate separate summaries for each group."
       ],
-      "id": "2b8698f5"
+      "id": "ad83ba36"
     },
     {
       "cell_type": "code",
@@ -403,7 +403,7 @@
         "thanas_outside_cc = [\"Mirsharai\", \"Fatikchhari\", \"Raozan\", \"Sitakunda\", \"Hathazari\", \"Boalkhali\", \"Patiya\", \"Chandanaish\", \"Sandwip\", \"Rangunia\", \"Anowara\", \"Satkania\", \"Banshkhali\", \"Lohagara\"]\n",
         "thanas_in_cc = [\"Bayejid Bostami\", \"Chandgaon\", \"Bakalia\", \"Kotwali\", \"Double Mooring\", \"Patenga\", \"Chittagong Port\", \"Halishahar\", \"Pahartali\", \"Khulshi\", \"Panchlaish\"]"
       ],
-      "id": "721af1e5",
+      "id": "059b6a66",
       "execution_count": null,
       "outputs": []
     },
@@ -417,7 +417,7 @@
         "\n",
         "This step is important because inconsistent naming can split the same geographic area into multiple categories and distort count-based summaries."
       ],
-      "id": "97e45cd7"
+      "id": "0ef74a29"
     },
     {
       "cell_type": "code",
@@ -443,7 +443,7 @@
         "    \"Bandarban Sadar\":\"Satkania\"\n",
         "}"
       ],
-      "id": "c0a6995e",
+      "id": "e6f75ad1",
       "execution_count": null,
       "outputs": []
     },
@@ -453,7 +453,7 @@
       "source": [
         "The mapping is applied to the `Thana` column. Any value not found in the mapping dictionary is retained as its original value."
       ],
-      "id": "428f62b2"
+      "id": "7a7e25fb"
     },
     {
       "cell_type": "code",
@@ -461,7 +461,7 @@
       "source": [
         "df[\"Thana\"] = df[\"Thana\"].map(mapping).fillna(df[\"Thana\"])"
       ],
-      "id": "1bae9913",
+      "id": "4f77e078",
       "execution_count": null,
       "outputs": []
     },
@@ -473,7 +473,7 @@
         "\n",
         "The number of Thanas in each reference list is printed to confirm the expected coverage of the City Corporation and outside City Corporation groups."
       ],
-      "id": "d7b52854"
+      "id": "299dda0a"
     },
     {
       "cell_type": "code",
@@ -482,7 +482,7 @@
         "print(thanas_in_cc.__len__())\n",
         "print(thanas_outside_cc.__len__())"
       ],
-      "id": "8499b49c",
+      "id": "6eabe1aa",
       "execution_count": null,
       "outputs": []
     },
@@ -494,7 +494,7 @@
         "\n",
         "This step prints all unique Thana names available in the filtered and standardized dataset. It helps identify whether any unexpected, unmapped, misspelled, or out-of-scope Thana names remain after cleaning."
       ],
-      "id": "5c7f6167"
+      "id": "06eba750"
     },
     {
       "cell_type": "code",
@@ -507,7 +507,7 @@
         "\n",
         "print(f\"\\nTotal {thanas.__len__()} thanas\")"
       ],
-      "id": "4497fa12",
+      "id": "9d5cd339",
       "execution_count": null,
       "outputs": []
     },
@@ -524,7 +524,7 @@
         "\n",
         "This age grouping supports comparison of younger and older population segments across Thanas and City Corporation classifications."
       ],
-      "id": "ffac78a3"
+      "id": "6d861b2c"
     },
     {
       "cell_type": "code",
@@ -536,7 +536,7 @@
         "\n",
         "df.groupby([\"Age Group\", \"Thana\"]).size()"
       ],
-      "id": "c7d6251d",
+      "id": "0992eef5",
       "execution_count": null,
       "outputs": []
     },
@@ -548,7 +548,7 @@
         "\n",
         "The total number of records remaining after filtering and standardization is calculated. This value acts as the denominator for global percentage calculations later in the workflow."
       ],
-      "id": "431459e8"
+      "id": "569b3fdb"
     },
     {
       "cell_type": "code",
@@ -557,7 +557,7 @@
         "total_records = len(df)\n",
         "print(\"Total Population\",total_records)"
       ],
-      "id": "ed9f2070",
+      "id": "b7e57400",
       "execution_count": null,
       "outputs": []
     },
@@ -574,7 +574,7 @@
         "\n",
         "Creating these subsets simplifies downstream calculations and keeps the analysis more readable."
       ],
-      "id": "51aeb53f"
+      "id": "55c5d452"
     },
     {
       "cell_type": "code",
@@ -584,7 +584,7 @@
         "df_cc = df[df[\"Thana\"].isin(thanas_in_cc)]\n",
         "df_outside = df[df[\"Thana\"].isin(thanas_outside_cc)]"
       ],
-      "id": "5b4855ae",
+      "id": "25819f93",
       "execution_count": null,
       "outputs": []
     },
@@ -596,7 +596,7 @@
         "\n",
         "This section calculates total records inside the City Corporation, total records outside the City Corporation, and individual Thana-level counts for both groups."
       ],
-      "id": "39e46b0f"
+      "id": "c5f19ce2"
     },
     {
       "cell_type": "code",
@@ -614,7 +614,7 @@
         "# Total records for each individual thana outside City Corporation\n",
         "thana_counts_outside_cc = df_outside[\"Thana\"].value_counts()"
       ],
-      "id": "42e8fa68",
+      "id": "ac0dece4",
       "execution_count": null,
       "outputs": []
     },
@@ -633,7 +633,7 @@
         "\n",
         "These grouped outputs support both aggregate and location-specific demographic interpretation."
       ],
-      "id": "cd020083"
+      "id": "5d54d94f"
     },
     {
       "cell_type": "code",
@@ -651,7 +651,7 @@
         "# Total records outside CC grouped by Age Group\n",
         "outside_cc_records_by_age = df_outside.groupby(\"Age Group\").size()"
       ],
-      "id": "6096a5ba",
+      "id": "dd772a8b",
       "execution_count": null,
       "outputs": []
     },
@@ -663,7 +663,7 @@
         "\n",
         "This section prints the total number of records inside the City Corporation and the distribution of those records by age group."
       ],
-      "id": "c58c6737"
+      "id": "a50a80ca"
     },
     {
       "cell_type": "code",
@@ -678,7 +678,7 @@
         "print(\"\\nTotal records in CC for each age group:\")\n",
         "print(cc_age_counts.to_string())"
       ],
-      "id": "ad51721f",
+      "id": "ff2c885b",
       "execution_count": null,
       "outputs": []
     },
@@ -690,7 +690,7 @@
         "\n",
         "This section reports record counts for each Thana outside the City Corporation. It also creates a Thana-by-age-group table, where each row represents a Thana and each column represents an age group."
       ],
-      "id": "c4179b5f"
+      "id": "3895d308"
     },
     {
       "cell_type": "code",
@@ -713,7 +713,7 @@
         "thana_age_table = outside_thana_records_by_age.unstack(fill_value=0)\n",
         "print(thana_age_table.to_string())"
       ],
-      "id": "280d070d",
+      "id": "af582171",
       "execution_count": null,
       "outputs": []
     },
@@ -725,7 +725,7 @@
         "\n",
         "This section calculates the share of City Corporation records relative to the full dataset. It also calculates the age group distribution within the City Corporation subset."
       ],
-      "id": "603eb0fe"
+      "id": "5be81bc7"
     },
     {
       "cell_type": "code",
@@ -754,7 +754,7 @@
         "else:\n",
         "    print(\"  * No records available in CC to calculate age percentages.\")"
       ],
-      "id": "2765aa9b",
+      "id": "b23eb501",
       "execution_count": null,
       "outputs": []
     },
@@ -766,7 +766,7 @@
         "\n",
         "This section calculates the internal age distribution for each City Corporation Thana. Each row is normalized by its own total so that the percentages show the age group composition within that specific Thana."
       ],
-      "id": "c94987c6"
+      "id": "c6ec719b"
     },
     {
       "cell_type": "code",
@@ -783,7 +783,7 @@
         "# 3. Print the formatted result rounded to 2 decimal places\n",
         "print(cc_thana_age_pct.round(2).to_string())"
       ],
-      "id": "8800ca94",
+      "id": "630f722e",
       "execution_count": null,
       "outputs": []
     },
@@ -800,7 +800,7 @@
         "\n",
         "It then calculates age group percentages within each outside-City-Corporation Thana."
       ],
-      "id": "21ee5778"
+      "id": "923a18da"
     },
     {
       "cell_type": "code",
@@ -836,7 +836,7 @@
         "else:\n",
         "    print(\"No age group records found outside CC.\")"
       ],
-      "id": "0b1e1d9e",
+      "id": "4995b0da",
       "execution_count": null,
       "outputs": []
     },
@@ -853,7 +853,7 @@
         "\n",
         "These outputs help distinguish between local distribution within the City Corporation and global contribution to the overall dataset."
       ],
-      "id": "d593c3e6"
+      "id": "eda944f2"
     },
     {
       "cell_type": "code",
@@ -877,7 +877,7 @@
         "else:\n",
         "    print(\"No records found inside CC.\")"
       ],
-      "id": "5d3fdae9",
+      "id": "4fadc573",
       "execution_count": null,
       "outputs": []
     },
@@ -891,7 +891,7 @@
         "\n",
         "If the combined percentage does not equal 100%, the output warns that some records may still contain missing, unmapped, or unclassified Thana values."
       ],
-      "id": "e8a05044"
+      "id": "00e1a8d5"
     },
     {
       "cell_type": "code",
@@ -926,7 +926,7 @@
         "else:\n",
         "    print(\"⚠️ Check Warning: Does not equal 100%. You may have missing (NaN) values or unmapped Thanas in your raw data.\")"
       ],
-      "id": "ad197d28",
+      "id": "71baa38c",
       "execution_count": null,
       "outputs": []
     },
@@ -967,7 +967,7 @@
         "- City Corporation and outside City Corporation percentage breakdowns.\n",
         "- A final verification result indicating whether the grouped records sum to the full filtered dataset."
       ],
-      "id": "f67b2006"
+      "id": "76c1f481"
     }
   ],
   "metadata": {

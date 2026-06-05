@@ -14,6 +14,7 @@ book:
     - process/initial_analysis.qmd
     - process/final_calculation.qmd
     - process/City-Copr-Map.qmd
+    - process/subdistrict-CC-Map.qmd
 
 format:
   html:
