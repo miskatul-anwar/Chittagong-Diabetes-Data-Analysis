@@ -439,7 +439,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="load-dependencies" class="level2" data-number="2.4">
 <h2 data-number="2.4" class="anchored" data-anchor-id="load-dependencies"><span class="header-section-number">2.4</span> Load Dependencies</h2>
 <p>The workflow begins by importing the required Python libraries. The <code>os</code> module is used to read environment variables, <code>pandas</code> is used for data loading and transformation, and <code>load_dotenv</code> is used to load variables from a <code>.env</code> file.</p>
-<div id="80cf194f" class="cell" data-execution_count="1">
+<div id="46f234dd" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> dotenv <span class="im">import</span> load_dotenv</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -448,7 +448,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="import-raw-dataset" class="level2" data-number="2.5">
 <h2 data-number="2.5" class="anchored" data-anchor-id="import-raw-dataset"><span class="header-section-number">2.5</span> Import Raw Dataset</h2>
 <p>The environment variables are loaded first. The raw dataset path is then retrieved from <code>DATASET_PATH</code>, and the Excel file is imported into a pandas DataFrame.</p>
-<div id="9b652080" class="cell" data-execution_count="2">
+<div id="33adb0aa" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>load_dotenv()</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>dataset_path <span class="op">=</span> os.getenv(<span class="st">"DATASET_PATH"</span>)</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.read_excel(dataset_path)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -457,7 +457,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="inspect-data-structure" class="level2" data-number="2.6">
 <h2 data-number="2.6" class="anchored" data-anchor-id="inspect-data-structure"><span class="header-section-number">2.6</span> Inspect Data Structure</h2>
 <p>A preview of the first few rows is displayed to understand the structure of the dataset, verify that the file was loaded correctly, and inspect the initial format of the variables.</p>
-<div id="31c755bc" class="cell" data-execution_count="3">
+<div id="d781e4cc" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>df.head()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="3">
 <div>
@@ -622,7 +622,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="column-inventory" class="level2" data-number="2.7">
 <h2 data-number="2.7" class="anchored" data-anchor-id="column-inventory"><span class="header-section-number">2.7</span> Column Inventory</h2>
 <p>The column names are collected and printed. This step provides a quick inventory of all variables available in the raw dataset and helps identify potential duplicate columns, inconsistent naming, or unexpected fields.</p>
-<div id="fd03e065" class="cell" data-execution_count="4">
+<div id="73814b6e" class="cell" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>cols <span class="op">=</span> df.columns.tolist()</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> col <span class="kw">in</span> cols:</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(col, end<span class="op">=</span><span class="st">", "</span>)</span>
@@ -637,14 +637,14 @@ Total 23 columns</code></pre>
 <section id="remove-duplicate-columns" class="level2" data-number="2.8">
 <h2 data-number="2.8" class="anchored" data-anchor-id="remove-duplicate-columns"><span class="header-section-number">2.8</span> Remove Duplicate Columns</h2>
 <p>Duplicate columns are removed from the dataset. This can happen when Excel files are exported, merged, or manually edited. Keeping only the first occurrence of each column name prevents ambiguity during later transformations.</p>
-<div id="f2febac1" class="cell" data-execution_count="5">
+<div id="ed53bfa4" class="cell" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> df.loc[:, <span class="op">~</span>df.columns.duplicated()]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="remove-duplicate-records" class="level2" data-number="2.9">
 <h2 data-number="2.9" class="anchored" data-anchor-id="remove-duplicate-records"><span class="header-section-number">2.9</span> Remove Duplicate Records</h2>
 <p>Duplicate patient records are removed using <code>ID</code> as the unique patient identifier. When multiple records share the same <code>ID</code>, the last occurrence is retained. This assumes that later entries are more complete or more recently updated.</p>
-<div id="093d442b" class="cell" data-execution_count="6">
+<div id="ab41ad58" class="cell" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>df.drop_duplicates(subset<span class="op">=</span><span class="st">"ID"</span>, keep<span class="op">=</span><span class="st">"last"</span>, inplace<span class="op">=</span><span class="va">True</span>)</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>df.<span class="fu">__len__</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="6">
@@ -656,7 +656,7 @@ Total 23 columns</code></pre>
 <h2 data-number="2.10" class="anchored" data-anchor-id="update-the-original-dataset-with-cleaned-data"><span class="header-section-number">2.10</span> Update the Original Dataset with Cleaned Data</h2>
 <p>A supplementary dataset is loaded from the path stored in <code>NEW_PATH</code>. This file is used to update the <code>Fasting</code> column in the primary dataset.</p>
 <p>Before merging, duplicate records are also removed from the supplementary dataset using the same <code>ID</code>-based rule. Copies of the <code>ID</code> and <code>Fasting</code> columns are created for comparison and verification purposes before the update is applied.</p>
-<div id="ab23651b" class="cell" data-execution_count="7">
+<div id="b4a48a67" class="cell" data-execution_count="7">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>new_file <span class="op">=</span> os.getenv(<span class="st">"NEW_PATH"</span>)</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>new_df <span class="op">=</span> pd.read_excel(new_file)</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>new_df.drop_duplicates(subset<span class="op">=</span><span class="st">"ID"</span>, keep<span class="op">=</span><span class="st">"last"</span>, inplace<span class="op">=</span><span class="va">True</span>)</span>
@@ -666,7 +666,7 @@ Total 23 columns</code></pre>
 <span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>new_df_fasting <span class="op">=</span> new_df[[<span class="st">"ID"</span>, <span class="st">"Fasting"</span>]].copy()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The update is performed by temporarily setting <code>ID</code> as the index in both datasets. The <code>Fasting</code> values in the primary dataset are then updated using matching <code>ID</code> values from the supplementary dataset. After the update, the index is reset so that <code>ID</code> returns to a regular column.</p>
-<div id="bcb86d4c" class="cell" data-execution_count="8">
+<div id="67e3064f" class="cell" data-execution_count="8">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Perform merge using ID-based index</span></span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>df.set_index(<span class="st">"ID"</span>, inplace<span class="op">=</span><span class="va">True</span>)</span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>new_df.set_index(<span class="st">"ID"</span>, inplace<span class="op">=</span><span class="va">True</span>)</span>
@@ -677,7 +677,7 @@ Total 23 columns</code></pre>
 <section id="verify-merge-success" class="level2" data-number="2.11">
 <h2 data-number="2.11" class="anchored" data-anchor-id="verify-merge-success"><span class="header-section-number">2.11</span> Verify Merge Success</h2>
 <p>The following checks confirm whether the <code>Fasting</code> column contains values after the merge and how many records still have missing fasting values. This provides a simple quality-control checkpoint before further standardization.</p>
-<div id="43e7d8df" class="cell" data-execution_count="9">
+<div id="07d948f3" class="cell" data-execution_count="9">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Count records with Fasting values before and after merge</span></span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"=== Fasting Column Update Verification ===</span><span class="ch">\n</span><span class="st">"</span>)</span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Records with Fasting values (after merge): </span><span class="sc">{</span>df[<span class="st">'Fasting'</span>]<span class="sc">.</span>notna()<span class="sc">.</span><span class="bu">sum</span>()<span class="sc">}</span><span class="ss">"</span>)</span>
@@ -693,7 +693,7 @@ Total records: 44136</code></pre>
 </div>
 </div>
 <p>A small sample of the updated <code>ID</code> and <code>Fasting</code> values is displayed to visually inspect whether the merged column appears correctly aligned with patient records.</p>
-<div id="b4d48db1" class="cell" data-execution_count="10">
+<div id="2c29d3da" class="cell" data-execution_count="10">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Show sample of merged data to verify alignment</span></span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>merge_sample <span class="op">=</span> df[[<span class="st">"ID"</span>, <span class="st">"Fasting"</span>]].head(<span class="dv">10</span>)</span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">Sample of merged Fasting column:"</span>)</span>
@@ -718,14 +718,14 @@ Sample of merged Fasting column:
 <section id="define-export-path" class="level2" data-number="2.12">
 <h2 data-number="2.12" class="anchored" data-anchor-id="define-export-path"><span class="header-section-number">2.12</span> Define Export Path</h2>
 <p>The cleaned dataset output path is retrieved from the <code>CLEANED_DATASET_PATH</code> environment variable. This path is used at the end of the workflow to save the final cleaned Excel file.</p>
-<div id="0b919523" class="cell" data-execution_count="11">
+<div id="511cb002" class="cell" data-execution_count="11">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>clean_dataset_path <span class="op">=</span> os.getenv(<span class="st">"CLEANED_DATASET_PATH"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="check-dataset-size-after-initial-cleaning" class="level2" data-number="2.13">
 <h2 data-number="2.13" class="anchored" data-anchor-id="check-dataset-size-after-initial-cleaning"><span class="header-section-number">2.13</span> Check Dataset Size After Initial Cleaning</h2>
 <p>The number of records remaining after duplicate removal and fasting-value update is checked before additional transformations are applied.</p>
-<div id="0c7ab4b3" class="cell" data-execution_count="12">
+<div id="f0dedc15" class="cell" data-execution_count="12">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>df.<span class="fu">__len__</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="12">
 <pre><code>44136</code></pre>
@@ -735,7 +735,7 @@ Sample of merged Fasting column:
 <section id="preview-updated-dataset" class="level2" data-number="2.14">
 <h2 data-number="2.14" class="anchored" data-anchor-id="preview-updated-dataset"><span class="header-section-number">2.14</span> Preview Updated Dataset</h2>
 <p>The dataset is previewed again to inspect the current state after duplicate removal and fasting-value update.</p>
-<div id="375c6cac" class="cell" data-execution_count="13">
+<div id="171b1590" class="cell" data-execution_count="13">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>df.head()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="13">
 <div>
@@ -901,7 +901,7 @@ Sample of merged Fasting column:
 <h2 data-number="2.15" class="anchored" data-anchor-id="convert-anthropometric-columns-to-numeric-format"><span class="header-section-number">2.15</span> Convert Anthropometric Columns to Numeric Format</h2>
 <p>The columns <code>BMI</code>, <code>Weight (KG)</code>, and <code>Height (CM)</code> are converted to numeric data types. Any non-convertible values are coerced to missing values using <code>errors="coerce"</code>.</p>
 <p>This step ensures that these fields can be used reliably in later statistical analysis, visualization, or machine learning workflows.</p>
-<div id="9c9c9b89" class="cell" data-execution_count="14">
+<div id="7fdce114" class="cell" data-execution_count="14">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>cols <span class="op">=</span> [<span class="st">"BMI"</span>, <span class="st">"Weight (KG)"</span>, <span class="st">"Height (CM)"</span>]</span>
 <span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> col <span class="kw">in</span> cols:</span>
@@ -912,7 +912,7 @@ Sample of merged Fasting column:
 <h2 data-number="2.16" class="anchored" data-anchor-id="standardize-fasting-column-to-numerical-values"><span class="header-section-number">2.16</span> Standardize Fasting Column to Numerical Values</h2>
 <p>The original <code>Fasting</code> column may contain mixed-format values, such as numbers combined with units or text. A regular expression is used to extract the first numeric value from each entry.</p>
 <p>For example, a value such as <code>10.0MMOL</code> is converted to <code>10.0</code>. Records without a valid numeric fasting value are treated as missing.</p>
-<div id="1395fdd0" class="cell" data-execution_count="15">
+<div id="084efda3" class="cell" data-execution_count="15">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> re   </span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> extract_numerical_value(value):</span>
 <span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> pd.isna(value):</span>
@@ -927,7 +927,7 @@ Sample of merged Fasting column:
 <section id="verify-numerical-standardization" class="level2" data-number="2.17">
 <h2 data-number="2.17" class="anchored" data-anchor-id="verify-numerical-standardization"><span class="header-section-number">2.17</span> Verify Numerical Standardization</h2>
 <p>This verification step confirms how many records have valid numerical fasting values after extraction and type conversion. It also reports the number of missing fasting values and the remaining dataset size.</p>
-<div id="600e111a" class="cell" data-execution_count="16">
+<div id="0ce983ad" class="cell" data-execution_count="16">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"=== Fasting Column Standardization Verification ===</span><span class="ch">\n</span><span class="st">"</span>)</span>
 <span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Records with numerical Fasting values: </span><span class="sc">{</span>df[<span class="st">'Fasting'</span>]<span class="sc">.</span>notna()<span class="sc">.</span><span class="bu">sum</span>()<span class="sc">}</span><span class="ss">"</span>)</span>
 <span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Records with missing Fasting: </span><span class="sc">{</span>df[<span class="st">'Fasting'</span>]<span class="sc">.</span>isna()<span class="sc">.</span><span class="bu">sum</span>()<span class="sc">}</span><span class="ss">"</span>)</span>
@@ -945,14 +945,14 @@ Total records: 43777</code></pre>
 <section id="remove-records-with-missing-age" class="level2" data-number="2.18">
 <h2 data-number="2.18" class="anchored" data-anchor-id="remove-records-with-missing-age"><span class="header-section-number">2.18</span> Remove Records with Missing Age</h2>
 <p>Records with missing <code>Age</code> values are removed. Age is typically a key variable in diabetes-related analysis, and removing missing values here ensures that downstream analysis can rely on complete age information.</p>
-<div id="2d6fb04a" class="cell" data-execution_count="17">
+<div id="f155a57a" class="cell" data-execution_count="17">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>df.dropna(subset<span class="op">=</span>[<span class="st">"Age"</span>],inplace<span class="op">=</span><span class="va">True</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="export-cleaned-dataset" class="level2" data-number="2.19">
 <h2 data-number="2.19" class="anchored" data-anchor-id="export-cleaned-dataset"><span class="header-section-number">2.19</span> Export Cleaned Dataset</h2>
 <p>The final dataset is previewed and then exported as an Excel file to the path defined by <code>CLEANED_DATASET_PATH</code>.</p>
-<div id="580cf4bb" class="cell" data-execution_count="18">
+<div id="5d2bebcb" class="cell" data-execution_count="18">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>df.head()</span>
 <span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>df.to_excel(clean_dataset_path, index<span class="op">=</span><span class="va">False</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>

@@ -614,7 +614,7 @@
     "href": "process/final_calculation.html#unique-thana-inspection",
     "title": "5  Thana-Level Population Distribution and Age Group Analysis",
     "section": "5.9 Unique Thana Inspection",
-    "text": "5.9 Unique Thana Inspection\nThis step prints all unique Thana names available in the filtered and standardized dataset. It helps identify whether any unexpected, unmapped, misspelled, or out-of-scope Thana names remain after cleaning.\n\nthanas = set(df[\"Thana\"].tolist())\n\nfor thana in thanas:\n    print(thana)\n\nprint(f\"\\nTotal {thanas.__len__()} thanas\")\n\nRangunia\nBoalkhali\nMirsharai\nSitakunda\nRaozan\nHathazari\nSandwip\nAnowara\nSatkania\nFatikchhari\nPahartali\nPatiya\nLohagara\nBanshkhali\nBayejid Bostami\nBakalia\nChittagong Port\nKhulshi\nChandgaon\nChandanaish\nHalishahar\nKotwali\nPanchlaish\nPatenga\nDouble Mooring\n\nTotal 25 thanas",
+    "text": "5.9 Unique Thana Inspection\nThis step prints all unique Thana names available in the filtered and standardized dataset. It helps identify whether any unexpected, unmapped, misspelled, or out-of-scope Thana names remain after cleaning.\n\nthanas = set(df[\"Thana\"].tolist())\n\nfor thana in thanas:\n    print(thana)\n\nprint(f\"\\nTotal {thanas.__len__()} thanas\")\n\nKotwali\nAnowara\nBayejid Bostami\nSatkania\nPahartali\nLohagara\nSitakunda\nHalishahar\nRaozan\nRangunia\nBakalia\nBanshkhali\nChandgaon\nMirsharai\nChittagong Port\nDouble Mooring\nSandwip\nBoalkhali\nPatiya\nChandanaish\nPatenga\nKhulshi\nFatikchhari\nPanchlaish\nHathazari\n\nTotal 25 thanas",
     "crumbs": [
       "<span class='chapter-number'>5</span>  <span class='chapter-title'>Thana-Level Population Distribution and Age Group Analysis</span>"
     ]

@@ -425,13 +425,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="dataset-loading-and-environment-setup" class="level2" data-number="5.3">
 <h2 data-number="5.3" class="anchored" data-anchor-id="dataset-loading-and-environment-setup"><span class="header-section-number">5.3</span> Dataset Loading and Environment Setup</h2>
 <p>The workflow begins by importing the required Python libraries and loading environment variables. The dataset path is expected to be stored in the <code>CLEANED_DATASET_PATH</code> environment variable.</p>
-<div id="c15faa7e" class="cell" data-execution_count="1">
+<div id="2bf394da" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> dotenv <span class="im">import</span> load_dotenv</span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>load_dotenv()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="210">
+<div class="cell-output cell-output-display" data-execution_count="1">
 <pre><code>True</code></pre>
 </div>
 </div>
@@ -439,7 +439,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="display-configuration" class="level2" data-number="5.4">
 <h2 data-number="5.4" class="anchored" data-anchor-id="display-configuration"><span class="header-section-number">5.4</span> Display Configuration</h2>
 <p>The following display settings are configured to make exploratory outputs easier to inspect. These options ensure that all rows, columns, and long cell values are visible when printed or displayed in the notebook output.</p>
-<div id="31d4a156" class="cell" data-execution_count="2">
+<div id="5630eb6b" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Show all rows</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>pd.set_option(<span class="st">'display.max_rows'</span>, <span class="va">None</span>)</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -454,7 +454,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 data-number="5.5" class="anchored" data-anchor-id="initial-data-loading-and-scope-filtering"><span class="header-section-number">5.5</span> Initial Data Loading and Scope Filtering</h2>
 <p>The cleaned dataset is loaded from the Excel file specified in the environment variable. A predefined list of Thanas is then excluded from the analysis. These excluded values represent locations that are not part of the intended analytical scope for this experiment.</p>
 <p>Records with missing <code>Thana</code> values are also removed because the location field is essential for all subsequent grouping, classification, and percentage calculations.</p>
-<div id="9c9027e9" class="cell" data-execution_count="3">
+<div id="c695782c" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>path <span class="op">=</span> os.getenv(<span class="st">"CLEANED_DATASET_PATH"</span>)</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> path <span class="kw">is</span> <span class="va">None</span>:</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="st">"CLEANED_DATASET_PATH not set"</span>)</span>
@@ -482,7 +482,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><strong>Outside City Corporation</strong>, representing Thanas outside the City Corporation but still within the analysis boundary.</li>
 </ul>
 <p>These lists are later used to split the dataset and calculate separate summaries for each group.</p>
-<div id="52cd137d" class="cell" data-execution_count="4">
+<div id="8812dfec" class="cell" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>thanas_outside_cc <span class="op">=</span> [<span class="st">"Mirsharai"</span>, <span class="st">"Fatikchhari"</span>, <span class="st">"Raozan"</span>, <span class="st">"Sitakunda"</span>, <span class="st">"Hathazari"</span>, <span class="st">"Boalkhali"</span>, <span class="st">"Patiya"</span>, <span class="st">"Chandanaish"</span>, <span class="st">"Sandwip"</span>, <span class="st">"Rangunia"</span>, <span class="st">"Anowara"</span>, <span class="st">"Satkania"</span>, <span class="st">"Banshkhali"</span>, <span class="st">"Lohagara"</span>]</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>thanas_in_cc <span class="op">=</span> [<span class="st">"Bayejid Bostami"</span>, <span class="st">"Chandgaon"</span>, <span class="st">"Bakalia"</span>, <span class="st">"Kotwali"</span>, <span class="st">"Double Mooring"</span>, <span class="st">"Patenga"</span>, <span class="st">"Chittagong Port"</span>, <span class="st">"Halishahar"</span>, <span class="st">"Pahartali"</span>, <span class="st">"Khulshi"</span>, <span class="st">"Panchlaish"</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
@@ -491,7 +491,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 data-number="5.7" class="anchored" data-anchor-id="standardizing-thana-names"><span class="header-section-number">5.7</span> Standardizing Thana Names</h2>
 <p>Some records contain alternative spellings, informal names, administrative variants, or localized labels for the same Thana. A mapping dictionary is used to standardize these names into the classification labels used in the analysis.</p>
 <p>This step is important because inconsistent naming can split the same geographic area into multiple categories and distort count-based summaries.</p>
-<div id="1e45d85a" class="cell" data-execution_count="5">
+<div id="e41acbc5" class="cell" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>mapping <span class="op">=</span> {</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Firingibazar"</span>: <span class="st">"Kotwali"</span>,</span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"EPZ"</span>: <span class="st">"Chittagong Port"</span>,</span>
@@ -513,14 +513,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The mapping is applied to the <code>Thana</code> column. Any value not found in the mapping dictionary is retained as its original value.</p>
-<div id="3d16a37e" class="cell" data-execution_count="6">
+<div id="df4ca72f" class="cell" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>df[<span class="st">"Thana"</span>] <span class="op">=</span> df[<span class="st">"Thana"</span>].<span class="bu">map</span>(mapping).fillna(df[<span class="st">"Thana"</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="reference-list-size-check" class="level2" data-number="5.8">
 <h2 data-number="5.8" class="anchored" data-anchor-id="reference-list-size-check"><span class="header-section-number">5.8</span> Reference List Size Check</h2>
 <p>The number of Thanas in each reference list is printed to confirm the expected coverage of the City Corporation and outside City Corporation groups.</p>
-<div id="2c87f54e" class="cell" data-execution_count="7">
+<div id="00cc9c9b" class="cell" data-execution_count="7">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(thanas_in_cc.<span class="fu">__len__</span>())</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(thanas_outside_cc.<span class="fu">__len__</span>())</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
@@ -532,7 +532,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="unique-thana-inspection" class="level2" data-number="5.9">
 <h2 data-number="5.9" class="anchored" data-anchor-id="unique-thana-inspection"><span class="header-section-number">5.9</span> Unique Thana Inspection</h2>
 <p>This step prints all unique Thana names available in the filtered and standardized dataset. It helps identify whether any unexpected, unmapped, misspelled, or out-of-scope Thana names remain after cleaning.</p>
-<div id="0d153628" class="cell" data-execution_count="8">
+<div id="80259fb2" class="cell" data-execution_count="8">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>thanas <span class="op">=</span> <span class="bu">set</span>(df[<span class="st">"Thana"</span>].tolist())</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> thana <span class="kw">in</span> thanas:</span>
@@ -540,31 +540,31 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">Total </span><span class="sc">{</span>thanas<span class="sc">.</span><span class="fu">__len__</span>()<span class="sc">}</span><span class="ss"> thanas"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Rangunia
-Boalkhali
-Mirsharai
-Sitakunda
-Raozan
-Hathazari
-Sandwip
+<pre><code>Kotwali
 Anowara
-Satkania
-Fatikchhari
-Pahartali
-Patiya
-Lohagara
-Banshkhali
 Bayejid Bostami
-Bakalia
-Chittagong Port
-Khulshi
-Chandgaon
-Chandanaish
+Satkania
+Pahartali
+Lohagara
+Sitakunda
 Halishahar
-Kotwali
-Panchlaish
-Patenga
+Raozan
+Rangunia
+Bakalia
+Banshkhali
+Chandgaon
+Mirsharai
+Chittagong Port
 Double Mooring
+Sandwip
+Boalkhali
+Patiya
+Chandanaish
+Patenga
+Khulshi
+Fatikchhari
+Panchlaish
+Hathazari
 
 Total 25 thanas</code></pre>
 </div>
@@ -578,13 +578,13 @@ Total 25 thanas</code></pre>
 <li><code>&gt;30</code> for records where age is greater than 30.</li>
 </ul>
 <p>This age grouping supports comparison of younger and older population segments across Thanas and City Corporation classifications.</p>
-<div id="1fa89104" class="cell" data-execution_count="9">
+<div id="adbc1de2" class="cell" data-execution_count="9">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>df[<span class="st">"Age Group"</span>] <span class="op">=</span> np.where(df[<span class="st">"Age"</span>] <span class="op">&lt;=</span> <span class="dv">30</span>, <span class="st">"&lt;=30"</span>, <span class="st">"&gt;30"</span>)</span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>df[<span class="st">"Age Group"</span>].value_counts()</span>
 <span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>df.groupby([<span class="st">"Age Group"</span>, <span class="st">"Thana"</span>]).size()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="218">
+<div class="cell-output cell-output-display" data-execution_count="9">
 <pre><code>Age Group  Thana          
 &lt;=30       Anowara             141
            Bakalia              58
@@ -643,7 +643,7 @@ dtype: int64</code></pre>
 <section id="total-population-count" class="level2" data-number="5.11">
 <h2 data-number="5.11" class="anchored" data-anchor-id="total-population-count"><span class="header-section-number">5.11</span> Total Population Count</h2>
 <p>The total number of records remaining after filtering and standardization is calculated. This value acts as the denominator for global percentage calculations later in the workflow.</p>
-<div id="046fdb79" class="cell" data-execution_count="10">
+<div id="faaeba17" class="cell" data-execution_count="10">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>total_records <span class="op">=</span> <span class="bu">len</span>(df)</span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Total Population"</span>,total_records)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
@@ -659,7 +659,7 @@ dtype: int64</code></pre>
 <li><code>df_outside</code>: records belonging to Thanas outside the City Corporation.</li>
 </ul>
 <p>Creating these subsets simplifies downstream calculations and keeps the analysis more readable.</p>
-<div id="185fd012" class="cell" data-execution_count="11">
+<div id="b8a0696c" class="cell" data-execution_count="11">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Pre-filter DataFrames for cleaner execution</span></span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>df_cc <span class="op">=</span> df[df[<span class="st">"Thana"</span>].isin(thanas_in_cc)]</span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>df_outside <span class="op">=</span> df[df[<span class="st">"Thana"</span>].isin(thanas_outside_cc)]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -668,7 +668,7 @@ dtype: int64</code></pre>
 <section id="record-counts-by-classification-and-thana" class="level2" data-number="5.13">
 <h2 data-number="5.13" class="anchored" data-anchor-id="record-counts-by-classification-and-thana"><span class="header-section-number">5.13</span> Record Counts by Classification and Thana</h2>
 <p>This section calculates total records inside the City Corporation, total records outside the City Corporation, and individual Thana-level counts for both groups.</p>
-<div id="6c0ace5d" class="cell" data-execution_count="12">
+<div id="2fc122d0" class="cell" data-execution_count="12">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Total records in City Corporation</span></span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>total_cc_records <span class="op">=</span> <span class="bu">len</span>(df_cc)</span>
 <span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -692,7 +692,7 @@ dtype: int64</code></pre>
 <li>Total outside City Corporation records by age group.</li>
 </ul>
 <p>These grouped outputs support both aggregate and location-specific demographic interpretation.</p>
-<div id="2d54c220" class="cell" data-execution_count="13">
+<div id="4f799f0b" class="cell" data-execution_count="13">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Total records in City Corporation grouped by Age Group</span></span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>cc_records_by_age <span class="op">=</span> df_cc.groupby(<span class="st">"Age Group"</span>).size()</span>
 <span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -709,7 +709,7 @@ dtype: int64</code></pre>
 <section id="city-corporation-summary" class="level2" data-number="5.15">
 <h2 data-number="5.15" class="anchored" data-anchor-id="city-corporation-summary"><span class="header-section-number">5.15</span> City Corporation Summary</h2>
 <p>This section prints the total number of records inside the City Corporation and the distribution of those records by age group.</p>
-<div id="0699ff47" class="cell" data-execution_count="14">
+<div id="e68975b3" class="cell" data-execution_count="14">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Total records in CC</span></span>
 <span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>total_cc <span class="op">=</span> <span class="bu">len</span>(df[df[<span class="st">"Thana"</span>].isin(thanas_in_cc)])</span>
 <span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Total records in CC: </span><span class="sc">{</span>total_cc<span class="sc">}</span><span class="ss">"</span>)</span>
@@ -731,7 +731,7 @@ Age Group
 <section id="outside-city-corporation-summary" class="level2" data-number="5.16">
 <h2 data-number="5.16" class="anchored" data-anchor-id="outside-city-corporation-summary"><span class="header-section-number">5.16</span> Outside City Corporation Summary</h2>
 <p>This section reports record counts for each Thana outside the City Corporation. It also creates a Thana-by-age-group table, where each row represents a Thana and each column represents an age group.</p>
-<div id="1bf4e65b" class="cell" data-execution_count="15">
+<div id="11dcca5b" class="cell" data-execution_count="15">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># -------------------------------------------------------------</span></span>
 <span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. Total records outside CC for each Thana</span></span>
 <span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="co"># -------------------------------------------------------------</span></span>
@@ -790,7 +790,7 @@ Sitakunda     478  4230</code></pre>
 <section id="city-corporation-percentage-breakdown" class="level2" data-number="5.17">
 <h2 data-number="5.17" class="anchored" data-anchor-id="city-corporation-percentage-breakdown"><span class="header-section-number">5.17</span> City Corporation Percentage Breakdown</h2>
 <p>This section calculates the share of City Corporation records relative to the full dataset. It also calculates the age group distribution within the City Corporation subset.</p>
-<div id="fcd3197a" class="cell" data-execution_count="16">
+<div id="f0f42858" class="cell" data-execution_count="16">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate the total records across the entire dataset</span></span>
 <span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>total_dataset_records <span class="op">=</span> <span class="bu">len</span>(df)</span>
 <span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -826,7 +826,7 @@ Percentage of each age group within CC:
 <section id="age-group-percentages-within-city-corporation-thanas" class="level2" data-number="5.18">
 <h2 data-number="5.18" class="anchored" data-anchor-id="age-group-percentages-within-city-corporation-thanas"><span class="header-section-number">5.18</span> Age Group Percentages Within City Corporation Thanas</h2>
 <p>This section calculates the internal age distribution for each City Corporation Thana. Each row is normalized by its own total so that the percentages show the age group composition within that specific Thana.</p>
-<div id="bb15dcda" class="cell" data-execution_count="17">
+<div id="685308c6" class="cell" data-execution_count="17">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"   PERCENTAGE OF AGE GROUPS IN EACH THANA (CC)    "</span>)</span>
 <span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. Pivot the counts into a table (Thanas as rows, Age Groups as columns)</span></span>
@@ -863,7 +863,7 @@ Patenga           9.88  90.12</code></pre>
 <li>Percentage based on the total population of the entire dataset.</li>
 </ul>
 <p>It then calculates age group percentages within each outside-City-Corporation Thana.</p>
-<div id="e68b60d0" class="cell" data-execution_count="18">
+<div id="f66d8e78" class="cell" data-execution_count="18">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"     THANA RECORD PERCENTAGES (OUTSIDE CC)        "</span>)</span>
 <span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -956,7 +956,7 @@ Sitakunda    10.15  89.85</code></pre>
 <li>Percentage based on total records in the full dataset.</li>
 </ul>
 <p>These outputs help distinguish between local distribution within the City Corporation and global contribution to the overall dataset.</p>
-<div id="5de8c854" class="cell" data-execution_count="19">
+<div id="2248c72a" class="cell" data-execution_count="19">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"      THANA RECORD PERCENTAGES (INSIDE CC)        "</span>)</span>
 <span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -1010,7 +1010,7 @@ Patenga            0.59</code></pre>
 <h2 data-number="5.21" class="anchored" data-anchor-id="global-population-share-and-verification"><span class="header-section-number">5.21</span> Global Population Share and Verification</h2>
 <p>The final section calculates the City Corporation share of the total dataset and the individual outside-City-Corporation Thana shares. These percentages are then summed to verify whether the classification accounts for the entire filtered dataset.</p>
 <p>If the combined percentage does not equal 100%, the output warns that some records may still contain missing, unmapped, or unclassified Thana values.</p>
-<div id="3f3c3e8a" class="cell" data-execution_count="20">
+<div id="41af379e" class="cell" data-execution_count="20">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Ensure we have the global total</span></span>
 <span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>total_population <span class="op">=</span> <span class="bu">len</span>(df)</span>
 <span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a></span>
