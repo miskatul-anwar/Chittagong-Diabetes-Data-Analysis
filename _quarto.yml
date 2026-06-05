@@ -12,8 +12,8 @@ book:
     - index.qmd
     - process/data-wrangling.qmd
     - process/initial_analysis.qmd
-    - process/map_creation.qmd
     - process/final_calculation.qmd
+    - process/City-Copr-Map.qmd
 
 format:
   html:

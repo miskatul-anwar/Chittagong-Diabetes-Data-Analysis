@@ -1,0 +1,932 @@
+
+---
+title: "Spatial Distribution of Diabetes Patients and Age Group Composition in Chattogram City Corporation"
+format:
+  html:
+    code-fold: true
+    code-tools: true
+execute:
+  warning: false
+  message: false
+---
+
+## City Corporation
+
+This section visualizes the distribution of diabetes patients across selected thanas of Chattogram City Corporation. The map uses GADM level-3 administrative boundary data from a GeoPackage file and joins it with manually entered thana-level diabetes percentage data.
+
+The spatial boundary file path is loaded from the `.env` file using the `GPKG_PATH` environment variable. This keeps the source code cleaner and avoids hard-coding the data path directly inside the analysis script.
+
+The workflow follows these main steps:
+
+1. Load the required Python libraries.
+2. Read the GeoPackage boundary file using `geopandas`.
+3. Create a tabular dataset containing diabetes percentages by thana.
+4. Clean and standardize thana names for reliable joining.
+5. Join the diabetes dataset with the spatial boundary dataset.
+6. Classify diabetes percentages into fixed percentage intervals.
+7. Apply a red choropleth color palette, starting from a darker red shade.
+8. Draw the map directly inside the Jupyter or Quarto output.
+
+The diabetes percentages are classified into the following groups:
+
+- `1–3%`
+- `3–5%`
+- `5–7%`
+- `7–9%`
+- `9–11%`
+- `11–13%`
+- `>13%`
+
+A custom red color palette is used for the choropleth map. Unlike very pale choropleth palettes, the first class begins with a visibly darker red shade so that even low-percentage areas remain clearly visible on the map.
+
+```{python}
+# ============================
+# Load Required Libraries
+# ============================
+
+import os
+import re
+
+import geopandas as gpd
+import pandas as pd
+import seaborn as sns
+
+from dotenv import load_dotenv
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+from matplotlib.patches import Patch
+from IPython.display import display
+
+
+# ============================
+# Load Environment Variables
+# ============================
+
+load_dotenv()
+
+GPKG_PATH = os.getenv("GPKG_PATH")
+
+if GPKG_PATH is None:
+    raise ValueError("GPKG_PATH not found in .env file.")
+
+if not os.path.exists(GPKG_PATH):
+    raise FileNotFoundError(f"GPKG file not found at: {GPKG_PATH}")
+
+
+# ============================
+# Helper Functions
+# ============================
+
+def clean_key(x):
+    """
+    Standardize text for safe joining:
+    lowercase + remove non-letter characters.
+    """
+    if pd.isna(x):
+        return None
+
+    x = str(x).lower()
+    x = re.sub(r"[^a-z]", "", x)
+
+    return x
+
+
+def strip_admin_suffix(x):
+    """
+    Remove common administrative suffixes from place names.
+    """
+    if pd.isna(x):
+        return None
+
+    x = str(x)
+
+    pattern = r"\s+(Sadar Upazila|Sadar|Upazila|Thana|PS)$"
+    x = re.sub(pattern, "", x, flags=re.IGNORECASE)
+    x = x.strip()
+
+    return x
+
+
+# ============================
+# Load Spatial Data: GADM Level 3
+# ============================
+
+bd_adm3 = gpd.read_file(GPKG_PATH)
+
+
+# ============================
+# Input Data: Diabetes Percentages by Thana
+# ============================
+
+diab_city = pd.DataFrame(
+    {
+        "thana": [
+            "Pahartali",
+            "Halishahar",
+            "Khulshi",
+            "Chandgaon",
+            "Kotwali",
+            "Double Mooring",
+            "Panchlaish",
+            "Bayejid Bostami",
+            "Bakalia",
+            "Chittagong Port",
+            "Patenga",
+        ],
+        "percent": [
+            24.07,
+            12.82,
+            10.34,
+            9.59,
+            9.19,
+            8.63,
+            7.94,
+            7.80,
+            4.45,
+            3.31,
+            1.86,
+        ],
+    }
+)
+
+
+# ============================
+# Manual Name Harmonization
+# ============================
+
+name_fixes = {
+    "Pahartali": "Pahartali",
+    "Halishahar": "Halishahar",
+    "Khulshi": "Khulshi",
+    "Chandgaon": "Chandgaon",
+    "Kotwali": "Kotwali",
+    "Double Mooring": "Double Mooring",
+    "Panchlaish": "Panchlaish",
+    "Bayejid Bostami": "Bayejid Bostami",
+    "Bayezid": "Bayejid Bostami",
+    "Bayezid Bostami": "Bayejid Bostami",
+    "Chittagong Port": "Chittagong Port",
+    "Bakalia": "Bakalia",
+    "Patenga": "Patenga",
+}
+
+
+# ============================
+# Prepare Spatial Dataset
+# ============================
+
+bd_ctg = bd_adm3.loc[
+    bd_adm3["NAME_2"].isin(["Chattogram", "Chittagong"])
+].copy()
+
+bd_ctg["thana_gadm"] = bd_ctg["NAME_3"]
+bd_ctg["name3_simple"] = bd_ctg["NAME_3"].apply(strip_admin_suffix)
+bd_ctg["name3_fixed"] = bd_ctg["name3_simple"].replace(name_fixes)
+bd_ctg["join_key_gadm"] = bd_ctg["name3_fixed"].apply(clean_key)
+
+
+# ============================
+# Prepare Diabetes Dataset
+# ============================
+
+diab_join = diab_city.copy()
+
+diab_join["thana_fixed"] = diab_join["thana"].replace(name_fixes)
+diab_join["join_key_diab"] = diab_join["thana_fixed"].apply(clean_key)
+
+
+# ============================
+# Join Spatial and Diabetes Data
+# ============================
+
+map_dat = bd_ctg.merge(
+    diab_join,
+    how="left",
+    left_on="join_key_gadm",
+    right_on="join_key_diab",
+)
+
+
+# ============================
+# Join Quality Check
+# ============================
+
+missing_thanas = diab_join.loc[
+    ~diab_join["join_key_diab"].isin(map_dat["join_key_gadm"])
+].copy()
+
+if len(missing_thanas) > 0:
+    unmatched = ", ".join(missing_thanas["thana"].unique())
+    print(f"Unmatched thanas detected: {unmatched}")
+
+
+# ============================
+# Classification Setup
+# ============================
+
+vals = map_dat["percent"].dropna()
+
+if len(vals) == 0:
+    raise ValueError("No percentage values available for binning.")
+
+max_percent = vals.max()
+
+breaks = [1, 3, 5, 7, 9, 11, 13, max_percent]
+
+labels = [
+    "1–3%",
+    "3–5%",
+    "5–7%",
+    "7–9%",
+    "9–11%",
+    "11–13%",
+    ">13%",
+]
+
+
+# ============================
+# Apply Classification
+# ============================
+
+map_dat["pct_bin"] = pd.cut(
+    map_dat["percent"],
+    bins=breaks,
+    labels=labels,
+    right=True,
+    include_lowest=True,
+)
+
+map_dat["label_name"] = map_dat["name3_fixed"]
+
+map_dat_plot = map_dat.loc[
+    map_dat["percent"].notna()
+].copy()
+
+map_dat_plot["pct_bin"] = pd.Categorical(
+    map_dat_plot["pct_bin"],
+    categories=labels,
+    ordered=True,
+)
+
+
+# ============================
+# Color Palette: Diabetes Choropleth
+# ============================
+
+red_band = [
+    "#FCBBA1",
+    "#FC9272",
+    "#FB6A4A",
+    "#EF3B2C",
+    "#CB181D",
+    "#A50F15",
+    "#67000D",
+]
+
+palette_bins = sns.color_palette(red_band, n_colors=len(labels)).as_hex()
+
+color_map = dict(zip(labels, palette_bins))
+
+map_dat_plot["fill_color"] = map_dat_plot["pct_bin"].map(color_map)
+
+outline_col = "grey"
+outline_lwd = 0.4
+
+
+# ============================
+# Map Rendering in Quarto/Jupyter
+# ============================
+
+fig = Figure(figsize=(10.5, 10))
+canvas = FigureCanvas(fig)
+
+ax = fig.subplots()
+
+# Reserve blank space on the right side for the legend.
+fig.subplots_adjust(left=0.02, right=0.72, top=0.98, bottom=0.02)
+
+map_dat_plot.plot(
+    ax=ax,
+    color=map_dat_plot["fill_color"],
+    edgecolor=outline_col,
+    linewidth=outline_lwd,
+    zorder=1,
+)
+
+# Add thana labels
+for _, row in map_dat_plot.iterrows():
+    point = row.geometry.representative_point()
+
+    ax.text(
+        point.x,
+        point.y,
+        row["label_name"],
+        fontsize=8,
+        color="#1A1A1A",
+        ha="center",
+        va="center",
+        bbox={
+            "facecolor": "white",
+            "alpha": 0.65,
+            "edgecolor": "none",
+            "boxstyle": "round,pad=0.2",
+        },
+        zorder=5,
+    )
+
+
+# ============================
+# Create Diabetes Legend Outside Map
+# ============================
+
+legend_handles = [
+    Patch(
+        facecolor=color_map[label],
+        edgecolor=outline_col,
+        label=label,
+    )
+    for label in labels
+]
+
+legend = ax.legend(
+    handles=legend_handles,
+    title="Distribution of\nDiabetes Patients (%)",
+    loc="center left",
+    bbox_to_anchor=(1.03, 0.58),
+    frameon=True,
+    fontsize=8,
+    title_fontsize=9,
+    borderaxespad=0.0,
+)
+
+legend.get_frame().set_facecolor("white")
+legend.get_frame().set_alpha(0.95)
+
+
+# ============================
+# Final Map Appearance
+# ============================
+
+ax.set_title("")
+ax.set_axis_off()
+ax.set_aspect("equal")
+
+display(fig)
+```
+
+Figure: Spatial distribution of diabetes patients across selected thanas of Chattogram City Corporation. The choropleth colors represent diabetes patient percentage classes, with darker red indicating higher percentages.
+
+## City Corporation with Age Group Composition
+
+This section extends the diabetes choropleth map by adding miniature pie charts on top of each thana. The base map still shows diabetes percentage classes, while the pie charts show the age-group distribution within each thana.
+
+Each miniature pie chart represents two age groups:
+
+* `<=30 years`
+* `>30 years`
+
+The map therefore combines two layers of information:
+
+1. Background choropleth layer: diabetes patient percentage by thana.
+2. Overlay pie-chart layer: age-group distribution by thana.
+
+The pie charts are placed at representative points inside the thana polygons. The `<=30 years` group is shown in blue, while the `>30 years` group is shown in dark gray. These colors are intentionally distinct from the red choropleth background.
+
+```{python}
+# ============================
+# Load Required Libraries
+# ============================
+
+import os
+import re
+
+import geopandas as gpd
+import pandas as pd
+import seaborn as sns
+
+from dotenv import load_dotenv
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+from matplotlib.patches import Patch, Wedge, Circle
+from IPython.display import display
+
+
+# ============================
+# Load Environment Variables
+# ============================
+
+load_dotenv()
+
+GPKG_PATH = os.getenv("GPKG_PATH")
+
+if GPKG_PATH is None:
+    raise ValueError("GPKG_PATH not found in .env file.")
+
+if not os.path.exists(GPKG_PATH):
+    raise FileNotFoundError(f"GPKG file not found at: {GPKG_PATH}")
+
+
+# ============================
+# Helper Functions
+# ============================
+
+def clean_key(x):
+    """
+    Standardize text for safe joining:
+    lowercase + remove non-letter characters.
+    """
+    if pd.isna(x):
+        return None
+
+    x = str(x).lower()
+    x = re.sub(r"[^a-z]", "", x)
+
+    return x
+
+
+def strip_admin_suffix(x):
+    """
+    Remove common administrative suffixes from place names.
+    """
+    if pd.isna(x):
+        return None
+
+    x = str(x)
+
+    pattern = r"\s+(Sadar Upazila|Sadar|Upazila|Thana|PS)$"
+    x = re.sub(pattern, "", x, flags=re.IGNORECASE)
+    x = x.strip()
+
+    return x
+
+
+def draw_pie(ax, x, y, values, colors, radius, edgecolor="white", linewidth=0.45):
+    """
+    Draw a miniature pie chart at a map coordinate.
+    """
+    total = sum(values)
+
+    if total <= 0:
+        return
+
+    start_angle = 90
+
+    for value, color in zip(values, colors):
+        angle = 360 * value / total
+
+        wedge = Wedge(
+            center=(x, y),
+            r=radius,
+            theta1=start_angle,
+            theta2=start_angle + angle,
+            facecolor=color,
+            edgecolor=edgecolor,
+            linewidth=linewidth,
+            zorder=6,
+        )
+
+        ax.add_patch(wedge)
+        start_angle += angle
+
+    outline = Circle(
+        xy=(x, y),
+        radius=radius,
+        facecolor="none",
+        edgecolor="#333333",
+        linewidth=0.45,
+        zorder=7,
+    )
+
+    ax.add_patch(outline)
+
+
+# ============================
+# Load Spatial Data: GADM Level 3
+# ============================
+
+bd_adm3 = gpd.read_file(GPKG_PATH)
+
+
+# ============================
+# Input Data: Diabetes Percentages by Thana
+# ============================
+
+diab_city = pd.DataFrame(
+    {
+        "thana": [
+            "Pahartali",
+            "Halishahar",
+            "Khulshi",
+            "Chandgaon",
+            "Kotwali",
+            "Double Mooring",
+            "Panchlaish",
+            "Bayejid Bostami",
+            "Bakalia",
+            "Chittagong Port",
+            "Patenga",
+        ],
+        "percent": [
+            24.07,
+            12.82,
+            10.34,
+            9.59,
+            9.19,
+            8.63,
+            7.94,
+            7.80,
+            4.45,
+            3.31,
+            1.86,
+        ],
+    }
+)
+
+
+# ============================
+# Input Data: Age Group Percentages by Thana
+# ============================
+
+age_city = pd.DataFrame(
+    {
+        "thana": [
+            "Bakalia",
+            "Bayejid Bostami",
+            "Chandgaon",
+            "Chittagong Port",
+            "Double Mooring",
+            "Halishahar",
+            "Khulshi",
+            "Kotwali",
+            "Pahartali",
+            "Panchlaish",
+            "Patenga",
+        ],
+        "age_le_30": [
+            9.57,
+            9.60,
+            8.50,
+            8.44,
+            7.74,
+            7.97,
+            10.73,
+            6.71,
+            10.10,
+            6.94,
+            9.88,
+        ],
+        "age_gt_30": [
+            90.43,
+            90.40,
+            91.50,
+            91.56,
+            92.26,
+            92.03,
+            89.27,
+            93.29,
+            89.90,
+            93.06,
+            90.12,
+        ],
+    }
+)
+
+
+# ============================
+# Manual Name Harmonization
+# ============================
+
+name_fixes = {
+    "Pahartali": "Pahartali",
+    "Halishahar": "Halishahar",
+    "Khulshi": "Khulshi",
+    "Chandgaon": "Chandgaon",
+    "Kotwali": "Kotwali",
+    "Double Mooring": "Double Mooring",
+    "Panchlaish": "Panchlaish",
+    "Bayejid Bostami": "Bayejid Bostami",
+    "Bayezid": "Bayejid Bostami",
+    "Bayezid Bostami": "Bayejid Bostami",
+    "Chittagong Port": "Chittagong Port",
+    "Bakalia": "Bakalia",
+    "Patenga": "Patenga",
+}
+
+
+# ============================
+# Prepare Spatial Dataset
+# ============================
+
+bd_ctg = bd_adm3.loc[
+    bd_adm3["NAME_2"].isin(["Chattogram", "Chittagong"])
+].copy()
+
+bd_ctg["thana_gadm"] = bd_ctg["NAME_3"]
+bd_ctg["name3_simple"] = bd_ctg["NAME_3"].apply(strip_admin_suffix)
+bd_ctg["name3_fixed"] = bd_ctg["name3_simple"].replace(name_fixes)
+bd_ctg["join_key_gadm"] = bd_ctg["name3_fixed"].apply(clean_key)
+
+
+# ============================
+# Prepare Diabetes Dataset
+# ============================
+
+diab_join = diab_city.copy()
+
+diab_join["thana_fixed"] = diab_join["thana"].replace(name_fixes)
+diab_join["join_key_diab"] = diab_join["thana_fixed"].apply(clean_key)
+
+
+# ============================
+# Prepare Age Group Dataset
+# ============================
+
+age_join = age_city.copy()
+
+age_join["thana_fixed"] = age_join["thana"].replace(name_fixes)
+age_join["join_key_age"] = age_join["thana_fixed"].apply(clean_key)
+
+
+# ============================
+# Join Spatial, Diabetes, and Age Group Data
+# ============================
+
+map_dat = bd_ctg.merge(
+    diab_join,
+    how="left",
+    left_on="join_key_gadm",
+    right_on="join_key_diab",
+)
+
+map_dat = map_dat.merge(
+    age_join[["join_key_age", "age_le_30", "age_gt_30"]],
+    how="left",
+    left_on="join_key_gadm",
+    right_on="join_key_age",
+)
+
+
+# ============================
+# Join Quality Checks
+# ============================
+
+missing_diabetes_thanas = diab_join.loc[
+    ~diab_join["join_key_diab"].isin(map_dat["join_key_gadm"])
+].copy()
+
+if len(missing_diabetes_thanas) > 0:
+    unmatched = ", ".join(missing_diabetes_thanas["thana"].unique())
+    print(f"Unmatched diabetes thanas detected: {unmatched}")
+
+
+missing_age_thanas = age_join.loc[
+    ~age_join["join_key_age"].isin(map_dat["join_key_gadm"])
+].copy()
+
+if len(missing_age_thanas) > 0:
+    unmatched = ", ".join(missing_age_thanas["thana"].unique())
+    print(f"Unmatched age-group thanas detected: {unmatched}")
+
+
+# ============================
+# Classification Setup
+# ============================
+
+vals = map_dat["percent"].dropna()
+
+if len(vals) == 0:
+    raise ValueError("No percentage values available for binning.")
+
+max_percent = vals.max()
+
+breaks = [1, 3, 5, 7, 9, 11, 13, max_percent]
+
+labels = [
+    "1–3%",
+    "3–5%",
+    "5–7%",
+    "7–9%",
+    "9–11%",
+    "11–13%",
+    ">13%",
+]
+
+
+# ============================
+# Apply Diabetes Classification
+# ============================
+
+map_dat["pct_bin"] = pd.cut(
+    map_dat["percent"],
+    bins=breaks,
+    labels=labels,
+    right=True,
+    include_lowest=True,
+)
+
+map_dat["label_name"] = map_dat["name3_fixed"]
+
+map_dat_plot = map_dat.loc[
+    map_dat["percent"].notna()
+].copy()
+
+map_dat_plot["pct_bin"] = pd.Categorical(
+    map_dat_plot["pct_bin"],
+    categories=labels,
+    ordered=True,
+)
+
+
+# ============================
+# Color Palette: Diabetes Choropleth
+# ============================
+
+red_band = [
+    "#FCBBA1",
+    "#FC9272",
+    "#FB6A4A",
+    "#EF3B2C",
+    "#CB181D",
+    "#A50F15",
+    "#67000D",
+]
+
+palette_bins = sns.color_palette(red_band, n_colors=len(labels)).as_hex()
+
+color_map = dict(zip(labels, palette_bins))
+
+map_dat_plot["fill_color"] = map_dat_plot["pct_bin"].map(color_map)
+
+outline_col = "grey"
+outline_lwd = 0.4
+
+
+# ============================
+# Color Palette: Age Group Pie Charts
+# ============================
+
+age_labels = ["<=30", ">30"]
+
+age_colors = sns.color_palette(
+    ["#3182BD", "#4D4D4D"],
+    n_colors=len(age_labels),
+).as_hex()
+
+age_color_map = dict(zip(age_labels, age_colors))
+
+
+# ============================
+# Map Rendering in Quarto/Jupyter
+# ============================
+
+fig = Figure(figsize=(10.5, 10))
+canvas = FigureCanvas(fig)
+
+ax = fig.subplots()
+
+# Reserve blank space on the right side for both legends.
+fig.subplots_adjust(left=0.02, right=0.72, top=0.98, bottom=0.02)
+
+map_dat_plot.plot(
+    ax=ax,
+    color=map_dat_plot["fill_color"],
+    edgecolor=outline_col,
+    linewidth=outline_lwd,
+    zorder=1,
+)
+
+
+# ============================
+# Determine Pie Chart Radius
+# ============================
+
+minx, miny, maxx, maxy = map_dat_plot.total_bounds
+
+map_width = maxx - minx
+map_height = maxy - miny
+
+pie_radius = min(map_width, map_height) * 0.028
+
+
+# ============================
+# Draw Miniature Pie Charts
+# ============================
+
+for _, row in map_dat_plot.iterrows():
+    if pd.isna(row["age_le_30"]) or pd.isna(row["age_gt_30"]):
+        continue
+
+    point = row.geometry.representative_point()
+
+    draw_pie(
+        ax=ax,
+        x=point.x,
+        y=point.y,
+        values=[row["age_le_30"], row["age_gt_30"]],
+        colors=[age_color_map["<=30"], age_color_map[">30"]],
+        radius=pie_radius,
+    )
+
+
+# ============================
+# Add Thana Labels
+# ============================
+
+for _, row in map_dat_plot.iterrows():
+    point = row.geometry.representative_point()
+
+    ax.text(
+        point.x,
+        point.y - pie_radius * 1.55,
+        row["label_name"],
+        fontsize=7.2,
+        color="#1A1A1A",
+        ha="center",
+        va="top",
+        bbox={
+            "facecolor": "white",
+            "alpha": 0.65,
+            "edgecolor": "none",
+            "boxstyle": "round,pad=0.18",
+        },
+        zorder=8,
+    )
+
+
+# ============================
+# Create Diabetes Legend Outside Map
+# ============================
+
+diabetes_legend_handles = [
+    Patch(
+        facecolor=color_map[label],
+        edgecolor=outline_col,
+        label=label,
+    )
+    for label in labels
+]
+
+diabetes_legend = ax.legend(
+    handles=diabetes_legend_handles,
+    title="Distribution of\nDiabetes Patients (%)",
+    loc="center left",
+    bbox_to_anchor=(0.9, 0.58),
+    frameon=True,
+    fontsize=8,
+    title_fontsize=9,
+    borderaxespad=0.0,
+)
+
+diabetes_legend.get_frame().set_facecolor("white")
+diabetes_legend.get_frame().set_alpha(0.95)
+
+ax.add_artist(diabetes_legend)
+
+
+# ============================
+# Create Age Group Pie Legend Outside Map
+# ============================
+
+age_legend_handles = [
+    Patch(
+        facecolor=age_color_map["<=30"],
+        edgecolor="#333333",
+        label="<=30 years",
+    ),
+    Patch(
+        facecolor=age_color_map[">30"],
+        edgecolor="#333333",
+        label=">30 years",
+    ),
+]
+
+age_legend = ax.legend(
+    handles=age_legend_handles,
+    title="Age Group",
+    loc="center left",
+    bbox_to_anchor=(1.03, 0.30),
+    frameon=True,
+    fontsize=8,
+    title_fontsize=9,
+    borderaxespad=0.0,
+)
+
+age_legend.get_frame().set_facecolor("white")
+age_legend.get_frame().set_alpha(0.95)
+
+
+# ============================
+# Final Map Appearance
+# ============================
+
+ax.set_title("")
+ax.set_axis_off()
+ax.set_aspect("equal")
+
+display(fig)
+```
+
+Figure: Diabetes patient distribution and age-group composition across selected thanas of Chattogram City Corporation. The red choropleth background shows diabetes patient percentage classes, while miniature pie charts show the proportion of patients aged `<=30 years` and `>30 years` in each thana.
+
+
+

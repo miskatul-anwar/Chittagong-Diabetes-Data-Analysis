@@ -1,0 +1,983 @@
+{
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "---\n",
+        "title: \"Thana-Level Population Distribution and Age Group Analysis\"\n",
+        "format:\n",
+        "  html:\n",
+        "    toc: true\n",
+        "    toc-depth: 3\n",
+        "    code-fold: false\n",
+        "    code-tools: true\n",
+        "execute:\n",
+        "  warning: false\n",
+        "  message: false\n",
+        "---\n",
+        "\n",
+        "## Overview\n",
+        "\n",
+        "This document presents a reproducible analysis workflow for examining population records by **Thana**, **City Corporation classification**, and **Age Group**. The experiment focuses on cleaning location labels, separating records into areas inside and outside the City Corporation, summarizing population counts, and calculating percentage distributions.\n",
+        "\n",
+        "The analysis uses a cleaned Excel dataset loaded from an environment variable. The workflow is designed to support transparent reporting, verification, and future replication without hard-coding the input file path.\n",
+        "\n",
+        "## Objectives\n",
+        "\n",
+        "The main objectives of this experiment are to:\n",
+        "\n",
+        "- Load the cleaned dataset from a configured environment path.\n",
+        "- Remove records from Thanas that are outside the intended analysis scope.\n",
+        "- Standardize inconsistent or alternative Thana names through mapping.\n",
+        "- Classify Thanas into City Corporation and non-City Corporation groups.\n",
+        "- Create an age-based grouping using a threshold of 30 years.\n",
+        "- Produce total population counts and Thana-wise summaries.\n",
+        "- Calculate percentage distributions for City Corporation, outside City Corporation, and overall dataset shares.\n",
+        "- Run a verification check to confirm whether all records are accounted for in the final grouping.\n",
+        "\n",
+        "## Data Loading and Preparation"
+      ],
+      "id": "a159bdc0"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "import os\n",
+        "import pandas as pd\n",
+        "import numpy as np\n",
+        "from dotenv import load_dotenv\n",
+        "load_dotenv()"
+      ],
+      "id": "559be299",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "# Show all rows\n",
+        "pd.set_option('display.max_rows', None)\n",
+        "\n",
+        "# Show all columns\n",
+        "pd.set_option('display.max_columns', None)\n",
+        "\n",
+        "# Show full cell content (stops long text from getting cut off)\n",
+        "pd.set_option('display.max_colwidth', None)"
+      ],
+      "id": "dfd084f1",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "load_dotenv()\n",
+        "\n",
+        "dataset_path = os.getenv(\"CLEANED_DATASET_PATH\")\n",
+        "if dataset_path is None:\n",
+        "    raise ValueError(\"CLEANED_DATASET_PATH is not set in the environment.\")\n",
+        "\n",
+        "df = pd.read_excel(dataset_path)\n",
+        "df.head()"
+      ],
+      "id": "0d2e4a76",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "total_population = len(df)\n",
+        "total_population_in_cc = df.groupby(\"City Corporation\").count()['ID']['Chattogram City Corporation']"
+      ],
+      "id": "fff11b87",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "df.groupby(\"Thana\")[\"ID\"].count().reset_index(name=\"Total_IDs\")"
+      ],
+      "id": "839e7bcb",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "df[\"Thana_clean\"] = (\n",
+        "    df[\"Thana\"]\n",
+        "    .str.strip()\n",
+        "    .str.lower()\n",
+        "    .str.replace(r\"\\s*thana$\", \"\", regex=True)\n",
+        ")"
+      ],
+      "id": "bd68f59f",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "mapping = {\n",
+        "    # Fatikchhari\n",
+        "    \"fatikchari\": \"Fatikchhari\",\n",
+        "    \"fatickchori\": \"Fatikchhari\",\n",
+        "    \"fatikchhari\": \"Fatikchhari\",\n",
+        "\n",
+        "    # Banshkhali\n",
+        "    \"bashkhali\": \"Banshkhali\",\n",
+        "    \"banshkhali\": \"Banshkhali\",\n",
+        "\n",
+        "    # Bakalia\n",
+        "    \"bakolia\": \"Bakalia\",\n",
+        "    \"bakalia\": \"Bakalia\",\n",
+        "\n",
+        "    # Bayazid Bostami\n",
+        "    \"baizid\": \"Bayazid Bostami\",\n",
+        "    \"bayazid\": \"Bayazid Bostami\",\n",
+        "    \"baizid bostami\": \"Bayazid Bostami\",\n",
+        "    \"bayezid bostami\": \"Bayazid Bostami\",\n",
+        "    \"bayazid bostami\": \"Bayazid Bostami\",\n",
+        "\n",
+        "    # Double Mooring\n",
+        "    \"doublemooring\": \"Double Mooring\",\n",
+        "    \"double mooring\": \"Double Mooring\",\n",
+        "\n",
+        "    # Chawk Bazar\n",
+        "    \"chowkbazar\": \"Chawk Bazar\",\n",
+        "    \"chawkbazar\": \"Chawk Bazar\",\n",
+        "\n",
+        "    # Pahartali\n",
+        "    \"pahartoli\": \"Pahartali\",\n",
+        "    \"pahartali\": \"Pahartali\",\n",
+        "\n",
+        "    # Sitakunda\n",
+        "    \"sitakundu\": \"Sitakunda\",\n",
+        "    \"sitakunda\": \"Sitakunda\",\n",
+        "\n",
+        "    # Chakaria\n",
+        "    \"chokoria\": \"Chakaria\",\n",
+        "    \"chakaria\": \"Chakaria\",\n",
+        "\n",
+        "    # Mirsharai\n",
+        "    \"mirsarai\": \"Mirsharai\",\n",
+        "    \"mirsharai\": \"Mirsharai\",\n",
+        "\n",
+        "    # Karnaphuli\n",
+        "    \"karnafuly\": \"Karnaphuli\",\n",
+        "    \"karnafuli\": \"Karnaphuli\",\n",
+        "    \"karnaphuli\": \"Karnaphuli\",\n",
+        "\n",
+        "    # Halishahar\n",
+        "    \"halisahar\": \"Halishahar\",\n",
+        "    \"halishahar\": \"Halishahar\",\n",
+        "\n",
+        "    # Jorargonj\n",
+        "    \"jorarganj\": \"Jorargonj\",\n",
+        "    \"zorargonj\": \"Jorargonj\",\n",
+        "    \"jorargonj\": \"Jorargonj\",\n",
+        "\n",
+        "    # Akbar Shah\n",
+        "    \"akbarshah\": \"Akbar Shah\",\n",
+        "    \"akbar shah\": \"Akbar Shah\",\n",
+        "\n",
+        "    # Patenga\n",
+        "    \"potenga\": \"Patenga\",\n",
+        "    \"patenga\": \"Patenga\",\n",
+        "\n",
+        "    # EPZ\n",
+        "    \"epz\": \"EPZ\",\n",
+        "\n",
+        "    # Khulshi\n",
+        "    \"khulshi\": \"Khulshi\",\n",
+        "\n",
+        "    # Kotwali\n",
+        "    \"kotwali\": \"Kotwali\",\n",
+        "\n",
+        "    # Panchlaish\n",
+        "    \"panchlaish\": \"Panchlaish\",\n",
+        "\n",
+        "    # Chandgaon\n",
+        "    \"chandgaon\": \"Chandgaon\",\n",
+        "\n",
+        "    # Bandor / Bandar\n",
+        "    \"bandar\": \"Bandar\",\n",
+        "\n",
+        "    # Anwara\n",
+        "    \"anowara\": \"Anwara\",\n",
+        "    \"anwara\": \"Anwara\",\n",
+        "\n",
+        "    # Sitakunda duplicate handled already\n",
+        "    # Raozan\n",
+        "    \"raozan\": \"Raozan\",\n",
+        "\n",
+        "    # Rangunia\n",
+        "    \"rangunia\": \"Rangunia\",\n",
+        "\n",
+        "    # Boalkhali\n",
+        "    \"boalkhali\": \"Boalkhali\",\n",
+        "\n",
+        "    # Sandwip\n",
+        "    \"sandwip\": \"Sandwip\",\n",
+        "\n",
+        "    # Lohagara\n",
+        "    \"lohagara\": \"Lohagara\",\n",
+        "\n",
+        "    # Hathazari\n",
+        "    \"hathazari\": \"Hathazari\",\n",
+        "\n",
+        "    # Cox's Bazar Sadar\n",
+        "    \"cox's bazar sadar\": \"Cox's Bazar Sadar\",\n",
+        "\n",
+        "    # Khagrachhari Sadar\n",
+        "    \"khagrachari sadar\": \"Khagrachhari Sadar\",\n",
+        "    \"khagrachhari sadar\": \"Khagrachhari Sadar\",\n",
+        "}"
+      ],
+      "id": "1758cf61",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "df[\"Thana_normalized\"] = df[\"Thana_clean\"].map(mapping)"
+      ],
+      "id": "ea5e3451",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "df[\"Thana_normalized\"] = df[\"Thana_normalized\"].fillna(\n",
+        "    df[\"Thana_clean\"].str.title()\n",
+        ")"
+      ],
+      "id": "00f07c41",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "# overwrite original column with normalized values\n",
+        "df[\"Thana\"] = df[\"Thana_normalized\"]\n",
+        "\n",
+        "# drop helper columns\n",
+        "df = df.drop(columns=[\"Thana_clean\", \"Thana_normalized\"])"
+      ],
+      "id": "db6bb3fb",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "df.groupby(\"Thana\")[\"ID\"].count().reset_index(name=\"Total_IDs\")"
+      ],
+      "id": "ce31d910",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "print(\"Total Population:\", total_population)\n",
+        "print(\"Population in CC:\", total_population_in_cc)\n",
+        "print(\"Total Population outside CC:\", total_population-total_population_in_cc)"
+      ],
+      "id": "e068e56b",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "df.to_excel(dataset_path)"
+      ],
+      "id": "e900d947",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Display Configuration\n",
+        "\n",
+        "The following display settings are configured to make exploratory outputs easier to inspect. These options ensure that all rows, columns, and long cell values are visible when printed or displayed in the notebook output."
+      ],
+      "id": "64ab0275"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "# Show all rows\n",
+        "pd.set_option('display.max_rows', None)\n",
+        "\n",
+        "# Show all columns\n",
+        "pd.set_option('display.max_columns', None)\n",
+        "\n",
+        "# Show full cell content (stops long text from getting cut off)\n",
+        "pd.set_option('display.max_colwidth', None)"
+      ],
+      "id": "52609606",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Initial Data Loading and Scope Filtering\n",
+        "\n",
+        "The cleaned dataset is loaded from the Excel file specified in the environment variable. A predefined list of Thanas is then excluded from the analysis. These excluded values represent locations that are not part of the intended analytical scope for this experiment.\n",
+        "\n",
+        "Records with missing `Thana` values are also removed because the location field is essential for all subsequent grouping, classification, and percentage calculations."
+      ],
+      "id": "f63a7f4a"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "path = os.getenv(\"CLEANED_DATASET_PATH\")\n",
+        "if path is None:\n",
+        "    raise ValueError(\"CLEANED_DATASET_PATH not set\")\n",
+        "\n",
+        "df = pd.read_excel(path)\n",
+        "\n",
+        "values = [\"Senbag\", \"Shahjadpur\", \"Barkal\", \"Chandina\", \"Chatkhil\",\n",
+        "          \"Chouddagram\", \"Companyganj\", \"Cox's Bazar Sadar\",\n",
+        "          \"Cumilla Adarsha Sadar\", \"Jorargonj\", \"Kawkhali\",\n",
+        "          \"Khagrachhari Sadar\", \"Kobirhat\", \"Manikchhari\",\n",
+        "          \"Matiranga\", \"Moheshkhali\", \"Muradnagar\", \"Nabinagar\",\n",
+        "          \"Noakhali Sadar\", \"Ramgarh\", \"Rangamati Sadar\",\n",
+        "          \"Shahrasti\", \"Sonagazi\", \"Ukhia\", \"Hatia\", \"Chakaria\"]\n",
+        "\n",
+        "df = df.loc[~df['Thana'].isin(values)]\n",
+        "\n",
+        "df.dropna(subset=[\"Thana\"], inplace=True)"
+      ],
+      "id": "65f2babf",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## City Corporation and Outside City Corporation Classification\n",
+        "\n",
+        "Two reference lists are created to classify Thanas into two analytical groups:\n",
+        "\n",
+        "- **Inside City Corporation**, representing Thanas within the City Corporation area.\n",
+        "- **Outside City Corporation**, representing Thanas outside the City Corporation but still within the analysis boundary.\n",
+        "\n",
+        "These lists are later used to split the dataset and calculate separate summaries for each group."
+      ],
+      "id": "2b8698f5"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "thanas_outside_cc = [\"Mirsharai\", \"Fatikchhari\", \"Raozan\", \"Sitakunda\", \"Hathazari\", \"Boalkhali\", \"Patiya\", \"Chandanaish\", \"Sandwip\", \"Rangunia\", \"Anowara\", \"Satkania\", \"Banshkhali\", \"Lohagara\"]\n",
+        "thanas_in_cc = [\"Bayejid Bostami\", \"Chandgaon\", \"Bakalia\", \"Kotwali\", \"Double Mooring\", \"Patenga\", \"Chittagong Port\", \"Halishahar\", \"Pahartali\", \"Khulshi\", \"Panchlaish\"]"
+      ],
+      "id": "721af1e5",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Standardizing Thana Names\n",
+        "\n",
+        "Some records contain alternative spellings, informal names, administrative variants, or localized labels for the same Thana. A mapping dictionary is used to standardize these names into the classification labels used in the analysis.\n",
+        "\n",
+        "This step is important because inconsistent naming can split the same geographic area into multiple categories and distort count-based summaries."
+      ],
+      "id": "97e45cd7"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "mapping = {\n",
+        "    \"Firingibazar\": \"Kotwali\",\n",
+        "    \"EPZ\": \"Chittagong Port\",\n",
+        "    \"Lalkhan Bazar\": \"Khulshi\",\n",
+        "    \"Patharghata\": \"Kotwali\",\n",
+        "    \"Kaptai\": \"Rangunia\",\n",
+        "    \"Fouzdarhat\": \"Sitakunda\",\n",
+        "    \"New Mooring\": \"Chittagong Port\",\n",
+        "    \"Agrabad\": \"Double Mooring\",\n",
+        "    \"Karnaphuli\": \"Patiya\",\n",
+        "    \"Bhujpur\": \"Fatikchhari\",\n",
+        "    \"Chawk Bazar\": \"Panchlaish\",\n",
+        "    \"Bandar\": \"Chittagong Port\",\n",
+        "    \"Anwara\":\"Anowara\",\n",
+        "    \"Sadarghat\": \"Patiya\",\n",
+        "    \"Akbar Shah\":\"Pahartali\",\n",
+        "    \"Bayazid Bostami\":\"Bayejid Bostami\",\n",
+        "    \"Bandarban Sadar\":\"Satkania\"\n",
+        "}"
+      ],
+      "id": "c0a6995e",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "The mapping is applied to the `Thana` column. Any value not found in the mapping dictionary is retained as its original value."
+      ],
+      "id": "428f62b2"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "df[\"Thana\"] = df[\"Thana\"].map(mapping).fillna(df[\"Thana\"])"
+      ],
+      "id": "1bae9913",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Reference List Size Check\n",
+        "\n",
+        "The number of Thanas in each reference list is printed to confirm the expected coverage of the City Corporation and outside City Corporation groups."
+      ],
+      "id": "d7b52854"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "print(thanas_in_cc.__len__())\n",
+        "print(thanas_outside_cc.__len__())"
+      ],
+      "id": "8499b49c",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Unique Thana Inspection\n",
+        "\n",
+        "This step prints all unique Thana names available in the filtered and standardized dataset. It helps identify whether any unexpected, unmapped, misspelled, or out-of-scope Thana names remain after cleaning."
+      ],
+      "id": "5c7f6167"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "thanas = set(df[\"Thana\"].tolist())\n",
+        "\n",
+        "for thana in thanas:\n",
+        "    print(thana)\n",
+        "\n",
+        "print(f\"\\nTotal {thanas.__len__()} thanas\")"
+      ],
+      "id": "4497fa12",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Age Group Creation\n",
+        "\n",
+        "A new categorical variable, `Age Group`, is created using the following rule:\n",
+        "\n",
+        "- `<=30` for records where age is less than or equal to 30.\n",
+        "- `>30` for records where age is greater than 30.\n",
+        "\n",
+        "This age grouping supports comparison of younger and older population segments across Thanas and City Corporation classifications."
+      ],
+      "id": "ffac78a3"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "df[\"Age Group\"] = np.where(df[\"Age\"] <= 30, \"<=30\", \">30\")\n",
+        "\n",
+        "df[\"Age Group\"].value_counts()\n",
+        "\n",
+        "df.groupby([\"Age Group\", \"Thana\"]).size()"
+      ],
+      "id": "c7d6251d",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Total Population Count\n",
+        "\n",
+        "The total number of records remaining after filtering and standardization is calculated. This value acts as the denominator for global percentage calculations later in the workflow."
+      ],
+      "id": "431459e8"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "total_records = len(df)\n",
+        "print(\"Total Population\",total_records)"
+      ],
+      "id": "ed9f2070",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Creating City Corporation and Outside City Corporation Subsets\n",
+        "\n",
+        "The dataset is divided into two filtered DataFrames:\n",
+        "\n",
+        "- `df_cc`: records belonging to Thanas inside the City Corporation.\n",
+        "- `df_outside`: records belonging to Thanas outside the City Corporation.\n",
+        "\n",
+        "Creating these subsets simplifies downstream calculations and keeps the analysis more readable."
+      ],
+      "id": "51aeb53f"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "# Pre-filter DataFrames for cleaner execution\n",
+        "df_cc = df[df[\"Thana\"].isin(thanas_in_cc)]\n",
+        "df_outside = df[df[\"Thana\"].isin(thanas_outside_cc)]"
+      ],
+      "id": "5b4855ae",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Record Counts by Classification and Thana\n",
+        "\n",
+        "This section calculates total records inside the City Corporation, total records outside the City Corporation, and individual Thana-level counts for both groups."
+      ],
+      "id": "39e46b0f"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "# Total records in City Corporation\n",
+        "total_cc_records = len(df_cc)\n",
+        "\n",
+        "# Total records for each individual thana in City Corporation\n",
+        "thana_counts_in_cc = df_cc[\"Thana\"].value_counts()\n",
+        "\n",
+        "# Total records Outside City Corporation\n",
+        "total_outside_cc_records = len(df_outside)\n",
+        "\n",
+        "# Total records for each individual thana outside City Corporation\n",
+        "thana_counts_outside_cc = df_outside[\"Thana\"].value_counts()"
+      ],
+      "id": "42e8fa68",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Age Group Counts by Classification and Thana\n",
+        "\n",
+        "The following grouped summaries are calculated:\n",
+        "\n",
+        "- Total City Corporation records by age group.\n",
+        "- City Corporation Thana-level records by age group.\n",
+        "- Outside City Corporation Thana-level records by age group.\n",
+        "- Total outside City Corporation records by age group.\n",
+        "\n",
+        "These grouped outputs support both aggregate and location-specific demographic interpretation."
+      ],
+      "id": "cd020083"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "# Total records in City Corporation grouped by Age Group\n",
+        "cc_records_by_age = df_cc.groupby(\"Age Group\").size()\n",
+        "\n",
+        "# Total records for each thana in CC grouped by Age Group\n",
+        "cc_thana_records_by_age = df_cc.groupby([\"Thana\", \"Age Group\"]).size()\n",
+        "\n",
+        "# Total records for each thana outside CC grouped by Age Group\n",
+        "outside_thana_records_by_age = df_outside.groupby([\"Thana\", \"Age Group\"]).size()\n",
+        "\n",
+        "# Total records outside CC grouped by Age Group\n",
+        "outside_cc_records_by_age = df_outside.groupby(\"Age Group\").size()"
+      ],
+      "id": "6096a5ba",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## City Corporation Summary\n",
+        "\n",
+        "This section prints the total number of records inside the City Corporation and the distribution of those records by age group."
+      ],
+      "id": "c58c6737"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "# Total records in CC\n",
+        "total_cc = len(df[df[\"Thana\"].isin(thanas_in_cc)])\n",
+        "print(f\"Total records in CC: {total_cc}\")\n",
+        "\n",
+        "# Total records in CC by Age Group\n",
+        "cc_age_counts = df[df[\"Thana\"].isin(thanas_in_cc)][\"Age Group\"].value_counts()\n",
+        "print(\"\\nTotal records in CC for each age group:\")\n",
+        "print(cc_age_counts.to_string())"
+      ],
+      "id": "ad51721f",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Outside City Corporation Summary\n",
+        "\n",
+        "This section reports record counts for each Thana outside the City Corporation. It also creates a Thana-by-age-group table, where each row represents a Thana and each column represents an age group."
+      ],
+      "id": "c4179b5f"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "# -------------------------------------------------------------\n",
+        "# 1. Total records outside CC for each Thana\n",
+        "# -------------------------------------------------------------\n",
+        "print(\"     TOTAL RECORDS OUTSIDE CC FOR EACH THANA      \")\n",
+        "print(thana_counts_outside_cc.to_string())\n",
+        "\n",
+        "print(\"\\n\")\n",
+        "\n",
+        "# -------------------------------------------------------------\n",
+        "# 2. Total records outside CC for each Thana by Age Group\n",
+        "# -------------------------------------------------------------\n",
+        "\n",
+        "print(\"    RECORDS OUTSIDE CC BY THANA AND AGE GROUP    \")\n",
+        "# .unstack() moves the 'Age Group' index level into tidy columns\n",
+        "thana_age_table = outside_thana_records_by_age.unstack(fill_value=0)\n",
+        "print(thana_age_table.to_string())"
+      ],
+      "id": "280d070d",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## City Corporation Percentage Breakdown\n",
+        "\n",
+        "This section calculates the share of City Corporation records relative to the full dataset. It also calculates the age group distribution within the City Corporation subset."
+      ],
+      "id": "603eb0fe"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "# Calculate the total records across the entire dataset\n",
+        "total_dataset_records = len(df)\n",
+        "\n",
+        "print(\"              PERCENTAGE BREAKDOWNS               \")\n",
+        "\n",
+        "# 1. Total percentage in CC based on total number of records\n",
+        "if total_dataset_records > 0:\n",
+        "    cc_percentage = (total_cc_records / total_dataset_records) * 100\n",
+        "    print(f\"Total records in CC: {cc_percentage:.2f}% of the entire dataset\")\n",
+        "else:\n",
+        "    print(\"Total records in CC: 0.00% (Dataset is empty)\")\n",
+        "\n",
+        "print(\"-\" * 50)\n",
+        "\n",
+        "# 2. Percentage of each age group based on total records in CC\n",
+        "print(\"Percentage of each age group within CC:\")\n",
+        "if total_cc_records > 0:\n",
+        "    cc_age_percentage = (cc_records_by_age / total_cc_records) * 100\n",
+        "    for age_group, percentage in cc_age_percentage.items():\n",
+        "        print(f\"  * Age Group {age_group}: {percentage:.2f}%\")\n",
+        "else:\n",
+        "    print(\"  * No records available in CC to calculate age percentages.\")"
+      ],
+      "id": "2765aa9b",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Age Group Percentages Within City Corporation Thanas\n",
+        "\n",
+        "This section calculates the internal age distribution for each City Corporation Thana. Each row is normalized by its own total so that the percentages show the age group composition within that specific Thana."
+      ],
+      "id": "c94987c6"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "print(\"   PERCENTAGE OF AGE GROUPS IN EACH THANA (CC)    \")\n",
+        "\n",
+        "# 1. Pivot the counts into a table (Thanas as rows, Age Groups as columns)\n",
+        "cc_thana_age_table = cc_thana_records_by_age.unstack(fill_value=0)\n",
+        "\n",
+        "# 2. Divide each row by its total sum to get proportions, then multiply by 100\n",
+        "cc_thana_age_pct = cc_thana_age_table.div(cc_thana_age_table.sum(axis=1), axis=0) * 100\n",
+        "\n",
+        "# 3. Print the formatted result rounded to 2 decimal places\n",
+        "print(cc_thana_age_pct.round(2).to_string())"
+      ],
+      "id": "8800ca94",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Outside City Corporation Percentage Breakdown\n",
+        "\n",
+        "This section reports two types of Thana-level percentage calculations for areas outside the City Corporation:\n",
+        "\n",
+        "- Percentage based on the total number of records outside the City Corporation.\n",
+        "- Percentage based on the total population of the entire dataset.\n",
+        "\n",
+        "It then calculates age group percentages within each outside-City-Corporation Thana."
+      ],
+      "id": "21ee5778"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "print(\"     THANA RECORD PERCENTAGES (OUTSIDE CC)        \")\n",
+        "\n",
+        "\n",
+        "if total_outside_cc_records > 0:\n",
+        "    # Option A: Based on total records OUTSIDE CC\n",
+        "    thana_pct_outside_total = (thana_counts_outside_cc / total_outside_cc_records) * 100\n",
+        "    print(\"A. Percentage based on total records OUTSIDE CC:\")\n",
+        "    print(thana_pct_outside_total.round(2).to_string())\n",
+        "    \n",
+        "    print(\"-\" * 50)\n",
+        "    \n",
+        "    # Option B: Based on the ENTIRE dataset's total records\n",
+        "    thana_pct_global_total = (thana_counts_outside_cc / total_dataset_records) * 100\n",
+        "    print(\"B. Percentage based on the ENTIRE dataset population:\")\n",
+        "    print(thana_pct_global_total.round(2).to_string())\n",
+        "else:\n",
+        "    print(\"No records found outside CC.\")\n",
+        "\n",
+        "print(\"   PERCENTAGE OF AGE GROUPS IN EACH THANA (OUTSIDE)\")\n",
+        "\n",
+        "\n",
+        "# Pivot, divide across rows (axis=0) to get internal distributions, and multiply by 100\n",
+        "outside_thana_age_table = outside_thana_records_by_age.unstack(fill_value=0)\n",
+        "\n",
+        "if not outside_thana_age_table.empty:\n",
+        "    outside_thana_age_pct = outside_thana_age_table.div(outside_thana_age_table.sum(axis=1), axis=0) * 100\n",
+        "    print(outside_thana_age_pct.round(2).to_string())\n",
+        "else:\n",
+        "    print(\"No age group records found outside CC.\")"
+      ],
+      "id": "0b1e1d9e",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Inside City Corporation Thana Percentage Breakdown\n",
+        "\n",
+        "This section reports two types of percentage calculations for Thanas inside the City Corporation:\n",
+        "\n",
+        "- Percentage based on total records inside the City Corporation.\n",
+        "- Percentage based on total records in the full dataset.\n",
+        "\n",
+        "These outputs help distinguish between local distribution within the City Corporation and global contribution to the overall dataset."
+      ],
+      "id": "d593c3e6"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "print(\"      THANA RECORD PERCENTAGES (INSIDE CC)        \")\n",
+        "\n",
+        "\n",
+        "if total_cc_records > 0:\n",
+        "    # Option A: Based on total records INSIDE CC\n",
+        "    thana_pct_cc_total = (thana_counts_in_cc / total_cc_records) * 100\n",
+        "    print(\"A. Percentage based on total records INSIDE CC:\")\n",
+        "    print(thana_pct_cc_total.round(2).to_string())\n",
+        "    \n",
+        "    print(\"-\" * 50)\n",
+        "    \n",
+        "    # Option B: Based on the ENTIRE dataset's total records\n",
+        "    thana_pct_global_total = (thana_counts_in_cc / total_dataset_records) * 100\n",
+        "    print(\"B. Percentage based on the ENTIRE dataset population:\")\n",
+        "    print(thana_pct_global_total.round(2).to_string())\n",
+        "else:\n",
+        "    print(\"No records found inside CC.\")"
+      ],
+      "id": "5d3fdae9",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Global Population Share and Verification\n",
+        "\n",
+        "The final section calculates the City Corporation share of the total dataset and the individual outside-City-Corporation Thana shares. These percentages are then summed to verify whether the classification accounts for the entire filtered dataset.\n",
+        "\n",
+        "If the combined percentage does not equal 100%, the output warns that some records may still contain missing, unmapped, or unclassified Thana values."
+      ],
+      "id": "e8a05044"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "# Ensure we have the global total\n",
+        "total_population = len(df)\n",
+        "\n",
+        "print(\"       GLOBAL POPULATION SHARE BREAKDOWN          \")\n",
+        "\n",
+        "\n",
+        "# 1. Percentage of records in CC based on total population\n",
+        "cc_pct_global = (len(df[df[\"Thana\"].isin(thanas_in_cc)]) / total_population) * 100\n",
+        "print(f\"Total City Corporation (CC) Share: {cc_pct_global:.2f}%\\n\")\n",
+        "\n",
+        "print(\"--------------------------------------------------\")\n",
+        "print(\"Individual Thana Shares (Outside CC):\")\n",
+        "# 2. Percentage of records in each thana outside CC based on total population\n",
+        "outside_thana_pct_global = (df[df[\"Thana\"].isin(thanas_outside_cc)][\"Thana\"].value_counts() / total_population) * 100\n",
+        "print(outside_thana_pct_global.round(2).to_string())\n",
+        "\n",
+        "\n",
+        "print(\"                VERIFICATION CHECK                \")\n",
+        "\n",
+        "\n",
+        "# Summing CC total + individual outside thana percentages\n",
+        "grand_total_percentage = cc_pct_global + outside_thana_pct_global.sum()\n",
+        "print(f\"Combined Sum of Percentages: {grand_total_percentage:.2f}%\")\n",
+        "\n",
+        "if round(grand_total_percentage, 2) == 100.00:\n",
+        "    print(\" Check Passed: Perfect 100%! All data is accounted for.\")\n",
+        "else:\n",
+        "    print(\"⚠️ Check Warning: Does not equal 100%. You may have missing (NaN) values or unmapped Thanas in your raw data.\")"
+      ],
+      "id": "ad197d28",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Interpretation Guide\n",
+        "\n",
+        "Use the generated outputs as follows:\n",
+        "\n",
+        "- **Total Population** shows the number of valid records after filtering and removing missing Thana values.\n",
+        "- **Total records in CC** shows how many records fall inside the City Corporation classification.\n",
+        "- **Outside CC Thana counts** show how the non-City-Corporation records are distributed geographically.\n",
+        "- **Age Group summaries** show whether records are concentrated in the `<=30` or `>30` group.\n",
+        "- **Within-group percentages** explain internal composition, such as the age distribution inside a specific Thana.\n",
+        "- **Global percentages** show how much each group contributes to the entire filtered dataset.\n",
+        "- **Verification check** confirms whether all standardized Thana records are covered by either the City Corporation list or the outside City Corporation list.\n",
+        "\n",
+        "## Notes for Reproducibility\n",
+        "\n",
+        "Before rendering this document, ensure that:\n",
+        "\n",
+        "- The `.env` file exists in the working directory or the environment variable is otherwise available.\n",
+        "- `CLEANED_DATASET_PATH` points to the cleaned Excel dataset.\n",
+        "- The dataset contains the required columns: `Thana` and `Age`.\n",
+        "- Required Python packages are installed: `pandas`, `numpy`, `python-dotenv`, and an Excel-reading engine such as `openpyxl`.\n",
+        "\n",
+        "## Expected Output\n",
+        "\n",
+        "After running the document, the analysis should produce:\n",
+        "\n",
+        "- A cleaned and standardized Thana list.\n",
+        "- Total population count after filtering.\n",
+        "- Counts for City Corporation and outside City Corporation areas.\n",
+        "- Thana-wise record counts.\n",
+        "- Age group counts and percentages.\n",
+        "- City Corporation and outside City Corporation percentage breakdowns.\n",
+        "- A final verification result indicating whether the grouped records sum to the full filtered dataset."
+      ],
+      "id": "f67b2006"
+    }
+  ],
+  "metadata": {
+    "kernelspec": {
+      "name": "python3",
+      "language": "python",
+      "display_name": "Python 3 (ipykernel)",
+      "path": "/home/miskat/Chittagong-Diabetes-Data-Analysis/.venv/share/jupyter/kernels/python3"
+    }
+  },
+  "nbformat": 4,
+  "nbformat_minor": 5
+}
