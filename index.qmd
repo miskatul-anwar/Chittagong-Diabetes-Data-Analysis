@@ -1,6 +1,6 @@
 ---
 title: "Chittagong Diabetes Data Analysis"
-subtitle: "Data cleaning, regional distribution, age-group patterns, and clinical data preparation"
+subtitle: "Diabetes data cleaning, thana-level distribution, age-group patterns, and control status mapping"
 author: "Miskatul Anwar"
 date: "2026-06-05"
 number-sections: false
@@ -17,77 +17,74 @@ execute:
 
 ## Overview
 
-This project documents a reproducible workflow for preparing and analyzing diabetes patient data from the Chittagong region. The current version of the project focuses on two major stages: cleaning and standardizing the raw clinical dataset, then analyzing the cleaned records by Thana, City Corporation classification, and age group.
+This project analyzes diabetes patient data from the Chittagong region using a reproducible Python and Quarto workflow. The work covers data cleaning, fasting glucose standardization, thana-level distribution analysis, City Corporation classification, age-group summaries, and spatial mapping.
 
-The analysis pipeline is designed to support transparent reporting and future extension. Dataset paths are managed through environment variables, cleaned records are exported for downstream analysis, and location-based summaries are generated from the standardized dataset.
+The project focuses on preparing clean, analysis-ready clinical data and producing regional summaries for Chattogram City Corporation and outside-City-Corporation areas.
 
-## Project Scope
+## Project Goals
 
-The project currently covers the following analytical areas:
+- Clean and standardize raw diabetes patient records.
+- Update fasting glucose values using supplementary patient-level data.
+- Standardize thana names for reliable regional analysis.
+- Compare diabetes patient distribution inside and outside Chattogram City Corporation.
+- Analyze age-group patterns using `<=30` and `>30` categories.
+- Map thana-level diabetes distribution and control status.
+- Generate reproducible outputs for reporting and future analysis.
 
-- Cleaning raw diabetes patient records and removing duplicate entries.
-- Updating fasting glucose values from a supplementary dataset using patient `ID`.
-- Standardizing mixed-format clinical variables into analysis-ready numeric fields.
-- Removing records with missing key analytical fields such as `Fasting`, `Age`, and `Thana` where required.
-- Standardizing Thana names to reduce spelling and administrative-label inconsistencies.
-- Separating records into City Corporation and outside City Corporation groups.
-- Creating age groups using the threshold `<=30` and `>30`.
-- Calculating population counts, Thana-wise distributions, and percentage breakdowns.
-- Verifying whether the final regional grouping accounts for the full filtered dataset.
-
-## Analysis Workflow
-
-The project is organized into a sequential workflow. Each stage produces outputs that support the next stage of analysis.
+## Current Analysis Pages
 
 ### Data Cleaning and Standardization
 
-The first stage prepares the raw diabetes dataset for analysis. It loads the primary dataset and supplementary fasting-value dataset from environment-defined paths, removes duplicate columns and duplicate patient records, updates fasting values, standardizes numeric fields, and exports the cleaned dataset.
+This page prepares the raw clinical dataset for analysis.
 
-Key tasks in this stage include:
+Main tasks include:
 
-- Loading the raw Excel dataset from `DATASET_PATH`.
-- Removing duplicate columns.
-- Deduplicating records by `ID`, keeping the last available record.
-- Loading the supplementary file from `NEW_PATH`.
-- Updating the `Fasting` column by matching records on `ID`.
-- Converting `BMI`, `Weight (KG)`, and `Height (CM)` to numeric values.
-- Extracting numeric values from mixed-format `Fasting` entries.
-- Removing records with missing fasting glucose or age values.
-- Saving the cleaned dataset to `CLEANED_DATASET_PATH`.
+- Loading raw and supplementary datasets from environment variables.
+- Removing duplicate columns and duplicate patient records.
+- Updating fasting glucose values by patient `ID`.
+- Converting clinical fields such as fasting glucose, BMI, weight, and height into numeric format.
+- Removing records with missing key analytical values.
+- Exporting the cleaned dataset for downstream analysis.
 
-The complete documentation for this stage is available in:
+File:
 
-```text
-data_cleaning_and_standardization.qmd
-```
+[](process/initial_analysis.qmd)
 
-### Thana-Level Population Distribution and Age Group Analysis
+### Thana-Level Distribution and Age Group Analysis
 
-The second stage uses the cleaned dataset to examine the regional distribution of patient records. It focuses on Thana-level classification, City Corporation grouping, age-group segmentation, and percentage-based summaries.
+This page analyzes the cleaned dataset by region and age group.
 
-Key tasks in this stage include:
+Main tasks include:
 
-- Loading the cleaned dataset from `CLEANED_DATASET_PATH`.
-- Removing Thanas outside the selected analysis scope.
-- Dropping records with missing `Thana` values.
-- Mapping alternative Thana names to standardized labels.
-- Defining Thanas inside and outside the City Corporation.
-- Creating the `Age Group` variable using `<=30` and `>30` categories.
-- Calculating total population records after filtering.
-- Summarizing records inside the City Corporation.
-- Summarizing records outside the City Corporation.
-- Calculating Thana-level and age-group percentages.
-- Running a final verification check to identify unmapped or unclassified records.
+* Standardizing thana names.
+* Separating records into City Corporation and outside-City-Corporation groups.
+* Calculating thana-wise population shares.
+* Summarizing age-group distribution by thana.
+* Checking whether all filtered records are correctly classified.
+* Preparing percentage summaries for maps and reports.
 
-The complete documentation for this stage is available in:
+File:
 
-```text
-thana_population_distribution_analysis.qmd
-```
+[](process/subdistrict-CC-Map.qmd)
 
-## Data Sources and Environment Variables
+### Spatial Mapping
 
-This project avoids hard-coded file paths. The workflow expects file locations to be provided through environment variables.
+The mapping outputs show diabetes distribution across Chattogram using GADM administrative boundaries.
+
+Current map outputs include:
+
+* Chattogram City Corporation diabetes distribution.
+* City Corporation control-status pie charts by thana.
+* Chattogram district-level diabetes share map.
+* Outside-City-Corporation and City Corporation age-group composition maps.
+
+Generated maps are saved in:
+
+[](process/subdistrict-CC-Map.qmd)
+
+## Data Inputs
+
+The project uses environment variables instead of hard-coded file paths.
 
 Required variables:
 
@@ -95,39 +92,21 @@ Required variables:
 DATASET_PATH
 NEW_PATH
 CLEANED_DATASET_PATH
+GPKG_PATH
 ```
 
-These variables should be defined in a `.env` file or made available directly in the execution environment before rendering the project files.
+These paths should be defined in a `.env` file before rendering the project.
 
-## Current Dataset Preparation Logic
+## Regional Classification
 
-The latest data preparation workflow uses the following assumptions and rules:
-
-- `ID` is treated as the unique patient identifier for deduplication.
-- If multiple records share the same `ID`, the last occurrence is retained.
-- The supplementary dataset is used to update fasting glucose values in the primary dataset.
-- Fasting glucose values may contain units or mixed text, so the first numeric value is extracted.
-- Records without valid fasting glucose values are removed from the cleaned dataset.
-- Records without age values are removed from the cleaned dataset.
-- Thana names are standardized before regional analysis.
-- Records without valid Thana values are removed before Thana-level analysis.
-
-## Regional Classification Used in the Analysis
-
-The current regional analysis separates Thanas into two groups: inside the City Corporation and outside the City Corporation.
-
-### Inside City Corporation
-
-The current City Corporation list includes:
+### City Corporation Thanas
 
 ```text
 Bayejid Bostami, Chandgaon, Bakalia, Kotwali, Double Mooring, Patenga,
 Chittagong Port, Halishahar, Pahartali, Khulshi, Panchlaish
 ```
 
-### Outside City Corporation
-
-The current outside City Corporation list includes:
+### Outside City Corporation Upazilas
 
 ```text
 Mirsharai, Fatikchhari, Raozan, Sitakunda, Hathazari, Boalkhali,
@@ -135,100 +114,51 @@ Patiya, Chandanaish, Sandwip, Rangunia, Anowara, Satkania,
 Banshkhali, Lohagara
 ```
 
-## Standardized Thana Mapping
-
-The regional analysis standardizes alternative Thana names before grouping. Examples include:
-
-```text
-Firingibazar -> Kotwali
-EPZ -> Chittagong Port
-Lalkhan Bazar -> Khulshi
-Patharghata -> Kotwali
-Kaptai -> Rangunia
-Fouzdarhat -> Sitakunda
-New Mooring -> Chittagong Port
-Agrabad -> Double Mooring
-Karnaphuli -> Patiya
-Bhujpur -> Fatikchhari
-Chawk Bazar -> Panchlaish
-Bandar -> Chittagong Port
-Anwara -> Anowara
-Sadarghat -> Patiya
-Akbar Shah -> Pahartali
-Bayazid Bostami -> Bayejid Bostami
-Bandarban Sadar -> Satkania
-```
-
 ## Key Outputs
 
-The current project generates the following outputs:
+* Cleaned diabetes dataset.
+* Updated fasting glucose values.
+* Standardized thana names.
+* City Corporation and outside-City-Corporation summaries.
+* Age-group percentage tables.
+* Thana-wise diabetes distribution tables.
+* Control-status distribution tables.
+* PDF maps saved under `report/`.
 
-- A cleaned Excel dataset saved to the path defined by `CLEANED_DATASET_PATH`.
-- A verified column inventory after duplicate column removal.
-- Deduplicated patient records based on `ID`.
-- Updated fasting glucose values from the supplementary dataset.
-- Numeric versions of fasting glucose, BMI, weight, and height fields.
-- Total population count after cleaning and filtering.
-- City Corporation and outside City Corporation record counts.
-- Thana-wise population counts.
-- Age group counts by Thana.
-- Percentage breakdowns within City Corporation and outside City Corporation groups.
-- Global population share by City Corporation and outside-City-Corporation Thanas.
-- A final verification check for unmapped or unclassified Thana records.
+## Reproducibility
 
-## How to Render the Project
+Before rendering, confirm that:
 
-From the project root, render the website with:
+* The `.env` file exists.
+* All dataset paths are valid.
+* Required Python packages are installed.
+* The cleaning page is rendered before dependent analysis pages.
+
+Required Python packages include:
+
+```text
+pandas
+numpy
+geopandas
+seaborn
+python-dotenv
+openpyxl
+matplotlib
+```
+
+## Render the Project
+
+Render the full Quarto project:
 
 ```bash
 quarto render
 ```
 
-To preview the website locally, use:
+Preview the site locally:
 
 ```bash
 quarto preview
 ```
 
-Before rendering, confirm that the `.env` file is available and that all required dataset paths are valid.
 
-## Project Files
 
-The latest documentation files are:
-
-```text
-index.qmd
-data_cleaning_and_standardization.qmd
-thana_population_distribution_analysis.qmd
-```
-
-Suggested website order:
-
-```text
-index.qmd
-Data Cleaning and Standardization
-Thana-Level Population Distribution and Age Group Analysis
-```
-
-## Reproducibility Checklist
-
-Before running the full project, verify that:
-
-- The `.env` file exists or environment variables are already configured.
-- `DATASET_PATH` points to the raw diabetes dataset.
-- `NEW_PATH` points to the supplementary fasting-value dataset.
-- `CLEANED_DATASET_PATH` points to the intended cleaned output file.
-- The raw and supplementary datasets contain the required columns.
-- Python dependencies are installed, including `pandas`, `numpy`, `python-dotenv`, and `openpyxl`.
-- The data cleaning stage is rendered before the regional analysis stage.
-
-## Next Steps
-
-The current project website can be extended with additional analysis pages, such as:
-
-- Exploratory analysis of clinical variables.
-- Diabetes risk factor profiling by age group and region.
-- BMI, fasting glucose, and anthropometric distribution analysis.
-- City Corporation versus outside City Corporation comparison.
-- Visual dashboards or maps for Thana-level patterns.
-- Model-ready feature engineering and predictive modeling documentation.
