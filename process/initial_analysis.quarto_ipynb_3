@@ -1,0 +1,1425 @@
+{
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "---\n",
+        "title: \"Fasting, Body Composition, and Lifestyle Patterns by Age Group\"\n",
+        "format: html\n",
+        "---\n",
+        "\n",
+        "## Analysis Objective\n",
+        "\n",
+        "This report explores how fasting measurements, BMI, body size, sex, and lifestyle-related variables vary across two age groups:\n",
+        "\n",
+        "- `Age <= 30`\n",
+        "- `Age > 30`\n",
+        "\n",
+        "The objective is to identify descriptive patterns, compare distributions, and examine how anthropometric and metabolic variables behave across these two age-based segments.\n",
+        "\n",
+        "## Import necessary libraries"
+      ],
+      "id": "9e864894"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "import os\n",
+        "import numpy as np\n",
+        "import pandas as pd\n",
+        "import seaborn as sns\n",
+        "from dotenv import load_dotenv"
+      ],
+      "id": "4ac266ed",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Set the visual theme"
+      ],
+      "id": "6a29a1e9"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "sns.set_theme(\n",
+        "    style=\"whitegrid\",\n",
+        "    context=\"notebook\",\n",
+        "    rc={\"figure.figsize\": (8, 5)}\n",
+        ")"
+      ],
+      "id": "8fc8cae1",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Load the dataset"
+      ],
+      "id": "08fa0892"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "load_dotenv()\n",
+        "\n",
+        "dataset_path = os.getenv(\"CLEANED_DATASET_PATH\")\n",
+        "if dataset_path is None:\n",
+        "    raise ValueError(\"CLEANED_DATASET_PATH is not set in the environment.\")\n",
+        "\n",
+        "df = pd.read_excel(dataset_path)\n",
+        "df.head()"
+      ],
+      "id": "946d8fed",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Initial data overview\n",
+        "\n",
+        "### Shape of the dataset"
+      ],
+      "id": "99bcb974"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "df.shape"
+      ],
+      "id": "e515ec09",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "### Column names"
+      ],
+      "id": "1e737415"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "df.columns.tolist()"
+      ],
+      "id": "08b156e0",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "### Check required columns"
+      ],
+      "id": "b52df851"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "required_columns = [\n",
+        "    \"Age\",\n",
+        "    \"Sex\",\n",
+        "    \"Height (CM)\",\n",
+        "    \"Weight (KG)\",\n",
+        "    \"BMI\",\n",
+        "    \"Fasting\"\n",
+        "]\n",
+        "\n",
+        "missing_columns = [col for col in required_columns if col not in df.columns]\n",
+        "\n",
+        "if missing_columns:\n",
+        "    raise ValueError(f\"Missing required columns: {missing_columns}\")\n",
+        "else:\n",
+        "    print(\"All required columns are present.\")"
+      ],
+      "id": "92baabeb",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "### Data types"
+      ],
+      "id": "9e209d32"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "df.dtypes"
+      ],
+      "id": "77bbed98",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "### Missing values summary"
+      ],
+      "id": "416aeb3f"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "df[required_columns].isnull().sum().sort_values(ascending=False)"
+      ],
+      "id": "a6ebda55",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "### Duplicate rows"
+      ],
+      "id": "443e2ccd"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "df.duplicated().sum()"
+      ],
+      "id": "9f29dbe1",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Descriptive statistics\n",
+        "\n",
+        "### Numerical summary"
+      ],
+      "id": "6e150a94"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "df[[\"Age\", \"Height (CM)\", \"Weight (KG)\", \"BMI\", \"Fasting\"]].describe()"
+      ],
+      "id": "8f2d127a",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "### Categorical summary"
+      ],
+      "id": "7d965810"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "categorical_columns = [\"Sex\"] + ([\"Diet\"] if \"Diet\" in df.columns else [])\n",
+        "\n",
+        "for col in categorical_columns:\n",
+        "    print(f\"\\nValue counts for: {col}\")\n",
+        "    print(df[col].value_counts(dropna=False))"
+      ],
+      "id": "399ec4d4",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Data cleaning and outlier handling\n",
+        "\n",
+        "The goal here is to remove implausible or extreme records that may distort the analysis."
+      ],
+      "id": "874b3791"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "df = df.drop_duplicates().copy()\n",
+        "\n",
+        "df = df[\n",
+        "    ~(\n",
+        "        (df[\"BMI\"] >= 60) |\n",
+        "        (df[\"BMI\"] <= 15) |\n",
+        "        (df[\"Weight (KG)\"] >= 500) |\n",
+        "        (df[\"Weight (KG)\"] <= 30) |\n",
+        "        (df[\"Height (CM)\"] > 250) |\n",
+        "        (df[\"Height (CM)\"] <= 100) |\n",
+        "        (df[\"Fasting\"] > 50)\n",
+        "    )\n",
+        "].copy()"
+      ],
+      "id": "abef0b96",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "### Quick sanity check after filtering"
+      ],
+      "id": "9ec39f96"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "df[[\"Age\", \"Height (CM)\", \"Weight (KG)\", \"BMI\", \"Fasting\"]].describe()"
+      ],
+      "id": "25312efa",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Feature engineering\n",
+        "\n",
+        "### Create age group labels"
+      ],
+      "id": "891e57b6"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "df[\"Age Group\"] = np.where(df[\"Age\"] <= 30, \"<=30\", \">30\")\n",
+        "df[\"Age Group\"].value_counts()"
+      ],
+      "id": "e52c9147",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "### Create BMI category"
+      ],
+      "id": "cb4dfa15"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "bmi_bins = [0, 18.5, 25, 30, np.inf]\n",
+        "bmi_labels = [\"Underweight\", \"Normal\", \"Overweight\", \"Obese\"]\n",
+        "\n",
+        "df[\"BMI Category\"] = pd.cut(\n",
+        "    df[\"BMI\"],\n",
+        "    bins=bmi_bins,\n",
+        "    labels=bmi_labels,\n",
+        "    right=False\n",
+        ")\n",
+        "\n",
+        "df[\"BMI Category\"].value_counts(dropna=False)"
+      ],
+      "id": "03599f42",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Sample composition\n",
+        "\n",
+        "### Participant count by age group"
+      ],
+      "id": "f08967f1"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "ax = sns.countplot(data=df, x=\"Age Group\", hue=\"Age Group\", palette=\"Set2\", legend=False)\n",
+        "ax.set(\n",
+        "    xlabel=\"Age Group\",\n",
+        "    ylabel=\"Count\",\n",
+        "    title=\"Participant Distribution by Age Group\"\n",
+        ")"
+      ],
+      "id": "9c791477",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "### Sex distribution across age groups"
+      ],
+      "id": "16f0bd05"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "ax = sns.countplot(data=df, x=\"Age Group\", hue=\"Sex\", palette=\"Set1\")\n",
+        "ax.set(\n",
+        "    xlabel=\"Age Group\",\n",
+        "    ylabel=\"Count\",\n",
+        "    title=\"Sex Distribution Across Age Groups\"\n",
+        ")"
+      ],
+      "id": "9f4faa48",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "### BMI category distribution by age group"
+      ],
+      "id": "f23d25e0"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "g = sns.catplot(\n",
+        "    data=df,\n",
+        "    x=\"BMI Category\",\n",
+        "    hue=\"Age Group\",\n",
+        "    kind=\"count\",\n",
+        "    palette=\"Set2\",\n",
+        "    height=5,\n",
+        "    aspect=1.6\n",
+        ")\n",
+        "\n",
+        "g.set_axis_labels(\"BMI Category\", \"Count\")\n",
+        "g.set_titles(\"BMI Category Distribution by Age Group\")\n",
+        "g.ax.tick_params(axis=\"x\", rotation=15)"
+      ],
+      "id": "93ff4302",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Grouped descriptive analytics\n",
+        "\n",
+        "### Summary statistics by age group"
+      ],
+      "id": "f783c599"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "group_summary = (\n",
+        "    df.groupby(\"Age Group\")[[\"Age\", \"Height (CM)\", \"Weight (KG)\", \"BMI\", \"Fasting\"]]\n",
+        "    .agg([\"count\", \"mean\", \"median\", \"std\", \"min\", \"max\"])\n",
+        "    .round(2)\n",
+        ")\n",
+        "\n",
+        "group_summary"
+      ],
+      "id": "46a4baf9",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "### Summary statistics by age group and sex"
+      ],
+      "id": "6ea03442"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "group_sex_summary = (\n",
+        "    df.groupby([\"Age Group\", \"Sex\"])[[\"Height (CM)\", \"Weight (KG)\", \"BMI\", \"Fasting\"]]\n",
+        "    .agg([\"count\", \"mean\", \"median\", \"std\"])\n",
+        "    .round(2)\n",
+        ")\n",
+        "\n",
+        "group_sex_summary"
+      ],
+      "id": "a6d68bb6",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Correlation analysis\n",
+        "\n",
+        "### Overall correlation heatmap"
+      ],
+      "id": "9abd428f"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "corr = df[[\"Age\", \"Height (CM)\", \"Weight (KG)\", \"BMI\", \"Fasting\"]].corr(numeric_only=True)\n",
+        "\n",
+        "ax = sns.heatmap(\n",
+        "    corr,\n",
+        "    annot=True,\n",
+        "    cmap=\"coolwarm\",\n",
+        "    fmt=\".2f\",\n",
+        "    linewidths=0.5\n",
+        ")\n",
+        "\n",
+        "ax.set_title(\"Correlation Heatmap of Core Numerical Variables\")"
+      ],
+      "id": "3b336a8b",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "### Correlation heatmap for `Age <= 30`"
+      ],
+      "id": "c1f5cc0b"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "corr_young = (\n",
+        "    df.loc[df[\"Age Group\"] == \"<=30\", [\"Age\", \"Height (CM)\", \"Weight (KG)\", \"BMI\", \"Fasting\"]]\n",
+        "    .corr(numeric_only=True)\n",
+        ")\n",
+        "\n",
+        "ax = sns.heatmap(\n",
+        "    corr_young,\n",
+        "    annot=True,\n",
+        "    cmap=\"coolwarm\",\n",
+        "    fmt=\".2f\",\n",
+        "    linewidths=0.5\n",
+        ")\n",
+        "\n",
+        "ax.set_title(\"Correlation Heatmap for Age <= 30\")"
+      ],
+      "id": "800cff95",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "### Correlation heatmap for `Age > 30`"
+      ],
+      "id": "4ff8c17c"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "corr_older = (\n",
+        "    df.loc[df[\"Age Group\"] == \">30\", [\"Age\", \"Height (CM)\", \"Weight (KG)\", \"BMI\", \"Fasting\"]]\n",
+        "    .corr(numeric_only=True)\n",
+        ")\n",
+        "\n",
+        "ax = sns.heatmap(\n",
+        "    corr_older,\n",
+        "    annot=True,\n",
+        "    cmap=\"coolwarm\",\n",
+        "    fmt=\".2f\",\n",
+        "    linewidths=0.5\n",
+        ")\n",
+        "\n",
+        "ax.set_title(\"Correlation Heatmap for Age > 30\")"
+      ],
+      "id": "b7a051a0",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Distribution analysis\n",
+        "\n",
+        "### Fasting distribution overall"
+      ],
+      "id": "81c6bd9e"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "ax = sns.histplot(\n",
+        "    data=df,\n",
+        "    x=\"Fasting\",\n",
+        "    kde=True,\n",
+        "    bins=30\n",
+        ")\n",
+        "\n",
+        "ax.set(\n",
+        "    xlabel=\"Fasting\",\n",
+        "    ylabel=\"Count\",\n",
+        "    title=\"Overall Distribution of Fasting\"\n",
+        ")"
+      ],
+      "id": "160ad7d2",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "### Fasting distribution by age group"
+      ],
+      "id": "3566bed1"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "ax = sns.histplot(\n",
+        "    data=df,\n",
+        "    x=\"Fasting\",\n",
+        "    hue=\"Age Group\",\n",
+        "    kde=True,\n",
+        "    bins=30,\n",
+        "    element=\"step\",\n",
+        "    stat=\"count\",\n",
+        "    common_norm=False\n",
+        ")\n",
+        "\n",
+        "ax.set(\n",
+        "    xlabel=\"Fasting\",\n",
+        "    ylabel=\"Count\",\n",
+        "    title=\"Fasting Distribution by Age Group\"\n",
+        ")"
+      ],
+      "id": "d5a300ea",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "### BMI distribution overall"
+      ],
+      "id": "958f0eb8"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "ax = sns.histplot(\n",
+        "    data=df,\n",
+        "    x=\"BMI\",\n",
+        "    kde=True,\n",
+        "    bins=30\n",
+        ")\n",
+        "\n",
+        "ax.set(\n",
+        "    xlabel=\"BMI\",\n",
+        "    ylabel=\"Count\",\n",
+        "    title=\"Overall Distribution of BMI\"\n",
+        ")"
+      ],
+      "id": "738dff7a",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "### BMI distribution by age group"
+      ],
+      "id": "52d21def"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "ax = sns.histplot(\n",
+        "    data=df,\n",
+        "    x=\"BMI\",\n",
+        "    hue=\"Age Group\",\n",
+        "    kde=True,\n",
+        "    bins=30,\n",
+        "    element=\"step\",\n",
+        "    stat=\"count\",\n",
+        "    common_norm=False\n",
+        ")\n",
+        "\n",
+        "ax.set(\n",
+        "    xlabel=\"BMI\",\n",
+        "    ylabel=\"Count\",\n",
+        "    title=\"BMI Distribution by Age Group\"\n",
+        ")"
+      ],
+      "id": "874469ae",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "### Density comparison of fasting by age group"
+      ],
+      "id": "a790cb74"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "ax = sns.kdeplot(\n",
+        "    data=df,\n",
+        "    x=\"Fasting\",\n",
+        "    hue=\"Age Group\",\n",
+        "    fill=True,\n",
+        "    common_norm=False,\n",
+        "    alpha=0.4\n",
+        ")\n",
+        "\n",
+        "ax.set(\n",
+        "    xlabel=\"Fasting\",\n",
+        "    ylabel=\"Density\",\n",
+        "    title=\"Density of Fasting by Age Group\"\n",
+        ")"
+      ],
+      "id": "2c838647",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Core relationship analysis\n",
+        "\n",
+        "### Age vs fasting\n",
+        "\n",
+        "#### Scatter plot"
+      ],
+      "id": "cef3c8b8"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "ax = sns.scatterplot(\n",
+        "    data=df,\n",
+        "    x=\"Age\",\n",
+        "    y=\"Fasting\",\n",
+        "    hue=\"Age Group\",\n",
+        "    palette=\"Set1\",\n",
+        "    alpha=0.7\n",
+        ")\n",
+        "\n",
+        "ax.set(\n",
+        "    xlabel=\"Age\",\n",
+        "    ylabel=\"Fasting\",\n",
+        "    title=\"Age vs Fasting\"\n",
+        ")"
+      ],
+      "id": "28bd172e",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "#### Mean fasting by age"
+      ],
+      "id": "8ed4ffde"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "age_fasting = (\n",
+        "    df.groupby([\"Age\", \"Age Group\"], as_index=False)[\"Fasting\"]\n",
+        "    .mean()\n",
+        ")\n",
+        "\n",
+        "ax = sns.lineplot(\n",
+        "    data=age_fasting,\n",
+        "    x=\"Age\",\n",
+        "    y=\"Fasting\",\n",
+        "    hue=\"Age Group\",\n",
+        "    marker=\"o\"\n",
+        ")\n",
+        "\n",
+        "ax.set(\n",
+        "    xlabel=\"Age\",\n",
+        "    ylabel=\"Mean Fasting\",\n",
+        "    title=\"Mean Fasting by Age\"\n",
+        ")"
+      ],
+      "id": "0e835e7f",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "### BMI vs fasting\n",
+        "\n",
+        "#### Scatter plot by age group"
+      ],
+      "id": "d2fc76f1"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "ax = sns.scatterplot(\n",
+        "    data=df,\n",
+        "    x=\"BMI\",\n",
+        "    y=\"Fasting\",\n",
+        "    hue=\"Age Group\",\n",
+        "    alpha=0.7,\n",
+        "    palette=\"Set2\"\n",
+        ")\n",
+        "\n",
+        "ax.set(\n",
+        "    xlabel=\"BMI\",\n",
+        "    ylabel=\"Fasting\",\n",
+        "    title=\"BMI vs Fasting by Age Group\"\n",
+        ")"
+      ],
+      "id": "0923d062",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "#### Regression view"
+      ],
+      "id": "fa9a16b2"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "g = sns.lmplot(\n",
+        "    data=df,\n",
+        "    x=\"BMI\",\n",
+        "    y=\"Fasting\",\n",
+        "    hue=\"Age Group\",\n",
+        "    height=5,\n",
+        "    aspect=1.4,\n",
+        "    scatter_kws={\"alpha\": 0.6}\n",
+        ")\n",
+        "\n",
+        "g.set_axis_labels(\"BMI\", \"Fasting\")"
+      ],
+      "id": "15357175",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "### Weight vs fasting"
+      ],
+      "id": "74054a10"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "ax = sns.scatterplot(\n",
+        "    data=df,\n",
+        "    x=\"Weight (KG)\",\n",
+        "    y=\"Fasting\",\n",
+        "    hue=\"Age Group\",\n",
+        "    alpha=0.7,\n",
+        "    palette=\"Set1\"\n",
+        ")\n",
+        "\n",
+        "ax.set(\n",
+        "    xlabel=\"Weight (KG)\",\n",
+        "    ylabel=\"Fasting\",\n",
+        "    title=\"Weight vs Fasting by Age Group\"\n",
+        ")"
+      ],
+      "id": "4cef5802",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "### Height vs fasting"
+      ],
+      "id": "fedeb4e4"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "ax = sns.scatterplot(\n",
+        "    data=df,\n",
+        "    x=\"Height (CM)\",\n",
+        "    y=\"Fasting\",\n",
+        "    hue=\"Age Group\",\n",
+        "    alpha=0.7,\n",
+        "    palette=\"Set2\"\n",
+        ")\n",
+        "\n",
+        "ax.set(\n",
+        "    xlabel=\"Height (CM)\",\n",
+        "    ylabel=\"Fasting\",\n",
+        "    title=\"Height vs Fasting by Age Group\"\n",
+        ")"
+      ],
+      "id": "b9d046d6",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Categorical comparisons\n",
+        "\n",
+        "### Sex vs fasting"
+      ],
+      "id": "5fac5523"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "ax = sns.boxplot(\n",
+        "    data=df,\n",
+        "    x=\"Sex\",\n",
+        "    y=\"Fasting\",\n",
+        "    hue=\"Age Group\",\n",
+        "    palette=\"Set2\"\n",
+        ")\n",
+        "\n",
+        "ax.set(\n",
+        "    xlabel=\"Sex\",\n",
+        "    ylabel=\"Fasting\",\n",
+        "    title=\"Fasting by Sex and Age Group\"\n",
+        ")"
+      ],
+      "id": "3c40ef33",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "### Sex vs BMI"
+      ],
+      "id": "48517904"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "ax = sns.boxplot(\n",
+        "    data=df,\n",
+        "    x=\"Sex\",\n",
+        "    y=\"BMI\",\n",
+        "    hue=\"Age Group\",\n",
+        "    palette=\"Set1\"\n",
+        ")\n",
+        "\n",
+        "ax.set(\n",
+        "    xlabel=\"Sex\",\n",
+        "    ylabel=\"BMI\",\n",
+        "    title=\"BMI by Sex and Age Group\"\n",
+        ")"
+      ],
+      "id": "6cf63539",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "### Age group vs fasting"
+      ],
+      "id": "9e40e374"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "ax = sns.boxplot(\n",
+        "    data=df,\n",
+        "    x=\"Age Group\",\n",
+        "    y=\"Fasting\",\n",
+        "    hue=\"Age Group\",\n",
+        "    palette=\"Set2\",\n",
+        "    legend=False\n",
+        ")\n",
+        "\n",
+        "ax.set(\n",
+        "    xlabel=\"Age Group\",\n",
+        "    ylabel=\"Fasting\",\n",
+        "    title=\"Fasting by Age Group\"\n",
+        ")"
+      ],
+      "id": "52b21525",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "### Age group vs BMI"
+      ],
+      "id": "2ad20cd0"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "ax = sns.boxplot(\n",
+        "    data=df,\n",
+        "    x=\"Age Group\",\n",
+        "    y=\"BMI\",\n",
+        "    hue=\"Age Group\",\n",
+        "    palette=\"Set1\",\n",
+        "    legend=False\n",
+        ")\n",
+        "\n",
+        "ax.set(\n",
+        "    xlabel=\"Age Group\",\n",
+        "    ylabel=\"BMI\",\n",
+        "    title=\"BMI by Age Group\"\n",
+        ")"
+      ],
+      "id": "206a22f3",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "### Violin plot of fasting by age group"
+      ],
+      "id": "f932f5ac"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "ax = sns.violinplot(\n",
+        "    data=df,\n",
+        "    x=\"Age Group\",\n",
+        "    y=\"Fasting\",\n",
+        "    hue=\"Age Group\",\n",
+        "    palette=\"Pastel1\",\n",
+        "    legend=False\n",
+        ")\n",
+        "\n",
+        "ax.set(\n",
+        "    xlabel=\"Age Group\",\n",
+        "    ylabel=\"Fasting\",\n",
+        "    title=\"Fasting Distribution Shape by Age Group\"\n",
+        ")"
+      ],
+      "id": "5da71ad0",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Diet-related analysis\n",
+        "\n",
+        "This section runs only if the `Diet` column exists.\n",
+        "\n",
+        "### Diet frequency table"
+      ],
+      "id": "ce6904ef"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "if \"Diet\" in df.columns:\n",
+        "    df[\"Diet\"].value_counts(dropna=False)\n",
+        "else:\n",
+        "    print(\"Diet column not found in the dataset.\")"
+      ],
+      "id": "a60a13e1",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "### Diet vs BMI"
+      ],
+      "id": "9484c05c"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "if \"Diet\" in df.columns:\n",
+        "    g = sns.catplot(\n",
+        "        data=df,\n",
+        "        x=\"Diet\",\n",
+        "        y=\"BMI\",\n",
+        "        hue=\"Age Group\",\n",
+        "        kind=\"box\",\n",
+        "        height=5,\n",
+        "        aspect=1.8\n",
+        "    )\n",
+        "\n",
+        "    g.set_axis_labels(\"Diet\", \"BMI\")\n",
+        "    g.ax.tick_params(axis=\"x\", rotation=20)\n",
+        "else:\n",
+        "    print(\"Diet column not found in the dataset.\")"
+      ],
+      "id": "c9aabe54",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "### Diet vs fasting"
+      ],
+      "id": "35076c93"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "if \"Diet\" in df.columns:\n",
+        "    g = sns.catplot(\n",
+        "        data=df,\n",
+        "        x=\"Diet\",\n",
+        "        y=\"Fasting\",\n",
+        "        hue=\"Age Group\",\n",
+        "        kind=\"box\",\n",
+        "        height=5,\n",
+        "        aspect=1.8\n",
+        "    )\n",
+        "\n",
+        "    g.set_axis_labels(\"Diet\", \"Fasting\")\n",
+        "    g.ax.tick_params(axis=\"x\", rotation=20)\n",
+        "else:\n",
+        "    print(\"Diet column not found in the dataset.\")"
+      ],
+      "id": "2ca859f2",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "### Diet composition across age groups"
+      ],
+      "id": "daffd49e"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "if \"Diet\" in df.columns:\n",
+        "    g = sns.catplot(\n",
+        "        data=df,\n",
+        "        x=\"Diet\",\n",
+        "        hue=\"Age Group\",\n",
+        "        kind=\"count\",\n",
+        "        height=5,\n",
+        "        aspect=1.8\n",
+        "    )\n",
+        "\n",
+        "    g.set_axis_labels(\"Diet\", \"Count\")\n",
+        "    g.ax.tick_params(axis=\"x\", rotation=20)\n",
+        "else:\n",
+        "    print(\"Diet column not found in the dataset.\")"
+      ],
+      "id": "68780b6f",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Multivariable relationship analysis\n",
+        "\n",
+        "### Age and sex to fasting"
+      ],
+      "id": "9fc075e4"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "ax = sns.lineplot(\n",
+        "    data=df,\n",
+        "    x=\"Age\",\n",
+        "    y=\"Fasting\",\n",
+        "    hue=\"Sex\",\n",
+        "    style=\"Age Group\",\n",
+        "    estimator=\"mean\"\n",
+        ")\n",
+        "\n",
+        "ax.set(\n",
+        "    xlabel=\"Age\",\n",
+        "    ylabel=\"Mean Fasting\",\n",
+        "    title=\"Mean Fasting by Age, Sex, and Age Group\"\n",
+        ")"
+      ],
+      "id": "8971c91a",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "### BMI vs fasting faceted by age group"
+      ],
+      "id": "9eb0d8d5"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "g = sns.relplot(\n",
+        "    data=df,\n",
+        "    x=\"BMI\",\n",
+        "    y=\"Fasting\",\n",
+        "    col=\"Age Group\",\n",
+        "    hue=\"Sex\",\n",
+        "    kind=\"scatter\",\n",
+        "    alpha=0.7,\n",
+        "    height=5,\n",
+        "    aspect=1.1\n",
+        ")\n",
+        "\n",
+        "g.set_axis_labels(\"BMI\", \"Fasting\")\n",
+        "g.set_titles(\"Age Group: {col_name}\")"
+      ],
+      "id": "13d17ba3",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "### Weight vs fasting faceted by age group"
+      ],
+      "id": "c4382445"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "g = sns.relplot(\n",
+        "    data=df,\n",
+        "    x=\"Weight (KG)\",\n",
+        "    y=\"Fasting\",\n",
+        "    col=\"Age Group\",\n",
+        "    hue=\"Sex\",\n",
+        "    kind=\"scatter\",\n",
+        "    alpha=0.7,\n",
+        "    height=5,\n",
+        "    aspect=1.1\n",
+        ")\n",
+        "\n",
+        "g.set_axis_labels(\"Weight (KG)\", \"Fasting\")\n",
+        "g.set_titles(\"Age Group: {col_name}\")"
+      ],
+      "id": "e960dc05",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "### Pairwise view of core variables"
+      ],
+      "id": "2c86f91d"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "pairplot_df = df[\n",
+        "    [\"Age\", \"Height (CM)\", \"Weight (KG)\", \"BMI\", \"Fasting\", \"Age Group\"]\n",
+        "].dropna()\n",
+        "\n",
+        "sns.pairplot(\n",
+        "    pairplot_df,\n",
+        "    hue=\"Age Group\",\n",
+        "    corner=True,\n",
+        "    diag_kind=\"hist\"\n",
+        ")"
+      ],
+      "id": "24c572b5",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Group comparison tables\n",
+        "\n",
+        "### Mean comparison across age groups"
+      ],
+      "id": "c75ba3ba"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "mean_comparison = (\n",
+        "    df.groupby(\"Age Group\")[[\"Height (CM)\", \"Weight (KG)\", \"BMI\", \"Fasting\"]]\n",
+        "    .mean()\n",
+        "    .round(2)\n",
+        "    .sort_index()\n",
+        ")\n",
+        "\n",
+        "mean_comparison"
+      ],
+      "id": "2215355b",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "### Median comparison across age groups"
+      ],
+      "id": "655bfbff"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "median_comparison = (\n",
+        "    df.groupby(\"Age Group\")[[\"Height (CM)\", \"Weight (KG)\", \"BMI\", \"Fasting\"]]\n",
+        "    .median()\n",
+        "    .round(2)\n",
+        "    .sort_index()\n",
+        ")\n",
+        "\n",
+        "median_comparison"
+      ],
+      "id": "92e88d76",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "### Sex-wise mean fasting within each age group"
+      ],
+      "id": "0ed29525"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "sex_age_fasting = (\n",
+        "    df.groupby([\"Age Group\", \"Sex\"])[\"Fasting\"]\n",
+        "    .mean()\n",
+        "    .round(2)\n",
+        "    .unstack()\n",
+        ")\n",
+        "\n",
+        "sex_age_fasting"
+      ],
+      "id": "1d359e2e",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "### BMI category by age group"
+      ],
+      "id": "f599f7ba"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "bmi_age_table = pd.crosstab(df[\"BMI Category\"], df[\"Age Group\"])\n",
+        "bmi_age_table"
+      ],
+      "id": "dfd31583",
+      "execution_count": null,
+      "outputs": []
+    }
+  ],
+  "metadata": {
+    "kernelspec": {
+      "name": "python3",
+      "language": "python",
+      "display_name": "Python 3 (ipykernel)",
+      "path": "/home/miskat/Chittagong-Diabetes-Data-Analysis/.venv/share/jupyter/kernels/python3"
+    }
+  },
+  "nbformat": 4,
+  "nbformat_minor": 5
+}

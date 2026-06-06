@@ -1,0 +1,504 @@
+{
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "---\n",
+        "title: \"Data Cleaning and Standardization\"\n",
+        "description: \"Transform raw diabetes patient data into a standardized format by handling duplicates, extracting numerical values from mixed-type columns, and ensuring consistent data types for downstream analysis.\"\n",
+        "format:\n",
+        "  html:\n",
+        "    toc: true\n",
+        "    toc-depth: 3\n",
+        "    code-fold: false\n",
+        "    code-tools: true\n",
+        "execute:\n",
+        "  warning: false\n",
+        "  message: false\n",
+        "---\n",
+        "\n",
+        "## Overview\n",
+        "\n",
+        "This document describes a reproducible data cleaning and standardization workflow for a diabetes patient dataset. The purpose of this workflow is to transform raw patient records into a cleaner and more analysis-ready dataset by removing duplicate fields and records, updating fasting glucose values from a supplementary file, standardizing mixed-format numeric columns, and exporting the cleaned dataset for downstream analysis.\n",
+        "\n",
+        "The workflow relies on environment variables to locate the raw dataset, supplementary update file, and final cleaned output path. This approach avoids hard-coding local file locations and makes the pipeline easier to reuse across different environments.\n",
+        "\n",
+        "## Objectives\n",
+        "\n",
+        "The main objectives of this cleaning process are to:\n",
+        "\n",
+        "- Load the raw diabetes dataset from a configured environment path.\n",
+        "- Inspect the structure and column inventory of the dataset.\n",
+        "- Remove duplicate columns created during data collection or export.\n",
+        "- Remove duplicate patient records using `ID` as the unique identifier.\n",
+        "- Update the primary dataset with corrected or newly available fasting glucose values from a supplementary dataset.\n",
+        "- Convert selected anthropometric variables to numeric format.\n",
+        "- Extract numeric fasting glucose values from mixed text formats.\n",
+        "- Remove records that are missing key analytical fields such as `Fasting` and `Age`.\n",
+        "- Export the cleaned dataset to the configured output path.\n",
+        "\n",
+        "## Expected Input and Output\n",
+        "\n",
+        "This workflow expects the following environment variables to be available:\n",
+        "\n",
+        "- `DATASET_PATH`: path to the primary raw Excel dataset.\n",
+        "- `NEW_PATH`: path to the supplementary Excel dataset containing updated fasting glucose values.\n",
+        "- `CLEANED_DATASET_PATH`: path where the cleaned Excel dataset will be saved.\n",
+        "\n",
+        "The expected output is a cleaned Excel dataset containing standardized patient records suitable for subsequent analysis, modeling, or reporting.\n",
+        "\n",
+        "## Load Dependencies\n",
+        "\n",
+        "The workflow begins by importing the required Python libraries. The `os` module is used to read environment variables, `pandas` is used for data loading and transformation, and `load_dotenv` is used to load variables from a `.env` file."
+      ],
+      "id": "ed30d1eb"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "import os\n",
+        "import pandas as pd\n",
+        "from dotenv import load_dotenv"
+      ],
+      "id": "4d05de9b",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Import Raw Dataset\n",
+        "\n",
+        "The environment variables are loaded first. The raw dataset path is then retrieved from `DATASET_PATH`, and the Excel file is imported into a pandas DataFrame."
+      ],
+      "id": "39c7ea1c"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "load_dotenv()\n",
+        "dataset_path = os.getenv(\"DATASET_PATH\")\n",
+        "df = pd.read_excel(dataset_path)"
+      ],
+      "id": "30a4affa",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Inspect Data Structure\n",
+        "\n",
+        "A preview of the first few rows is displayed to understand the structure of the dataset, verify that the file was loaded correctly, and inspect the initial format of the variables."
+      ],
+      "id": "353cb3d0"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "df.head()"
+      ],
+      "id": "1d254a82",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Column Inventory\n",
+        "\n",
+        "The column names are collected and printed. This step provides a quick inventory of all variables available in the raw dataset and helps identify potential duplicate columns, inconsistent naming, or unexpected fields."
+      ],
+      "id": "9ac9c675"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "cols = df.columns.tolist()\n",
+        "for col in cols:\n",
+        "    print(col, end=\", \")\n",
+        "print(f\"\\n\\nTotal {len(cols)} columns\")"
+      ],
+      "id": "3e590b6f",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Remove Duplicate Columns\n",
+        "\n",
+        "Duplicate columns are removed from the dataset. This can happen when Excel files are exported, merged, or manually edited. Keeping only the first occurrence of each column name prevents ambiguity during later transformations."
+      ],
+      "id": "541b00c7"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "df = df.loc[:, ~df.columns.duplicated()]"
+      ],
+      "id": "ad778993",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Remove Duplicate Records\n",
+        "\n",
+        "Duplicate patient records are removed using `ID` as the unique patient identifier. When multiple records share the same `ID`, the last occurrence is retained. This assumes that later entries are more complete or more recently updated."
+      ],
+      "id": "57bb7e6e"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "df.drop_duplicates(subset=\"ID\", keep=\"last\", inplace=True)\n",
+        "df.__len__()"
+      ],
+      "id": "91a316d2",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Update the Original Dataset with Cleaned Data\n",
+        "\n",
+        "A supplementary dataset is loaded from the path stored in `NEW_PATH`. This file is used to update the `Fasting` column in the primary dataset.\n",
+        "\n",
+        "Before merging, duplicate records are also removed from the supplementary dataset using the same `ID`-based rule. Copies of the `ID` and `Fasting` columns are created for comparison and verification purposes before the update is applied."
+      ],
+      "id": "d2a6de63"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "new_file = os.getenv(\"NEW_PATH\")\n",
+        "new_df = pd.read_excel(new_file)\n",
+        "new_df.drop_duplicates(subset=\"ID\", keep=\"last\", inplace=True)\n",
+        "\n",
+        "# Create index copies for comparison before merge\n",
+        "df_before_fasting = df[[\"ID\", \"Fasting\"]].copy()\n",
+        "new_df_fasting = new_df[[\"ID\", \"Fasting\"]].copy()"
+      ],
+      "id": "21eb3277",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "The update is performed by temporarily setting `ID` as the index in both datasets. The `Fasting` values in the primary dataset are then updated using matching `ID` values from the supplementary dataset. After the update, the index is reset so that `ID` returns to a regular column."
+      ],
+      "id": "18e8a33e"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "# Perform merge using ID-based index\n",
+        "df.set_index(\"ID\", inplace=True)\n",
+        "new_df.set_index(\"ID\", inplace=True)\n",
+        "df.update(new_df[\"Fasting\"])\n",
+        "df.reset_index(inplace=True)"
+      ],
+      "id": "7781e7bf",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Verify Merge Success\n",
+        "\n",
+        "The following checks confirm whether the `Fasting` column contains values after the merge and how many records still have missing fasting values. This provides a simple quality-control checkpoint before further standardization."
+      ],
+      "id": "e42594f2"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "# Count records with Fasting values before and after merge\n",
+        "print(\"=== Fasting Column Update Verification ===\\n\")\n",
+        "print(f\"Records with Fasting values (after merge): {df['Fasting'].notna().sum()}\")\n",
+        "print(f\"Records with missing Fasting: {df['Fasting'].isna().sum()}\")\n",
+        "print(f\"\\nTotal records: {len(df)}\")"
+      ],
+      "id": "01deef66",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "A small sample of the updated `ID` and `Fasting` values is displayed to visually inspect whether the merged column appears correctly aligned with patient records."
+      ],
+      "id": "5b64a518"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "# Show sample of merged data to verify alignment\n",
+        "merge_sample = df[[\"ID\", \"Fasting\"]].head(10)\n",
+        "print(\"\\nSample of merged Fasting column:\")\n",
+        "print(merge_sample)"
+      ],
+      "id": "89349ab4",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Define Export Path\n",
+        "\n",
+        "The cleaned dataset output path is retrieved from the `CLEANED_DATASET_PATH` environment variable. This path is used at the end of the workflow to save the final cleaned Excel file."
+      ],
+      "id": "4d705bed"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "clean_dataset_path = os.getenv(\"CLEANED_DATASET_PATH\")"
+      ],
+      "id": "ec0d26c3",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Check Dataset Size After Initial Cleaning\n",
+        "\n",
+        "The number of records remaining after duplicate removal and fasting-value update is checked before additional transformations are applied."
+      ],
+      "id": "3a2a0fae"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "df.__len__()"
+      ],
+      "id": "a17cf726",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Preview Updated Dataset\n",
+        "\n",
+        "The dataset is previewed again to inspect the current state after duplicate removal and fasting-value update."
+      ],
+      "id": "f9f69563"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "df.head()"
+      ],
+      "id": "01031c04",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Convert Anthropometric Columns to Numeric Format\n",
+        "\n",
+        "The columns `BMI`, `Weight (KG)`, and `Height (CM)` are converted to numeric data types. Any non-convertible values are coerced to missing values using `errors=\"coerce\"`.\n",
+        "\n",
+        "This step ensures that these fields can be used reliably in later statistical analysis, visualization, or machine learning workflows."
+      ],
+      "id": "b61d1cc3"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "cols = [\"BMI\", \"Weight (KG)\", \"Height (CM)\"]\n",
+        "\n",
+        "for col in cols:\n",
+        "    df[col] = pd.to_numeric(df[col], errors=\"coerce\")"
+      ],
+      "id": "71285f5f",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Standardize Fasting Column to Numerical Values\n",
+        "\n",
+        "The original `Fasting` column may contain mixed-format values, such as numbers combined with units or text. A regular expression is used to extract the first numeric value from each entry.\n",
+        "\n",
+        "For example, a value such as `10.0MMOL` is converted to `10.0`. Records without a valid numeric fasting value are treated as missing."
+      ],
+      "id": "05142c88"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "import re   \n",
+        "def extract_numerical_value(value):\n",
+        "    if pd.isna(value):\n",
+        "        return None\n",
+        "    match = re.search(r\"(\\d+\\.?\\d*)\", str(value))\n",
+        "    return float(match.group(1)) if match else None\n",
+        "df[\"Fasting\"] = df[\"Fasting\"].apply(extract_numerical_value)\n",
+        "df[\"Fasting\"] = df[\"Fasting\"].astype(float)\n",
+        "df.dropna(subset=[\"Fasting\"], inplace=True)"
+      ],
+      "id": "f53b3cf6",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Verify Numerical Standardization\n",
+        "\n",
+        "This verification step confirms how many records have valid numerical fasting values after extraction and type conversion. It also reports the number of missing fasting values and the remaining dataset size."
+      ],
+      "id": "a1b936cc"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "print(\"=== Fasting Column Standardization Verification ===\\n\")\n",
+        "print(f\"Records with numerical Fasting values: {df['Fasting'].notna().sum()}\")\n",
+        "print(f\"Records with missing Fasting: {df['Fasting'].isna().sum()}\")\n",
+        "print(f\"\\nTotal records: {len(df)}\")"
+      ],
+      "id": "c701572b",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Remove Records with Missing Age\n",
+        "\n",
+        "Records with missing `Age` values are removed. Age is typically a key variable in diabetes-related analysis, and removing missing values here ensures that downstream analysis can rely on complete age information."
+      ],
+      "id": "3fda1acc"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "df.dropna(subset=[\"Age\"],inplace=True)"
+      ],
+      "id": "87ca8ece",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Export Cleaned Dataset\n",
+        "\n",
+        "The final dataset is previewed and then exported as an Excel file to the path defined by `CLEANED_DATASET_PATH`."
+      ],
+      "id": "44c681e9"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "df.head()\n",
+        "df.to_excel(clean_dataset_path, index=False)"
+      ],
+      "id": "ca46c326",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Cleaning Summary\n",
+        "\n",
+        "This cleaning workflow performs the following transformations:\n",
+        "\n",
+        "- Loads the primary diabetes patient dataset from an environment-defined path.\n",
+        "- Removes duplicate columns from the raw dataset.\n",
+        "- Removes duplicate patient records using `ID`, keeping the last occurrence.\n",
+        "- Loads a supplementary dataset and updates the primary `Fasting` values by matching on `ID`.\n",
+        "- Verifies the fasting-value update through count summaries and sample inspection.\n",
+        "- Converts `BMI`, `Weight (KG)`, and `Height (CM)` to numeric format.\n",
+        "- Extracts numeric values from mixed-format fasting glucose entries.\n",
+        "- Removes records missing valid fasting glucose values.\n",
+        "- Removes records missing age values.\n",
+        "- Saves the cleaned dataset for downstream analysis.\n",
+        "\n",
+        "## Reproducibility Notes\n",
+        "\n",
+        "Before rendering this document, ensure that:\n",
+        "\n",
+        "- A `.env` file exists or the required environment variables are already available in the execution environment.\n",
+        "- `DATASET_PATH` points to the raw Excel dataset.\n",
+        "- `NEW_PATH` points to the supplementary Excel dataset used for fasting-value updates.\n",
+        "- `CLEANED_DATASET_PATH` points to the desired cleaned dataset output location.\n",
+        "- The input datasets contain the required columns: `ID`, `Fasting`, `Age`, `BMI`, `Weight (KG)`, and `Height (CM)`.\n",
+        "- Required Python packages are installed: `pandas`, `python-dotenv`, and an Excel engine such as `openpyxl`.\n",
+        "\n",
+        "## Expected Output\n",
+        "\n",
+        "After running this document successfully, the output should be a cleaned Excel dataset with:\n",
+        "\n",
+        "- Duplicate columns removed.\n",
+        "- Duplicate patient IDs resolved.\n",
+        "- Updated fasting glucose values merged from the supplementary dataset.\n",
+        "- Numeric values extracted from the `Fasting` column.\n",
+        "- Anthropometric variables converted to numeric format.\n",
+        "- Records with missing `Fasting` or `Age` removed.\n",
+        "- Final cleaned data saved to `CLEANED_DATASET_PATH`."
+      ],
+      "id": "0378b806"
+    }
+  ],
+  "metadata": {
+    "kernelspec": {
+      "name": "python3",
+      "language": "python",
+      "display_name": "Python 3 (ipykernel)",
+      "path": "/home/miskat/Chittagong-Diabetes-Data-Analysis/.venv/share/jupyter/kernels/python3"
+    }
+  },
+  "nbformat": 4,
+  "nbformat_minor": 5
+}

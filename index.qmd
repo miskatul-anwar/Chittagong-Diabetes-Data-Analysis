@@ -46,10 +46,9 @@ Main tasks include:
 - Removing records with missing key analytical values.
 - Exporting the cleaned dataset for downstream analysis.
 
-File:
-
-[](process/initial_analysis.qmd)
-
+Check:
+- [Data Cleaning and Standardization](https://miskatul-anwar.github.io/Chittagong-Diabetes-Data-Analysis/process/data-wrangling.html)
+- [Final Evaluation](https://miskatul-anwar.github.io/Chittagong-Diabetes-Data-Analysis/process/final_calculation.html)
 ### Thana-Level Distribution and Age Group Analysis
 
 This page analyzes the cleaned dataset by region and age group.
@@ -65,7 +64,7 @@ Main tasks include:
 
 File:
 
-[](process/subdistrict-CC-Map.qmd)
+[Thana-Level Distribution and Age Group Analysis](https://miskatul-anwar.github.io/Chittagong-Diabetes-Data-Analysis/process/final_calculation.html)
 
 ### Spatial Mapping
 
@@ -80,8 +79,9 @@ Current map outputs include:
 
 Generated maps are saved in:
 
-[](process/subdistrict-CC-Map.qmd)
-
+- [Spatial Mapping](https://miskatul-anwar.github.io/Chittagong-Diabetes-Data-Analysis/process/subdistrict-CC-Map.html)
+- [Spatial Mapping 2](https://miskatul-anwar.github.io/Chittagong-Diabetes-Data-Analysis/process/City-Copr-Map.html)
+- [Based on Total Population](https://miskatul-anwar.github.io/Chittagong-Diabetes-Data-Analysis/process/controlled-uncontrolled.html)
 ## Data Inputs
 
 The project uses environment variables instead of hard-coded file paths.
