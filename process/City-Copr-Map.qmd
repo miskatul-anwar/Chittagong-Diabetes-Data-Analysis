@@ -25,7 +25,7 @@ The workflow follows these main steps:
 6. Classify diabetes percentages into fixed percentage intervals.
 7. Apply a red choropleth color palette, starting from a darker red shade.
 8. Save the final map as a PDF under the `report/` directory.
-9. Preview the generated PDF directly inside the rendered document.
+9. Preview the generated map directly with `display(fig)`.
 
 The diabetes percentages are classified into the following groups:
 
@@ -46,7 +46,6 @@ A custom red color palette is used for the choropleth map. Unlike very pale chor
 
 import os
 import re
-import base64
 
 import geopandas as gpd
 import pandas as pd
@@ -56,7 +55,7 @@ from dotenv import load_dotenv
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.patches import Patch
-from IPython.display import HTML, display
+from IPython.display import display
 
 
 # ============================
@@ -81,38 +80,6 @@ if not os.path.exists(GPKG_PATH):
 REPORT_DIR = "report"
 
 os.makedirs(REPORT_DIR, exist_ok=True)
-
-
-# ============================
-# PDF Preview Helper
-# ============================
-
-def preview_pdf(pdf_path, height=950):
-    """
-    Embed a generated PDF directly into the Quarto HTML output.
-
-    This avoids relative-path preview errors such as 'Not Found'
-    when the PDF exists but the rendered HTML cannot resolve the path.
-    """
-    with open(pdf_path, "rb") as pdf_file:
-        encoded_pdf = base64.b64encode(pdf_file.read()).decode("utf-8")
-
-    display(
-        HTML(
-            f"""
-            <object
-                data="data:application/pdf;base64,{encoded_pdf}"
-                type="application/pdf"
-                width="100%"
-                height="{height}px">
-                <p>
-                    PDF preview is unavailable.
-                    The file was generated at: <code>{pdf_path}</code>
-                </p>
-            </object>
-            """
-        )
-    )
 
 
 # ============================
@@ -197,9 +164,11 @@ name_fixes = {
     "Kotwali": "Kotwali",
     "Double Mooring": "Double Mooring",
     "Panchlaish": "Panchlaish",
+    "Panchaish": "Panchlaish",
     "Bayejid Bostami": "Bayejid Bostami",
     "Bayezid": "Bayejid Bostami",
     "Bayezid Bostami": "Bayejid Bostami",
+    "Bayazid": "Bayejid Bostami",
     "Chittagong Port": "Chittagong Port",
     "Bakalia": "Bakalia",
     "Patenga": "Patenga",
@@ -266,7 +235,16 @@ if len(vals) == 0:
 
 max_percent = vals.max()
 
-breaks = [1, 3, 5, 7, 9, 11, 13, max_percent]
+breaks = [
+    1,
+    3,
+    5,
+    7,
+    9,
+    11,
+    13,
+    max_percent,
+]
 
 diabetes_labels = [
     "1–3%",
@@ -328,24 +306,17 @@ diabetes_color_map = dict(zip(diabetes_labels, diabetes_palette))
 map_dat_plot["fill_color"] = map_dat_plot["pct_bin"].map(diabetes_color_map)
 
 outline_col = "#737373"
-outline_lwd = 0.50
+outline_lwd = 0.75
 
 
 # ============================
 # Render Map
 # ============================
 
-fig = Figure(figsize=(15, 17))
+fig = Figure(figsize=(12, 14))
 canvas = FigureCanvas(fig)
 
 ax = fig.subplots()
-
-fig.subplots_adjust(
-    left=0.02,
-    right=0.72,
-    top=0.98,
-    bottom=0.02,
-)
 
 map_dat_plot.plot(
     ax=ax,
@@ -367,15 +338,15 @@ for _, row in map_dat_plot.iterrows():
         point.x,
         point.y,
         row["label_name"],
-        fontsize=16,
+        fontsize=8,
         color="#1A1A1A",
         ha="center",
         va="center",
         bbox={
             "facecolor": "white",
-            "alpha": 0.76,
+            "alpha": 0.75,
             "edgecolor": "none",
-            "boxstyle": "round,pad=0.24",
+            "boxstyle": "round,pad=0.20",
         },
         zorder=5,
     )
@@ -396,21 +367,19 @@ diabetes_legend_handles = [
 
 diabetes_legend = ax.legend(
     handles=diabetes_legend_handles,
-    title="Distribution of\nDiabetes Patients (%)",
-    loc="center left",
-    bbox_to_anchor=(1.05, 0.50),
+    title="Diabetes\n Patients(%)",
+    loc="upper right",
     frameon=True,
-    fontsize=13,
-    title_fontsize=15,
-    borderaxespad=0.0,
+    fontsize=8,
+    title_fontsize=9,
 )
 
 diabetes_legend.get_frame().set_facecolor("white")
-diabetes_legend.get_frame().set_alpha(0.96)
+diabetes_legend.get_frame().set_alpha(0.95)
 
 
 # ============================
-# Save PDF and Preview
+# Save PDF and Display Figure
 # ============================
 
 ax.set_title("")
@@ -426,13 +395,10 @@ fig.savefig(
     diabetes_map_pdf,
     format="pdf",
     bbox_inches="tight",
-    pad_inches=0.25,
+    pad_inches=0.20,
 )
 
-preview_pdf(
-    diabetes_map_pdf,
-    height=950,
-)
+display(fig)
 ```
 
 Figure: Spatial distribution of diabetes patients across selected thanas of Chattogram City Corporation. The choropleth colors represent diabetes patient percentage classes, with darker red indicating higher percentages.
@@ -451,7 +417,7 @@ The map therefore combines two layers of information:
 1. Background choropleth layer: diabetes patient percentage by thana.
 2. Overlay pie-chart layer: age-group distribution by thana.
 
-The pie charts are placed at representative points inside the thana polygons. The `<=30 years` group is shown in yellow-orange, while the `>30 years` group is shown in deep blue. These colors are intentionally distinct from the red choropleth background.
+The pie charts are shifted slightly above each polygon’s own representative point, while labels remain exactly at the representative point. This prevents labels from drifting into neighboring polygons.
 
 ```{python}
 # ============================
@@ -460,7 +426,6 @@ The pie charts are placed at representative points inside the thana polygons. Th
 
 import os
 import re
-import base64
 import numpy as np
 
 import geopandas as gpd
@@ -472,7 +437,7 @@ from dotenv import load_dotenv
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.patches import Patch, Wedge, Circle
-from IPython.display import HTML, display
+from IPython.display import display
 
 
 # ============================
@@ -497,38 +462,6 @@ if not os.path.exists(GPKG_PATH):
 REPORT_DIR = "report"
 
 os.makedirs(REPORT_DIR, exist_ok=True)
-
-
-# ============================
-# PDF Preview Helper
-# ============================
-
-def preview_pdf(pdf_path, height=1100):
-    """
-    Embed a generated PDF directly into the Quarto HTML output.
-
-    This avoids relative-path preview errors such as 'Not Found'
-    when the PDF exists but the rendered HTML cannot resolve the path.
-    """
-    with open(pdf_path, "rb") as pdf_file:
-        encoded_pdf = base64.b64encode(pdf_file.read()).decode("utf-8")
-
-    display(
-        HTML(
-            f"""
-            <object
-                data="data:application/pdf;base64,{encoded_pdf}"
-                type="application/pdf"
-                width="100%"
-                height="{height}px">
-                <p>
-                    PDF preview is unavailable.
-                    The file was generated at: <code>{pdf_path}</code>
-                </p>
-            </object>
-            """
-        )
-    )
 
 
 # ============================
@@ -566,9 +499,9 @@ def draw_pie_with_percentages(
     colors,
     text_colors,
     radius,
-    label_fontsize=19,
+    label_fontsize=6,
     edgecolor="white",
-    linewidth=1.20,
+    linewidth=0.50,
 ):
     """
     Draw a miniature pie chart at a map coordinate
@@ -620,7 +553,7 @@ def draw_pie_with_percentages(
             zorder=9,
             path_effects=[
                 path_effects.withStroke(
-                    linewidth=3.0,
+                    linewidth=1.2,
                     foreground=stroke_color,
                 )
             ],
@@ -633,7 +566,7 @@ def draw_pie_with_percentages(
         radius=radius,
         facecolor="none",
         edgecolor="#222222",
-        linewidth=1.20,
+        linewidth=0.50,
         zorder=7,
     )
 
@@ -744,9 +677,11 @@ name_fixes = {
     "Kotwali": "Kotwali",
     "Double Mooring": "Double Mooring",
     "Panchlaish": "Panchlaish",
+    "Panchaish": "Panchlaish",
     "Bayejid Bostami": "Bayejid Bostami",
     "Bayezid": "Bayejid Bostami",
     "Bayezid Bostami": "Bayejid Bostami",
+    "Bayazid": "Bayejid Bostami",
     "Chittagong Port": "Chittagong Port",
     "Bakalia": "Bakalia",
     "Patenga": "Patenga",
@@ -839,7 +774,16 @@ if len(vals) == 0:
 
 max_percent = vals.max()
 
-breaks = [1, 3, 5, 7, 9, 11, 13, max_percent]
+breaks = [
+    1,
+    3,
+    5,
+    7,
+    9,
+    11,
+    13,
+    max_percent,
+]
 
 diabetes_labels = [
     "1–3%",
@@ -901,7 +845,7 @@ diabetes_color_map = dict(zip(diabetes_labels, diabetes_palette))
 map_dat_plot["fill_color"] = map_dat_plot["pct_bin"].map(diabetes_color_map)
 
 outline_col = "#737373"
-outline_lwd = 0.65
+outline_lwd = 0.75
 
 
 # ============================
@@ -927,17 +871,10 @@ age_text_color_map = {
 # Render Map
 # ============================
 
-fig = Figure(figsize=(28, 34))
+fig = Figure(figsize=(12, 14))
 canvas = FigureCanvas(fig)
 
 ax = fig.subplots()
-
-fig.subplots_adjust(
-    left=0.02,
-    right=0.72,
-    top=0.985,
-    bottom=0.015,
-)
 
 map_dat_plot.plot(
     ax=ax,
@@ -957,23 +894,54 @@ minx, miny, maxx, maxy = map_dat_plot.total_bounds
 map_width = maxx - minx
 map_height = maxy - miny
 
-pie_radius = min(map_width, map_height) * 0.070
+pie_radius = min(map_width, map_height) * 0.040
 
 
 # ============================
-# Draw Age Group Pie Charts
+# Add Labels at True Representative Points
+# ============================
+
+label_points = {}
+
+for _, row in map_dat_plot.iterrows():
+    point = row.geometry.representative_point()
+    label_points[row["label_name"]] = point
+
+    ax.text(
+        point.x,
+        point.y,
+        row["label_name"],
+        fontsize=8,
+        color="#1A1A1A",
+        ha="center",
+        va="center",
+        bbox={
+            "facecolor": "white",
+            "alpha": 0.80,
+            "edgecolor": "none",
+            "boxstyle": "round,pad=0.20",
+        },
+        zorder=10,
+    )
+
+
+# ============================
+# Draw Age Group Pie Charts Slightly Above Labels
 # ============================
 
 for _, row in map_dat_plot.iterrows():
     if pd.isna(row["age_le_30"]) or pd.isna(row["age_gt_30"]):
         continue
 
-    point = row.geometry.representative_point()
+    point = label_points[row["label_name"]]
+
+    pie_x = point.x
+    pie_y = point.y + pie_radius * 1.35
 
     draw_pie_with_percentages(
         ax=ax,
-        x=point.x,
-        y=point.y,
+        x=pie_x,
+        y=pie_y,
         values=[
             row["age_le_30"],
             row["age_gt_30"],
@@ -987,32 +955,7 @@ for _, row in map_dat_plot.iterrows():
             age_text_color_map[">30"],
         ],
         radius=pie_radius,
-        label_fontsize=19,
-    )
-
-
-# ============================
-# Add Thana Labels
-# ============================
-
-for _, row in map_dat_plot.iterrows():
-    point = row.geometry.representative_point()
-
-    ax.text(
-        point.x,
-        point.y - pie_radius * 1.68,
-        row["label_name"],
-        fontsize=24,
-        color="#1A1A1A",
-        ha="center",
-        va="top",
-        bbox={
-            "facecolor": "white",
-            "alpha": 0.80,
-            "edgecolor": "none",
-            "boxstyle": "round,pad=0.25",
-        },
-        zorder=10,
+        label_fontsize=6,
     )
 
 
@@ -1031,17 +974,15 @@ diabetes_legend_handles = [
 
 diabetes_legend = ax.legend(
     handles=diabetes_legend_handles,
-    title="Distribution of\nDiabetes Patients (%)",
-    loc="center left",
-    bbox_to_anchor=(0.9, 0.5),
+    title="Diabetes\n Patients(%)",
+    loc="upper right",
     frameon=True,
-    fontsize=20,
-    title_fontsize=22,
-    borderaxespad=0.0,
+    fontsize=8,
+    title_fontsize=9,
 )
 
 diabetes_legend.get_frame().set_facecolor("white")
-diabetes_legend.get_frame().set_alpha(0.96)
+diabetes_legend.get_frame().set_alpha(0.95)
 
 ax.add_artist(diabetes_legend)
 
@@ -1066,20 +1007,18 @@ age_legend_handles = [
 age_legend = ax.legend(
     handles=age_legend_handles,
     title="Age Group",
-    loc="center left",
-    bbox_to_anchor=(0.95, 0.40),
+    loc=(0.6,0.9),
     frameon=True,
-    fontsize=20,
-    title_fontsize=22,
-    borderaxespad=0.0,
+    fontsize=8,
+    title_fontsize=9,
 )
 
 age_legend.get_frame().set_facecolor("white")
-age_legend.get_frame().set_alpha(0.96)
+age_legend.get_frame().set_alpha(0.95)
 
 
 # ============================
-# Save PDF and Preview
+# Save PDF and Display Figure
 # ============================
 
 ax.set_title("")
@@ -1095,13 +1034,10 @@ fig.savefig(
     age_group_map_pdf,
     format="pdf",
     bbox_inches="tight",
-    pad_inches=0.25,
+    pad_inches=0.20,
 )
 
-preview_pdf(
-    age_group_map_pdf,
-    height=1150,
-)
+display(fig)
 ```
 
 Figure: Diabetes patient distribution and age-group composition across selected thanas of Chattogram City Corporation. The red choropleth background shows diabetes patient percentage classes, while miniature pie charts show the proportion of patients aged `<=30 years` and `>30 years` in each thana.

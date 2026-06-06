@@ -593,6 +593,80 @@ else:
     print("No records found inside CC.")
 ```
 
+```{python}
+import numpy as np
+import pandas as pd
+
+# 1. Define the population dictionary matching your standardized thanas_in_cc names
+cc_population = {
+    "Bayejid Bostami": 392242,
+    "Chandgaon": 312244,
+    "Bakalia": 226143,
+    "Kotwali": 338391,
+    "Double Mooring": 249344,
+    "Patenga": 249421,
+    "Chittagong Port": 341860,  # Mapped from 'Bandar'
+    "Halishahar": 234450,
+    "Pahartali": 265873,
+    "Khulshi": 283638,
+    "Panchlaish": 336901
+}
+
+# 2. Classify Fasting Status
+df["Fasting_Status"] = np.where(df["Fasting"] >= 7, "Not Controlled", "Controlled")
+
+# Filter data to only look at valid City Corporation records
+df_cc = df[df["Thana"].isin(cc_population.keys())].copy()
+
+
+# -----------------------------------------------------------------------------
+# METRIC 1: Percentage of records based on real population distribution
+# -----------------------------------------------------------------------------
+print("==================================================")
+print("  RECORD COUNT AS A % OF REAL THANA POPULATION   ")
+print("==================================================")
+thana_record_counts = df_cc["Thana"].value_counts()
+population_series = pd.Series(cc_population)
+
+# Calculate what % of the real-world population your dataset captures per thana
+sampling_rate_pct = (thana_record_counts / population_series) * 100
+print(sampling_rate_pct.round(4).to_string())
+print("\n")
+
+
+# -----------------------------------------------------------------------------
+# METRIC 2: Percentage for Controlled vs Not Controlled per Thana
+# -----------------------------------------------------------------------------
+print("==================================================")
+print("     CONTROL STATUS DISTRIBUTION PER THANA        ")
+print("==================================================")
+# Pivot counts into a cross-tab table
+status_counts = df_cc.groupby(["Thana", "Fasting_Status"]).size().unstack(fill_value=0)
+
+# Divide across rows (axis=0) to get the internal percentage split
+status_pct = status_counts.div(status_counts.sum(axis=1), axis=0) * 100
+print(status_pct.round(2).to_string())
+print("\n")
+
+
+# -----------------------------------------------------------------------------
+# VERIFICATION: Ensure the classes sum up to exactly 100%
+# -----------------------------------------------------------------------------
+print("==================================================")
+print("             100% SUM VERIFICATION                ")
+print("==================================================")
+verification_sum = status_pct.sum(axis=1)
+
+print("Row sums for each Thana:")
+print(verification_sum.to_string())
+
+print("-" * 50)
+if np.allclose(verification_sum, 100.0):
+    print(" Check Passed: Every single Thana splits perfectly to 100.0%!")
+else:
+    print("⚠️ Check Failed: Discrepancy found in row summations.")
+```
+
 ## Global Population Share and Verification
 
 The final section calculates the City Corporation share of the total dataset and the individual outside-City-Corporation Thana shares. These percentages are then summed to verify whether the classification accounts for the entire filtered dataset.

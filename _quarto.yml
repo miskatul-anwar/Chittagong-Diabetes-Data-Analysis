@@ -15,6 +15,7 @@ book:
     - process/final_calculation.qmd
     - process/City-Copr-Map.qmd
     - process/subdistrict-CC-Map.qmd
+    - process/controlled-uncontrolled.qmd
 
 format:
   html:

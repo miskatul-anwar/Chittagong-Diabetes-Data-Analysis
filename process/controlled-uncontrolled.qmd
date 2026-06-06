@@ -1,0 +1,654 @@
+---
+title: "Spatial Distribution of Diabetes Patients and Control Status in Chattogram City Corporation"
+format:
+  html:
+    code-fold: true
+    code-tools: true
+execute:
+  warning: false
+  message: false
+---
+
+## City Corporation Diabetes Share and Control Status
+
+This section visualizes diabetes patient share across selected thanas of Chattogram City Corporation using percentages calculated against the total City Corporation population.
+
+The choropleth background shows the percentage share of diabetes patients by thana. Miniature pie charts are placed on top of each thana to show the distribution of fasting control status:
+
+- `Controlled`
+- `Uncontrolled`
+
+The spatial boundary file path is loaded from the `.env` file using the `GPKG_PATH` environment variable.
+
+```{python}
+# ============================
+# Load Required Libraries
+# ============================
+
+import os
+import re
+import numpy as np
+
+import geopandas as gpd
+import pandas as pd
+import seaborn as sns
+import matplotlib.patheffects as path_effects
+
+from dotenv import load_dotenv
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+from matplotlib.patches import Patch, Wedge, Circle
+from IPython.display import display
+
+
+# ============================
+# Load Environment Variable
+# ============================
+
+load_dotenv()
+
+GPKG_PATH = os.getenv("GPKG_PATH")
+
+if GPKG_PATH is None:
+    raise ValueError("GPKG_PATH not found in .env file.")
+
+if not os.path.exists(GPKG_PATH):
+    raise FileNotFoundError(f"GPKG file not found at: {GPKG_PATH}")
+
+
+# ============================
+# Create Output Directory
+# ============================
+
+REPORT_DIR = "report"
+
+os.makedirs(REPORT_DIR, exist_ok=True)
+
+
+# ============================
+# Helper Functions
+# ============================
+
+def clean_key(x):
+    """
+    Standardize text for joining:
+    lowercase + remove all non-letter characters.
+    """
+    if pd.isna(x):
+        return None
+
+    return re.sub(r"[^a-z]", "", str(x).lower())
+
+
+def strip_admin_suffix(x):
+    """
+    Remove common administrative suffixes from place names.
+    """
+    if pd.isna(x):
+        return None
+
+    pattern = r"\s+(Sadar Upazila|Sadar|Upazila|Thana|PS)$"
+
+    return re.sub(pattern, "", str(x), flags=re.IGNORECASE).strip()
+
+
+def draw_pie_with_percentages(
+    ax,
+    x,
+    y,
+    values,
+    colors,
+    text_colors,
+    radius,
+    label_fontsize=6,
+    edgecolor="white",
+    linewidth=0.55,
+):
+    """
+    Draw a miniature pie chart at a map coordinate
+    and place percentage labels inside each slice.
+    """
+    total = sum(values)
+
+    if total <= 0:
+        return
+
+    start_angle = 90
+
+    for value, color, text_color in zip(values, colors, text_colors):
+        angle = 360 * value / total
+        end_angle = start_angle + angle
+
+        wedge = Wedge(
+            center=(x, y),
+            r=radius,
+            theta1=start_angle,
+            theta2=end_angle,
+            facecolor=color,
+            edgecolor=edgecolor,
+            linewidth=linewidth,
+            zorder=6,
+        )
+
+        ax.add_patch(wedge)
+
+        mid_angle = (start_angle + end_angle) / 2
+        mid_angle_rad = np.deg2rad(mid_angle)
+
+        label_x = x + radius * 0.58 * np.cos(mid_angle_rad)
+        label_y = y + radius * 0.58 * np.sin(mid_angle_rad)
+
+        label_text = f"{value:.1f}%"
+
+        stroke_color = "white" if text_color == "black" else "black"
+
+        ax.text(
+            label_x,
+            label_y,
+            label_text,
+            fontsize=label_fontsize,
+            color=text_color,
+            ha="center",
+            va="center",
+            weight="bold",
+            zorder=9,
+            path_effects=[
+                path_effects.withStroke(
+                    linewidth=1.25,
+                    foreground=stroke_color,
+                )
+            ],
+        )
+
+        start_angle = end_angle
+
+    outline = Circle(
+        xy=(x, y),
+        radius=radius,
+        facecolor="none",
+        edgecolor="#222222",
+        linewidth=0.55,
+        zorder=7,
+    )
+
+    ax.add_patch(outline)
+
+
+# ============================
+# Load Spatial Data
+# ============================
+
+bd_adm3 = gpd.read_file(GPKG_PATH)
+
+
+# ============================
+# Input Data: Diabetes Share by Thana
+# Based on Total City Corporation Population
+# ============================
+
+diab_city = pd.DataFrame(
+    {
+        "thana": [
+            "Bakalia",
+            "Bayejid Bostami",
+            "Chandgaon",
+            "Chittagong Port",
+            "Double Mooring",
+            "Halishahar",
+            "Khulshi",
+            "Kotwali",
+            "Pahartali",
+            "Panchlaish",
+            "Patenga",
+        ],
+        "percent": [
+            0.2680,
+            0.2708,
+            0.4183,
+            0.1316,
+            0.4712,
+            0.7443,
+            0.4961,
+            0.3697,
+            1.2322,
+            0.3209,
+            0.1014,
+        ],
+    }
+)
+
+
+# ============================
+# Input Data: Control Status Distribution by Thana
+# ============================
+
+control_city = pd.DataFrame(
+    {
+        "thana": [
+            "Bakalia",
+            "Bayejid Bostami",
+            "Chandgaon",
+            "Chittagong Port",
+            "Double Mooring",
+            "Halishahar",
+            "Khulshi",
+            "Kotwali",
+            "Pahartali",
+            "Panchlaish",
+            "Patenga",
+        ],
+        "controlled": [
+            16.67,
+            18.55,
+            13.09,
+            12.00,
+            14.81,
+            15.93,
+            18.12,
+            15.75,
+            17.03,
+            16.10,
+            18.18,
+        ],
+        "not_controlled": [
+            83.33,
+            81.45,
+            86.91,
+            88.00,
+            85.19,
+            84.07,
+            81.88,
+            84.25,
+            82.97,
+            83.90,
+            81.82,
+        ],
+    }
+)
+
+
+# ============================
+# Manual Name Harmonization
+# ============================
+
+name_fixes = {
+    "Bakalia": "Bakalia",
+    "Bayejid Bostami": "Bayejid Bostami",
+    "Bayezid": "Bayejid Bostami",
+    "Bayezid Bostami": "Bayejid Bostami",
+    "Bayazid": "Bayejid Bostami",
+    "Chandgaon": "Chandgaon",
+    "Chittagong Port": "Chittagong Port",
+    "Double Mooring": "Double Mooring",
+    "Halishahar": "Halishahar",
+    "Khulshi": "Khulshi",
+    "Kotwali": "Kotwali",
+    "Pahartali": "Pahartali",
+    "Panchlaish": "Panchlaish",
+    "Panchaish": "Panchlaish",
+    "Patenga": "Patenga",
+}
+
+
+# ============================
+# Prepare Spatial Dataset
+# ============================
+
+bd_ctg = bd_adm3.loc[
+    bd_adm3["NAME_2"].isin(["Chattogram", "Chittagong"])
+].copy()
+
+bd_ctg["thana_gadm"] = bd_ctg["NAME_3"]
+bd_ctg["name3_simple"] = bd_ctg["NAME_3"].apply(strip_admin_suffix)
+bd_ctg["name3_fixed"] = bd_ctg["name3_simple"].replace(name_fixes)
+bd_ctg["join_key_gadm"] = bd_ctg["name3_fixed"].apply(clean_key)
+
+
+# ============================
+# Prepare Diabetes Dataset
+# ============================
+
+diab_join = diab_city.copy()
+
+diab_join["thana_fixed"] = diab_join["thana"].replace(name_fixes)
+diab_join["join_key_diab"] = diab_join["thana_fixed"].apply(clean_key)
+
+
+# ============================
+# Prepare Control Status Dataset
+# ============================
+
+control_join = control_city.copy()
+
+control_join["thana_fixed"] = control_join["thana"].replace(name_fixes)
+control_join["join_key_control"] = control_join["thana_fixed"].apply(clean_key)
+
+
+# ============================
+# Join Spatial, Diabetes, and Control Data
+# ============================
+
+map_dat = bd_ctg.merge(
+    diab_join,
+    how="left",
+    left_on="join_key_gadm",
+    right_on="join_key_diab",
+)
+
+map_dat = map_dat.merge(
+    control_join[["join_key_control", "controlled", "not_controlled"]],
+    how="left",
+    left_on="join_key_gadm",
+    right_on="join_key_control",
+)
+
+
+# ============================
+# Join Quality Checks
+# ============================
+
+missing_diabetes_thanas = diab_join.loc[
+    ~diab_join["join_key_diab"].isin(map_dat["join_key_gadm"])
+].copy()
+
+if len(missing_diabetes_thanas) > 0:
+    unmatched = ", ".join(missing_diabetes_thanas["thana"].unique())
+    raise ValueError(f"Unmatched diabetes thanas detected: {unmatched}")
+
+
+missing_control_thanas = control_join.loc[
+    ~control_join["join_key_control"].isin(map_dat["join_key_gadm"])
+].copy()
+
+if len(missing_control_thanas) > 0:
+    unmatched = ", ".join(missing_control_thanas["thana"].unique())
+    raise ValueError(f"Unmatched control-status thanas detected: {unmatched}")
+
+
+# ============================
+# Classification Setup
+# ============================
+
+vals = map_dat["percent"].dropna()
+
+if len(vals) == 0:
+    raise ValueError("No percentage values available for binning.")
+
+max_percent = vals.max()
+
+breaks = [
+    0.10,
+    0.25,
+    0.40,
+    0.55,
+    0.70,
+    0.85,
+    1.00,
+    max_percent,
+]
+
+diabetes_labels = [
+    "0.10–0.25%",
+    "0.25–0.40%",
+    "0.40–0.55%",
+    "0.55–0.70%",
+    "0.70–0.85%",
+    "0.85–1.00%",
+    ">1.00%",
+]
+
+
+# ============================
+# Apply Classification
+# ============================
+
+map_dat["pct_bin"] = pd.cut(
+    map_dat["percent"],
+    bins=breaks,
+    labels=diabetes_labels,
+    right=True,
+    include_lowest=True,
+)
+
+map_dat["label_name"] = map_dat["name3_fixed"]
+
+map_dat_plot = map_dat.loc[
+    map_dat["percent"].notna()
+].copy()
+
+map_dat_plot["pct_bin"] = pd.Categorical(
+    map_dat_plot["pct_bin"],
+    categories=diabetes_labels,
+    ordered=True,
+)
+
+
+# ============================
+# Diabetes Choropleth Palette
+# ============================
+
+red_band = [
+    "#FCBBA1",
+    "#FC9272",
+    "#FB6A4A",
+    "#EF3B2C",
+    "#CB181D",
+    "#A50F15",
+    "#67000D",
+]
+
+diabetes_palette = sns.color_palette(
+    red_band,
+    n_colors=len(diabetes_labels),
+).as_hex()
+
+diabetes_color_map = dict(zip(diabetes_labels, diabetes_palette))
+
+map_dat_plot["fill_color"] = map_dat_plot["pct_bin"].map(diabetes_color_map)
+
+outline_col = "#737373"
+outline_lwd = 0.75
+
+
+# ============================
+# Control Status Pie Chart Palette
+# ============================
+
+# Controlled: yellow
+# Uncontrolled: bluish
+
+control_labels = [
+    "Controlled",
+    "Uncontrolled",
+]
+
+control_colors = sns.color_palette(
+    [
+        "#F0E442",
+        "#0072B2",
+    ],
+    n_colors=len(control_labels),
+).as_hex()
+
+control_color_map = dict(zip(control_labels, control_colors))
+
+control_text_color_map = {
+    "Controlled": "black",
+    "Uncontrolled": "white",
+}
+
+
+# ============================
+# Render Map
+# ============================
+
+fig = Figure(figsize=(12, 14))
+canvas = FigureCanvas(fig)
+
+ax = fig.subplots()
+
+map_dat_plot.plot(
+    ax=ax,
+    color=map_dat_plot["fill_color"].tolist(),
+    edgecolor=outline_col,
+    linewidth=outline_lwd,
+    zorder=1,
+)
+
+
+# ============================
+# Pie Chart Size
+# ============================
+
+minx, miny, maxx, maxy = map_dat_plot.total_bounds
+
+map_width = maxx - minx
+map_height = maxy - miny
+
+pie_radius = min(map_width, map_height) * 0.040
+
+
+# ============================
+# Add Labels at True Representative Points
+# ============================
+
+label_points = {}
+
+for _, row in map_dat_plot.iterrows():
+    point = row.geometry.representative_point()
+    label_points[row["label_name"]] = point
+
+    ax.text(
+        point.x,
+        point.y,
+        row["label_name"],
+        fontsize=8,
+        color="#1A1A1A",
+        ha="center",
+        va="center",
+        bbox={
+            "facecolor": "white",
+            "alpha": 0.80,
+            "edgecolor": "none",
+            "boxstyle": "round,pad=0.20",
+        },
+        zorder=10,
+    )
+
+
+# ============================
+# Draw Control Status Pie Charts Slightly Above Labels
+# ============================
+
+for _, row in map_dat_plot.iterrows():
+    if pd.isna(row["controlled"]) or pd.isna(row["not_controlled"]):
+        continue
+
+    point = label_points[row["label_name"]]
+
+    pie_x = point.x
+    pie_y = point.y + pie_radius * 1.35
+
+    draw_pie_with_percentages(
+        ax=ax,
+        x=pie_x,
+        y=pie_y,
+        values=[
+            row["controlled"],
+            row["not_controlled"],
+        ],
+        colors=[
+            control_color_map["Controlled"],
+            control_color_map["Uncontrolled"],
+        ],
+        text_colors=[
+            control_text_color_map["Controlled"],
+            control_text_color_map["Uncontrolled"],
+        ],
+        radius=pie_radius,
+        label_fontsize=6,
+    )
+
+
+# ============================
+# Diabetes Legend
+# ============================
+
+diabetes_legend_handles = [
+    Patch(
+        facecolor=diabetes_color_map[label],
+        edgecolor=outline_col,
+        label=label,
+    )
+    for label in diabetes_labels
+]
+
+diabetes_legend = ax.legend(
+    handles=diabetes_legend_handles,
+    title="Diabetes \nPatient-to-Population\nRatio(%)",
+    loc="upper right",
+    frameon=True,
+    fontsize=7,
+    title_fontsize=8,
+)
+
+diabetes_legend.get_frame().set_facecolor("white")
+diabetes_legend.get_frame().set_alpha(0.95)
+
+ax.add_artist(diabetes_legend)
+
+
+# ============================
+# Control Status Legend
+# ============================
+
+control_legend_handles = [
+    Patch(
+        facecolor=control_color_map["Controlled"],
+        edgecolor="#333333",
+        label="Controlled",
+    ),
+    Patch(
+        facecolor=control_color_map["Uncontrolled"],
+        edgecolor="#333333",
+        label="Uncontrolled",
+    ),
+]
+
+control_legend = ax.legend(
+    handles=control_legend_handles,
+    title="Control Status",
+    loc=(0.6,0.9),
+    frameon=True,
+    fontsize=8,
+    title_fontsize=9,
+)
+
+control_legend.get_frame().set_facecolor("white")
+control_legend.get_frame().set_alpha(0.95)
+
+
+# ============================
+# Save PDF and Display Figure
+# ============================
+
+ax.set_title("")
+ax.set_axis_off()
+ax.set_aspect("equal")
+
+control_status_map_pdf = os.path.join(
+    REPORT_DIR,
+    "chattogram_city_diabetes_control_status_map.pdf",
+)
+
+fig.savefig(
+    control_status_map_pdf,
+    format="pdf",
+    bbox_inches="tight",
+    pad_inches=0.20,
+)
+
+display(fig)
+```
+
+Figure: Diabetes patient share and fasting control status distribution across selected thanas of Chattogram City Corporation. The red choropleth background shows diabetes patient share as a percentage of the total City Corporation population, while miniature pie charts show the percentage distribution of controlled and Uncontrolled cases.

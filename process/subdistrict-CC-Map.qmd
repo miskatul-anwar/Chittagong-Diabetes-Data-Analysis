@@ -56,7 +56,6 @@ The diabetes patient shares are classified into fixed classes:
 
 import os
 import re
-import base64
 
 import geopandas as gpd
 import pandas as pd
@@ -66,7 +65,7 @@ from dotenv import load_dotenv
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.patches import Patch
-from IPython.display import HTML, display
+from IPython.display import display
 
 
 # ============================
@@ -91,6 +90,7 @@ if not os.path.exists(GPKG_PATH):
 REPORT_DIR = "report"
 
 os.makedirs(REPORT_DIR, exist_ok=True)
+
 
 # ============================
 # Helper Functions
@@ -442,17 +442,10 @@ outline_lwd = 0.75
 # Render Map
 # ============================
 
-fig = Figure(figsize=(34, 40))
+fig = Figure(figsize=(12, 14))
 canvas = FigureCanvas(fig)
 
 ax = fig.subplots()
-
-fig.subplots_adjust(
-    left=0.015,
-    right=0.82,
-    top=0.990,
-    bottom=0.010,
-)
 
 plot_all.plot(
     ax=ax,
@@ -471,11 +464,10 @@ for _, row in plot_all.iterrows():
     point = row.geometry.representative_point()
 
     label_text = row["label_name"]
-    label_fontsize = 22
+    label_fontsize = 8
 
     if row["label_name"] == "Chittagong City Corporation":
         label_text = "Chittagong City\nCorporation"
-        label_fontsize = 24
 
     ax.text(
         point.x,
@@ -487,9 +479,9 @@ for _, row in plot_all.iterrows():
         va="center",
         bbox={
             "facecolor": "white",
-            "alpha": 0.82,
+            "alpha": 0.75,
             "edgecolor": "none",
-            "boxstyle": "round,pad=0.28",
+            "boxstyle": "round,pad=0.20",
         },
         zorder=5,
     )
@@ -511,20 +503,18 @@ diabetes_legend_handles = [
 diabetes_legend = ax.legend(
     handles=diabetes_legend_handles,
     title="Diabetes Patients\n(%)",
-    loc="center left",
-    bbox_to_anchor=(1.012, 0.52),
+    loc="upper right",
     frameon=True,
-    fontsize=22,
-    title_fontsize=25,
-    borderaxespad=0.0,
+    fontsize=8,
+    title_fontsize=9,
 )
 
 diabetes_legend.get_frame().set_facecolor("white")
-diabetes_legend.get_frame().set_alpha(0.96)
+diabetes_legend.get_frame().set_alpha(0.95)
 
 
 # ============================
-# Save PDF and PNG
+# Save PDF and Display Figure
 # ============================
 
 ax.set_title("")
@@ -536,22 +526,9 @@ district_map_pdf = os.path.join(
     "chattogram_diabetes_share_map.pdf",
 )
 
-district_map_png = os.path.join(
-    REPORT_DIR,
-    "chattogram_diabetes_share_map.png",
-)
-
 fig.savefig(
     district_map_pdf,
     format="pdf",
-    bbox_inches="tight",
-    pad_inches=0.20,
-)
-
-fig.savefig(
-    district_map_png,
-    format="png",
-    dpi=120,
     bbox_inches="tight",
     pad_inches=0.20,
 )
@@ -573,6 +550,8 @@ For outside-CC upazilas, each pie chart uses the corresponding upazila-level age
 * `<=30 years`: `8.85%`
 * `>30 years`: `91.15%`
 
+In this map, labels are placed directly at each polygon’s own representative point. The pie charts are shifted slightly upward from the same representative point. This prevents labels from drifting into neighboring polygons.
+
 ```{python}
 # ============================
 # Load Required Libraries
@@ -580,7 +559,6 @@ For outside-CC upazilas, each pie chart uses the corresponding upazila-level age
 
 import os
 import re
-import base64
 import numpy as np
 
 import geopandas as gpd
@@ -592,7 +570,7 @@ from dotenv import load_dotenv
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.patches import Patch, Wedge, Circle
-from IPython.display import HTML, display
+from IPython.display import display
 
 
 # ============================
@@ -617,6 +595,7 @@ if not os.path.exists(GPKG_PATH):
 REPORT_DIR = "report"
 
 os.makedirs(REPORT_DIR, exist_ok=True)
+
 
 # ============================
 # Helper Functions
@@ -663,9 +642,9 @@ def draw_pie_with_percentages(
     colors,
     text_colors,
     radius,
-    label_fontsize=18,
+    label_fontsize=6,
     edgecolor="white",
-    linewidth=1.30,
+    linewidth=0.50,
 ):
     """
     Draw a miniature pie chart at a map coordinate
@@ -717,7 +696,7 @@ def draw_pie_with_percentages(
             zorder=9,
             path_effects=[
                 path_effects.withStroke(
-                    linewidth=3.2,
+                    linewidth=1.2,
                     foreground=stroke_color,
                 )
             ],
@@ -730,7 +709,7 @@ def draw_pie_with_percentages(
         radius=radius,
         facecolor="none",
         edgecolor="#222222",
-        linewidth=1.30,
+        linewidth=0.50,
         zorder=7,
     )
 
@@ -1160,17 +1139,10 @@ age_text_color_map = {
 # Render Map
 # ============================
 
-fig = Figure(figsize=(38, 46))
+fig = Figure(figsize=(12, 14))
 canvas = FigureCanvas(fig)
 
 ax = fig.subplots()
-
-fig.subplots_adjust(
-    left=0.015,
-    right=0.82,
-    top=0.990,
-    bottom=0.010,
-)
 
 plot_all.plot(
     ax=ax,
@@ -1190,23 +1162,60 @@ minx, miny, maxx, maxy = plot_all.total_bounds
 map_width = maxx - minx
 map_height = maxy - miny
 
-pie_radius = min(map_width, map_height) * 0.047
+pie_radius = min(map_width, map_height) * 0.040
 
 
 # ============================
-# Draw Age Group Pie Charts
+# Add Labels at True Representative Points
+# ============================
+
+label_points = {}
+
+for _, row in plot_all.iterrows():
+    point = row.geometry.representative_point()
+    label_points[row["label_name"]] = point
+
+    label_text = row["label_name"]
+    label_fontsize = 8
+
+    if row["label_name"] == "Chittagong City Corporation":
+        label_text = "Chittagong City\nCorporation"
+
+    ax.text(
+        point.x,
+        point.y,
+        label_text,
+        fontsize=label_fontsize,
+        color="#1A1A1A",
+        ha="center",
+        va="center",
+        bbox={
+            "facecolor": "white",
+            "alpha": 0.80,
+            "edgecolor": "none",
+            "boxstyle": "round,pad=0.20",
+        },
+        zorder=10,
+    )
+
+
+# ============================
+# Draw Age Group Pie Charts Slightly Above Labels
 # ============================
 
 for _, row in plot_all.iterrows():
     if pd.isna(row["age_le_30"]) or pd.isna(row["age_gt_30"]):
         continue
 
-    point = row.geometry.representative_point()
+    point = label_points[row["label_name"]]
+
+    pie_x = point.x
+    pie_y = point.y + pie_radius * 1.35
 
     draw_pie_with_percentages(
         ax=ax,
-        x=point.x,
-        y=point.y,
+        x=pie_x,
+        y=pie_y,
         values=[
             row["age_le_30"],
             row["age_gt_30"],
@@ -1220,61 +1229,7 @@ for _, row in plot_all.iterrows():
             age_text_color_map[">30"],
         ],
         radius=pie_radius,
-        label_fontsize=18,
-    )
-
-
-# ============================
-# Add Labels
-# ============================
-
-label_offsets = {
-    "Mirsharai": (0.00, 0.00),
-    "Fatikchhari": (0.00, 0.00),
-    "Sandwip": (0.00, 0.00),
-    "Sitakunda": (0.00, 0.00),
-    "Hathazari": (0.00, 0.00),
-    "Raozan": (0.00, 0.00),
-    "Rangunia": (0.00, 0.00),
-    "Boalkhali": (0.00, 0.00),
-    "Patiya": (0.00, 0.00),
-    "Anowara": (0.00, 0.00),
-    "Chandanaish": (0.00, 0.00),
-    "Satkania": (0.00, 0.00),
-    "Lohagara": (0.00, 0.00),
-    "Banshkhali": (0.00, 0.00),
-    "Chittagong City Corporation": (0.00, 0.00),
-}
-
-for _, row in plot_all.iterrows():
-    point = row.geometry.representative_point()
-
-    label_text = row["label_name"]
-    label_fontsize = 22
-    x_offset, y_offset = label_offsets.get(row["label_name"], (0.00, 0.00))
-    label_y = point.y - pie_radius * 1.55 + y_offset
-    label_x = point.x + x_offset
-
-    if row["label_name"] == "Chittagong City Corporation":
-        label_text = "Chittagong City\nCorporation"
-        label_fontsize = 23
-        label_y = point.y - pie_radius * 1.70 + y_offset
-
-    ax.text(
-        label_x,
-        label_y,
-        label_text,
-        fontsize=label_fontsize,
-        color="#1A1A1A",
-        ha="center",
-        va="top",
-        bbox={
-            "facecolor": "white",
-            "alpha": 0.84,
-            "edgecolor": "none",
-            "boxstyle": "round,pad=0.28",
-        },
-        zorder=10,
+        label_fontsize=6,
     )
 
 
@@ -1294,16 +1249,14 @@ diabetes_legend_handles = [
 diabetes_legend = ax.legend(
     handles=diabetes_legend_handles,
     title="Diabetes Patients\n(%)",
-    loc="center left",
-    bbox_to_anchor=(1.012, 0.64),
+    loc="upper right",
     frameon=True,
-    fontsize=22,
-    title_fontsize=25,
-    borderaxespad=0.0,
+    fontsize=8,
+    title_fontsize=9,
 )
 
 diabetes_legend.get_frame().set_facecolor("white")
-diabetes_legend.get_frame().set_alpha(0.96)
+diabetes_legend.get_frame().set_alpha(0.95)
 
 ax.add_artist(diabetes_legend)
 
@@ -1328,20 +1281,18 @@ age_legend_handles = [
 age_legend = ax.legend(
     handles=age_legend_handles,
     title="Age Group",
-    loc="center left",
-    bbox_to_anchor=(1.012, 0.42),
+    loc=(0.7,0.9),
     frameon=True,
-    fontsize=22,
-    title_fontsize=25,
-    borderaxespad=0.0,
+    fontsize=8,
+    title_fontsize=9,
 )
 
 age_legend.get_frame().set_facecolor("white")
-age_legend.get_frame().set_alpha(0.96)
+age_legend.get_frame().set_alpha(0.95)
 
 
 # ============================
-# Save PDF and PNG
+# Save PDF and Display Figure
 # ============================
 
 ax.set_title("")
@@ -1353,22 +1304,9 @@ district_age_map_pdf = os.path.join(
     "chattogram_diabetes_share_age_group_map.pdf",
 )
 
-district_age_map_png = os.path.join(
-    REPORT_DIR,
-    "chattogram_diabetes_share_age_group_map.png",
-)
-
 fig.savefig(
     district_age_map_pdf,
     format="pdf",
-    bbox_inches="tight",
-    pad_inches=0.20,
-)
-
-fig.savefig(
-    district_age_map_png,
-    format="png",
-    dpi=120,
     bbox_inches="tight",
     pad_inches=0.20,
 )
