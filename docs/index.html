@@ -116,7 +116,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 </head>
 
-<body class="nav-sidebar floating quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+<body class="nav-sidebar floating fullcontent quarto-light"><script id="quarto-html-before-body" type="application/javascript">
     const toggleBodyColorMode = (bsSheetEl) => {
       const mode = bsSheetEl.getAttribute("data-mode");
       const bodyEl = window.document.querySelector("body");
@@ -362,21 +362,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active">
-    <h2 id="toc-title">Table of contents</h2>
-   
-  <ul class="collapse">
-  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">Overview</a></li>
-  <li><a href="#project-goals" id="toc-project-goals" class="nav-link" data-scroll-target="#project-goals">Project Goals</a></li>
-  <li><a href="#current-analysis-pages" id="toc-current-analysis-pages" class="nav-link" data-scroll-target="#current-analysis-pages">Current Analysis Pages</a></li>
-  <li><a href="#regional-classification" id="toc-regional-classification" class="nav-link" data-scroll-target="#regional-classification">Regional Classification</a></li>
-  <li><a href="#key-outputs" id="toc-key-outputs" class="nav-link" data-scroll-target="#key-outputs">Key Outputs</a></li>
-  <li><a href="#reproducibility" id="toc-reproducibility" class="nav-link" data-scroll-target="#reproducibility">Reproducibility</a></li>
-  <li><a href="#render-the-project" id="toc-render-the-project" class="nav-link" data-scroll-target="#render-the-project">Render the Project</a></li>
-  </ul>
-</nav>
-    </div>
+    
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
@@ -384,7 +370,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
 <div class="quarto-title-block"><div><h1 class="title">Chittagong Diabetes Data Analysis</h1><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
-<p class="subtitle lead">Diabetes data cleaning, thana-level distribution, age-group patterns, and control status mapping</p>
+<p class="subtitle lead">A reproducible diabetes data analysis and mapping project for Chattogram</p>
 </div>
 
 
@@ -416,125 +402,31 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="overview" class="level2">
 <h2 class="anchored" data-anchor-id="overview">Overview</h2><p><img src="cover.png" title="Chattogram Diabetes Data Analysis" class="quarto-cover-image nolightbox img-fluid"></p>
-<p>This project analyzes diabetes patient data from the Chittagong region using a reproducible Python and Quarto workflow. The work covers data cleaning, fasting glucose standardization, thana-level distribution analysis, City Corporation classification, age-group summaries, and spatial mapping.</p>
-<p>The project focuses on preparing clean, analysis-ready clinical data and producing regional summaries for Chattogram City Corporation and outside-City-Corporation areas.</p>
+<p>This project presents a reproducible workflow for cleaning, analyzing, and mapping diabetes patient data from the Chittagong region.</p>
+<p>The analysis covers clinical data preparation, thana-level distribution, age-group patterns, City Corporation classification, spatial mapping, and control-status visualization.</p>
+<p>Use the pages below to explore the full workflow.</p>
 </section>
-<section id="project-goals" class="level2">
-<h2 class="anchored" data-anchor-id="project-goals">Project Goals</h2>
+<section id="start-here" class="level2">
+<h2 class="anchored" data-anchor-id="start-here">Start Here</h2>
 <ul>
-<li>Clean and standardize raw diabetes patient records.</li>
-<li>Update fasting glucose values using supplementary patient-level data.</li>
-<li>Standardize thana names for reliable regional analysis.</li>
-<li>Compare diabetes patient distribution inside and outside Chattogram City Corporation.</li>
-<li>Analyze age-group patterns using <code>&lt;=30</code> and <code>&gt;30</code> categories.</li>
-<li>Map thana-level diabetes distribution and control status.</li>
-<li>Generate reproducible outputs for reporting and future analysis.</li>
+<li><p><a href="process/data-wrangling.html">Data Cleaning and Standardization</a></p>
+<p>Clean raw diabetes records, remove duplicates, update fasting glucose values, and prepare the dataset for analysis.</p></li>
+<li><p><a href="process/fasting-body-composition-lifestyle.html">Clinical Pattern Analysis</a></p>
+<p>Explore fasting glucose, body composition, and lifestyle-related patterns by age group.</p></li>
+<li><p><a href="process/final_calculation.html">Final Calculation and Regional Summary</a></p>
+<p>Review thana-level population distribution, City Corporation grouping, and age-group percentage summaries.</p></li>
 </ul>
 </section>
-<section id="current-analysis-pages" class="level2">
-<h2 class="anchored" data-anchor-id="current-analysis-pages">Current Analysis Pages</h2>
-<section id="data-cleaning-and-standardization" class="level3">
-<h3 class="anchored" data-anchor-id="data-cleaning-and-standardization">Data Cleaning and Standardization</h3>
-<p>This page prepares the raw clinical dataset for analysis.</p>
-<p>Main tasks include:</p>
+<section id="spatial-maps" class="level2">
+<h2 class="anchored" data-anchor-id="spatial-maps">Spatial Maps</h2>
 <ul>
-<li>Loading raw and supplementary datasets from environment variables.</li>
-<li>Removing duplicate columns and duplicate patient records.</li>
-<li>Updating fasting glucose values by patient <code>ID</code>.</li>
-<li>Converting clinical fields such as fasting glucose, BMI, weight, and height into numeric format.</li>
-<li>Removing records with missing key analytical values.</li>
-<li>Exporting the cleaned dataset for downstream analysis.</li>
+<li><p><a href="process/City-Copr-Map.html">City Corporation Map</a></p>
+<p>View diabetes distribution and age-group composition across Chattogram City Corporation thanas.</p></li>
+<li><p><a href="process/subdistrict-CC-Map.html">Chattogram District Map</a></p>
+<p>Compare diabetes distribution between Chattogram City Corporation and outside-City-Corporation upazilas.</p></li>
+<li><p><a href="process/controlled-uncontrolled.html">Control Status Map</a></p>
+<p>View diabetes share by thana with controlled and uncontrolled status shown using pie charts.</p></li>
 </ul>
-<p>Check: - <a href="https://miskatul-anwar.github.io/Chittagong-Diabetes-Data-Analysis/process/data-wrangling.html">Data Cleaning and Standardization</a> - <a href="https://miskatul-anwar.github.io/Chittagong-Diabetes-Data-Analysis/process/final_calculation.html">Final Evaluation</a> ### Thana-Level Distribution and Age Group Analysis</p>
-<p>This page analyzes the cleaned dataset by region and age group.</p>
-<p>Main tasks include:</p>
-<ul>
-<li>Standardizing thana names.</li>
-<li>Separating records into City Corporation and outside-City-Corporation groups.</li>
-<li>Calculating thana-wise population shares.</li>
-<li>Summarizing age-group distribution by thana.</li>
-<li>Checking whether all filtered records are correctly classified.</li>
-<li>Preparing percentage summaries for maps and reports.</li>
-</ul>
-<p>File:</p>
-<p><a href="https://miskatul-anwar.github.io/Chittagong-Diabetes-Data-Analysis/process/final_calculation.html">Thana-Level Distribution and Age Group Analysis</a></p>
-</section>
-<section id="spatial-mapping" class="level3">
-<h3 class="anchored" data-anchor-id="spatial-mapping">Spatial Mapping</h3>
-<p>The mapping outputs show diabetes distribution across Chattogram using GADM administrative boundaries.</p>
-<p>Current map outputs include:</p>
-<ul>
-<li>Chattogram City Corporation diabetes distribution.</li>
-<li>City Corporation control-status pie charts by thana.</li>
-<li>Chattogram district-level diabetes share map.</li>
-<li>Outside-City-Corporation and City Corporation age-group composition maps.</li>
-</ul>
-<p>Generated maps are saved in:</p>
-<ul>
-<li><a href="https://miskatul-anwar.github.io/Chittagong-Diabetes-Data-Analysis/process/subdistrict-CC-Map.html">Spatial Mapping</a></li>
-<li><a href="https://miskatul-anwar.github.io/Chittagong-Diabetes-Data-Analysis/process/City-Copr-Map.html">Spatial Mapping 2</a></li>
-<li><a href="https://miskatul-anwar.github.io/Chittagong-Diabetes-Data-Analysis/process/controlled-uncontrolled.html">Based on Total Population</a> ## Data Inputs</li>
-</ul>
-<p>The project uses environment variables instead of hard-coded file paths.</p>
-<p>Required variables:</p>
-<pre class="text"><code>DATASET_PATH
-NEW_PATH
-CLEANED_DATASET_PATH
-GPKG_PATH</code></pre>
-<p>These paths should be defined in a <code>.env</code> file before rendering the project.</p>
-</section>
-</section>
-<section id="regional-classification" class="level2">
-<h2 class="anchored" data-anchor-id="regional-classification">Regional Classification</h2>
-<section id="city-corporation-thanas" class="level3">
-<h3 class="anchored" data-anchor-id="city-corporation-thanas">City Corporation Thanas</h3>
-<pre class="text"><code>Bayejid Bostami, Chandgaon, Bakalia, Kotwali, Double Mooring, Patenga,
-Chittagong Port, Halishahar, Pahartali, Khulshi, Panchlaish</code></pre>
-</section>
-<section id="outside-city-corporation-upazilas" class="level3">
-<h3 class="anchored" data-anchor-id="outside-city-corporation-upazilas">Outside City Corporation Upazilas</h3>
-<pre class="text"><code>Mirsharai, Fatikchhari, Raozan, Sitakunda, Hathazari, Boalkhali,
-Patiya, Chandanaish, Sandwip, Rangunia, Anowara, Satkania,
-Banshkhali, Lohagara</code></pre>
-</section>
-</section>
-<section id="key-outputs" class="level2">
-<h2 class="anchored" data-anchor-id="key-outputs">Key Outputs</h2>
-<ul>
-<li>Cleaned diabetes dataset.</li>
-<li>Updated fasting glucose values.</li>
-<li>Standardized thana names.</li>
-<li>City Corporation and outside-City-Corporation summaries.</li>
-<li>Age-group percentage tables.</li>
-<li>Thana-wise diabetes distribution tables.</li>
-<li>Control-status distribution tables.</li>
-<li>PDF maps saved under <code>report/</code>.</li>
-</ul>
-</section>
-<section id="reproducibility" class="level2">
-<h2 class="anchored" data-anchor-id="reproducibility">Reproducibility</h2>
-<p>Before rendering, confirm that:</p>
-<ul>
-<li>The <code>.env</code> file exists.</li>
-<li>All dataset paths are valid.</li>
-<li>Required Python packages are installed.</li>
-<li>The cleaning page is rendered before dependent analysis pages.</li>
-</ul>
-<p>Required Python packages include:</p>
-<pre class="text"><code>pandas
-numpy
-geopandas
-seaborn
-python-dotenv
-openpyxl
-matplotlib</code></pre>
-</section>
-<section id="render-the-project" class="level2">
-<h2 class="anchored" data-anchor-id="render-the-project">Render the Project</h2>
-<p>Render the full Quarto project:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">quarto</span> render</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Preview the site locally:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">quarto</span> preview</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 
 
 <!-- -->
@@ -1015,169 +907,57 @@ matplotlib</code></pre>
       </a>
   </div>
 </nav><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Chittagong Diabetes Data Analysis"</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="an">subtitle:</span><span class="co"> "Diabetes data cleaning, thana-level distribution, age-group patterns, and control status mapping"</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="an">author:</span><span class="co"> "Miskatul Anwar"</span></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="an">date:</span><span class="co"> "2026-06-05"</span></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="an">number-sections:</span><span class="co"> false</span></span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span></span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="co">  html:</span></span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="co">    toc: true</span></span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="co">    toc-depth: 2</span></span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="co">    code-fold: false</span></span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="co">    code-tools: true</span></span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="an">execute:</span></span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="co">  warning: false</span></span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a><span class="co">  message: false</span></span>
-<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a><span class="fu">## Overview</span></span>
-<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>This project analyzes diabetes patient data from the Chittagong region using a reproducible Python and Quarto workflow. The work covers data cleaning, fasting glucose standardization, thana-level distribution analysis, City Corporation classification, age-group summaries, and spatial mapping.</span>
-<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>The project focuses on preparing clean, analysis-ready clinical data and producing regional summaries for Chattogram City Corporation and outside-City-Corporation areas.</span>
-<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a><span class="fu">## Project Goals</span></span>
-<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Clean and standardize raw diabetes patient records.</span>
-<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Update fasting glucose values using supplementary patient-level data.</span>
-<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Standardize thana names for reliable regional analysis.</span>
-<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Compare diabetes patient distribution inside and outside Chattogram City Corporation.</span>
-<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Analyze age-group patterns using <span class="in">`&lt;=30`</span> and <span class="in">`&gt;30`</span> categories.</span>
-<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Map thana-level diabetes distribution and control status.</span>
-<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Generate reproducible outputs for reporting and future analysis.</span>
-<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a><span class="fu">## Current Analysis Pages</span></span>
-<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a><span class="fu">### Data Cleaning and Standardization</span></span>
-<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a>This page prepares the raw clinical dataset for analysis.</span>
-<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a>Main tasks include:</span>
-<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Loading raw and supplementary datasets from environment variables.</span>
-<span id="cb7-43"><a href="#cb7-43" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Removing duplicate columns and duplicate patient records.</span>
-<span id="cb7-44"><a href="#cb7-44" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Updating fasting glucose values by patient <span class="in">`ID`</span>.</span>
-<span id="cb7-45"><a href="#cb7-45" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Converting clinical fields such as fasting glucose, BMI, weight, and height into numeric format.</span>
-<span id="cb7-46"><a href="#cb7-46" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Removing records with missing key analytical values.</span>
-<span id="cb7-47"><a href="#cb7-47" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Exporting the cleaned dataset for downstream analysis.</span>
-<span id="cb7-48"><a href="#cb7-48" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-49"><a href="#cb7-49" aria-hidden="true" tabindex="-1"></a>Check:</span>
-<span id="cb7-50"><a href="#cb7-50" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">Data Cleaning and Standardization</span><span class="co">](https://miskatul-anwar.github.io/Chittagong-Diabetes-Data-Analysis/process/data-wrangling.html)</span></span>
-<span id="cb7-51"><a href="#cb7-51" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">Final Evaluation</span><span class="co">](https://miskatul-anwar.github.io/Chittagong-Diabetes-Data-Analysis/process/final_calculation.html)</span></span>
-<span id="cb7-52"><a href="#cb7-52" aria-hidden="true" tabindex="-1"></a><span class="fu">### Thana-Level Distribution and Age Group Analysis</span></span>
-<span id="cb7-53"><a href="#cb7-53" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-54"><a href="#cb7-54" aria-hidden="true" tabindex="-1"></a>This page analyzes the cleaned dataset by region and age group.</span>
-<span id="cb7-55"><a href="#cb7-55" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-56"><a href="#cb7-56" aria-hidden="true" tabindex="-1"></a>Main tasks include:</span>
-<span id="cb7-57"><a href="#cb7-57" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-58"><a href="#cb7-58" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Standardizing thana names.</span>
-<span id="cb7-59"><a href="#cb7-59" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Separating records into City Corporation and outside-City-Corporation groups.</span>
-<span id="cb7-60"><a href="#cb7-60" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Calculating thana-wise population shares.</span>
-<span id="cb7-61"><a href="#cb7-61" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Summarizing age-group distribution by thana.</span>
-<span id="cb7-62"><a href="#cb7-62" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Checking whether all filtered records are correctly classified.</span>
-<span id="cb7-63"><a href="#cb7-63" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Preparing percentage summaries for maps and reports.</span>
-<span id="cb7-64"><a href="#cb7-64" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-65"><a href="#cb7-65" aria-hidden="true" tabindex="-1"></a>File:</span>
-<span id="cb7-66"><a href="#cb7-66" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-67"><a href="#cb7-67" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">Thana-Level Distribution and Age Group Analysis</span><span class="co">](https://miskatul-anwar.github.io/Chittagong-Diabetes-Data-Analysis/process/final_calculation.html)</span></span>
-<span id="cb7-68"><a href="#cb7-68" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-69"><a href="#cb7-69" aria-hidden="true" tabindex="-1"></a><span class="fu">### Spatial Mapping</span></span>
-<span id="cb7-70"><a href="#cb7-70" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-71"><a href="#cb7-71" aria-hidden="true" tabindex="-1"></a>The mapping outputs show diabetes distribution across Chattogram using GADM administrative boundaries.</span>
-<span id="cb7-72"><a href="#cb7-72" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-73"><a href="#cb7-73" aria-hidden="true" tabindex="-1"></a>Current map outputs include:</span>
-<span id="cb7-74"><a href="#cb7-74" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-75"><a href="#cb7-75" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Chattogram City Corporation diabetes distribution.</span>
-<span id="cb7-76"><a href="#cb7-76" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>City Corporation control-status pie charts by thana.</span>
-<span id="cb7-77"><a href="#cb7-77" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Chattogram district-level diabetes share map.</span>
-<span id="cb7-78"><a href="#cb7-78" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Outside-City-Corporation and City Corporation age-group composition maps.</span>
-<span id="cb7-79"><a href="#cb7-79" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-80"><a href="#cb7-80" aria-hidden="true" tabindex="-1"></a>Generated maps are saved in:</span>
-<span id="cb7-81"><a href="#cb7-81" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-82"><a href="#cb7-82" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">Spatial Mapping</span><span class="co">](https://miskatul-anwar.github.io/Chittagong-Diabetes-Data-Analysis/process/subdistrict-CC-Map.html)</span></span>
-<span id="cb7-83"><a href="#cb7-83" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">Spatial Mapping 2</span><span class="co">](https://miskatul-anwar.github.io/Chittagong-Diabetes-Data-Analysis/process/City-Copr-Map.html)</span></span>
-<span id="cb7-84"><a href="#cb7-84" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">Based on Total Population</span><span class="co">](https://miskatul-anwar.github.io/Chittagong-Diabetes-Data-Analysis/process/controlled-uncontrolled.html)</span></span>
-<span id="cb7-85"><a href="#cb7-85" aria-hidden="true" tabindex="-1"></a><span class="fu">## Data Inputs</span></span>
-<span id="cb7-86"><a href="#cb7-86" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-87"><a href="#cb7-87" aria-hidden="true" tabindex="-1"></a>The project uses environment variables instead of hard-coded file paths.</span>
-<span id="cb7-88"><a href="#cb7-88" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-89"><a href="#cb7-89" aria-hidden="true" tabindex="-1"></a>Required variables:</span>
-<span id="cb7-90"><a href="#cb7-90" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-91"><a href="#cb7-91" aria-hidden="true" tabindex="-1"></a><span class="in">```text</span></span>
-<span id="cb7-92"><a href="#cb7-92" aria-hidden="true" tabindex="-1"></a><span class="in">DATASET_PATH</span></span>
-<span id="cb7-93"><a href="#cb7-93" aria-hidden="true" tabindex="-1"></a><span class="in">NEW_PATH</span></span>
-<span id="cb7-94"><a href="#cb7-94" aria-hidden="true" tabindex="-1"></a><span class="in">CLEANED_DATASET_PATH</span></span>
-<span id="cb7-95"><a href="#cb7-95" aria-hidden="true" tabindex="-1"></a><span class="in">GPKG_PATH</span></span>
-<span id="cb7-96"><a href="#cb7-96" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb7-97"><a href="#cb7-97" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-98"><a href="#cb7-98" aria-hidden="true" tabindex="-1"></a>These paths should be defined in a <span class="in">`.env`</span> file before rendering the project.</span>
-<span id="cb7-99"><a href="#cb7-99" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-100"><a href="#cb7-100" aria-hidden="true" tabindex="-1"></a><span class="fu">## Regional Classification</span></span>
-<span id="cb7-101"><a href="#cb7-101" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-102"><a href="#cb7-102" aria-hidden="true" tabindex="-1"></a><span class="fu">### City Corporation Thanas</span></span>
-<span id="cb7-103"><a href="#cb7-103" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-104"><a href="#cb7-104" aria-hidden="true" tabindex="-1"></a><span class="in">```text</span></span>
-<span id="cb7-105"><a href="#cb7-105" aria-hidden="true" tabindex="-1"></a><span class="in">Bayejid Bostami, Chandgaon, Bakalia, Kotwali, Double Mooring, Patenga,</span></span>
-<span id="cb7-106"><a href="#cb7-106" aria-hidden="true" tabindex="-1"></a><span class="in">Chittagong Port, Halishahar, Pahartali, Khulshi, Panchlaish</span></span>
-<span id="cb7-107"><a href="#cb7-107" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb7-108"><a href="#cb7-108" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-109"><a href="#cb7-109" aria-hidden="true" tabindex="-1"></a><span class="fu">### Outside City Corporation Upazilas</span></span>
-<span id="cb7-110"><a href="#cb7-110" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-111"><a href="#cb7-111" aria-hidden="true" tabindex="-1"></a><span class="in">```text</span></span>
-<span id="cb7-112"><a href="#cb7-112" aria-hidden="true" tabindex="-1"></a><span class="in">Mirsharai, Fatikchhari, Raozan, Sitakunda, Hathazari, Boalkhali,</span></span>
-<span id="cb7-113"><a href="#cb7-113" aria-hidden="true" tabindex="-1"></a><span class="in">Patiya, Chandanaish, Sandwip, Rangunia, Anowara, Satkania,</span></span>
-<span id="cb7-114"><a href="#cb7-114" aria-hidden="true" tabindex="-1"></a><span class="in">Banshkhali, Lohagara</span></span>
-<span id="cb7-115"><a href="#cb7-115" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb7-116"><a href="#cb7-116" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-117"><a href="#cb7-117" aria-hidden="true" tabindex="-1"></a><span class="fu">## Key Outputs</span></span>
-<span id="cb7-118"><a href="#cb7-118" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-119"><a href="#cb7-119" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Cleaned diabetes dataset.</span>
-<span id="cb7-120"><a href="#cb7-120" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Updated fasting glucose values.</span>
-<span id="cb7-121"><a href="#cb7-121" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Standardized thana names.</span>
-<span id="cb7-122"><a href="#cb7-122" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>City Corporation and outside-City-Corporation summaries.</span>
-<span id="cb7-123"><a href="#cb7-123" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Age-group percentage tables.</span>
-<span id="cb7-124"><a href="#cb7-124" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Thana-wise diabetes distribution tables.</span>
-<span id="cb7-125"><a href="#cb7-125" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Control-status distribution tables.</span>
-<span id="cb7-126"><a href="#cb7-126" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>PDF maps saved under <span class="in">`report/`</span>.</span>
-<span id="cb7-127"><a href="#cb7-127" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-128"><a href="#cb7-128" aria-hidden="true" tabindex="-1"></a><span class="fu">## Reproducibility</span></span>
-<span id="cb7-129"><a href="#cb7-129" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-130"><a href="#cb7-130" aria-hidden="true" tabindex="-1"></a>Before rendering, confirm that:</span>
-<span id="cb7-131"><a href="#cb7-131" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-132"><a href="#cb7-132" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>The <span class="in">`.env`</span> file exists.</span>
-<span id="cb7-133"><a href="#cb7-133" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>All dataset paths are valid.</span>
-<span id="cb7-134"><a href="#cb7-134" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>Required Python packages are installed.</span>
-<span id="cb7-135"><a href="#cb7-135" aria-hidden="true" tabindex="-1"></a><span class="ss">* </span>The cleaning page is rendered before dependent analysis pages.</span>
-<span id="cb7-136"><a href="#cb7-136" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-137"><a href="#cb7-137" aria-hidden="true" tabindex="-1"></a>Required Python packages include:</span>
-<span id="cb7-138"><a href="#cb7-138" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-139"><a href="#cb7-139" aria-hidden="true" tabindex="-1"></a><span class="in">```text</span></span>
-<span id="cb7-140"><a href="#cb7-140" aria-hidden="true" tabindex="-1"></a><span class="in">pandas</span></span>
-<span id="cb7-141"><a href="#cb7-141" aria-hidden="true" tabindex="-1"></a><span class="in">numpy</span></span>
-<span id="cb7-142"><a href="#cb7-142" aria-hidden="true" tabindex="-1"></a><span class="in">geopandas</span></span>
-<span id="cb7-143"><a href="#cb7-143" aria-hidden="true" tabindex="-1"></a><span class="in">seaborn</span></span>
-<span id="cb7-144"><a href="#cb7-144" aria-hidden="true" tabindex="-1"></a><span class="in">python-dotenv</span></span>
-<span id="cb7-145"><a href="#cb7-145" aria-hidden="true" tabindex="-1"></a><span class="in">openpyxl</span></span>
-<span id="cb7-146"><a href="#cb7-146" aria-hidden="true" tabindex="-1"></a><span class="in">matplotlib</span></span>
-<span id="cb7-147"><a href="#cb7-147" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb7-148"><a href="#cb7-148" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-149"><a href="#cb7-149" aria-hidden="true" tabindex="-1"></a><span class="fu">## Render the Project</span></span>
-<span id="cb7-150"><a href="#cb7-150" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-151"><a href="#cb7-151" aria-hidden="true" tabindex="-1"></a>Render the full Quarto project:</span>
-<span id="cb7-152"><a href="#cb7-152" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-153"><a href="#cb7-153" aria-hidden="true" tabindex="-1"></a><span class="in">```bash</span></span>
-<span id="cb7-154"><a href="#cb7-154" aria-hidden="true" tabindex="-1"></a><span class="ex">quarto</span> render</span>
-<span id="cb7-155"><a href="#cb7-155" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb7-156"><a href="#cb7-156" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-157"><a href="#cb7-157" aria-hidden="true" tabindex="-1"></a>Preview the site locally:</span>
-<span id="cb7-158"><a href="#cb7-158" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-159"><a href="#cb7-159" aria-hidden="true" tabindex="-1"></a><span class="in">```bash</span></span>
-<span id="cb7-160"><a href="#cb7-160" aria-hidden="true" tabindex="-1"></a><span class="ex">quarto</span> preview</span>
-<span id="cb7-161"><a href="#cb7-161" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb7-162"><a href="#cb7-162" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-163"><a href="#cb7-163" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Chittagong Diabetes Data Analysis"</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="an">subtitle:</span><span class="co"> "A reproducible diabetes data analysis and mapping project for Chattogram"</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="an">author:</span><span class="co"> "Miskatul Anwar"</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="an">date:</span><span class="co"> "2026-06-05"</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="an">number-sections:</span><span class="co"> false</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="co">  html:</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="co">    toc: false</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="co">    code-fold: false</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="co">    code-tools: true</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="an">execute:</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="co">  warning: false</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="co">  message: false</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="fu">## Overview</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>This project presents a reproducible workflow for cleaning, analyzing, and mapping diabetes patient data from the Chittagong region.</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>The analysis covers clinical data preparation, thana-level distribution, age-group patterns, City Corporation classification, spatial mapping, and control-status visualization.</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>Use the pages below to explore the full workflow.</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="fu">## Start Here</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">Data Cleaning and Standardization</span><span class="co">](process/data-wrangling.html)</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>  Clean raw diabetes records, remove duplicates, update fasting glucose values, and prepare the dataset for analysis.</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">Clinical Pattern Analysis</span><span class="co">](process/fasting-body-composition-lifestyle.html)</span></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>  Explore fasting glucose, body composition, and lifestyle-related patterns by age group.</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">Final Calculation and Regional Summary</span><span class="co">](process/final_calculation.html)</span></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>  Review thana-level population distribution, City Corporation grouping, and age-group percentage summaries.</span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a><span class="fu">## Spatial Maps</span></span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">City Corporation Map</span><span class="co">](process/City-Copr-Map.html)</span></span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>  View diabetes distribution and age-group composition across Chattogram City Corporation thanas.</span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">Chattogram District Map</span><span class="co">](process/subdistrict-CC-Map.html)</span></span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a>  Compare diabetes distribution between Chattogram City Corporation and outside-City-Corporation upazilas.</span>
+<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="co">[</span><span class="ot">Control Status Map</span><span class="co">](process/controlled-uncontrolled.html)</span></span>
+<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a>  View diabetes share by thana with controlled and uncontrolled status shown using pie charts.</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
 

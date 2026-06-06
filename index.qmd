@@ -1,13 +1,12 @@
 ---
 title: "Chittagong Diabetes Data Analysis"
-subtitle: "Diabetes data cleaning, thana-level distribution, age-group patterns, and control status mapping"
+subtitle: "A reproducible diabetes data analysis and mapping project for Chattogram"
 author: "Miskatul Anwar"
 date: "2026-06-05"
 number-sections: false
 format:
   html:
-    toc: true
-    toc-depth: 2
+    toc: false
     code-fold: false
     code-tools: true
 execute:
@@ -17,148 +16,37 @@ execute:
 
 ## Overview
 
-This project analyzes diabetes patient data from the Chittagong region using a reproducible Python and Quarto workflow. The work covers data cleaning, fasting glucose standardization, thana-level distribution analysis, City Corporation classification, age-group summaries, and spatial mapping.
+This project presents a reproducible workflow for cleaning, analyzing, and mapping diabetes patient data from the Chittagong region.
 
-The project focuses on preparing clean, analysis-ready clinical data and producing regional summaries for Chattogram City Corporation and outside-City-Corporation areas.
+The analysis covers clinical data preparation, thana-level distribution, age-group patterns, City Corporation classification, spatial mapping, and control-status visualization.
 
-## Project Goals
+Use the pages below to explore the full workflow.
 
-- Clean and standardize raw diabetes patient records.
-- Update fasting glucose values using supplementary patient-level data.
-- Standardize thana names for reliable regional analysis.
-- Compare diabetes patient distribution inside and outside Chattogram City Corporation.
-- Analyze age-group patterns using `<=30` and `>30` categories.
-- Map thana-level diabetes distribution and control status.
-- Generate reproducible outputs for reporting and future analysis.
+## Start Here
 
-## Current Analysis Pages
+- [Data Cleaning and Standardization](process/data-wrangling.html)
 
-### Data Cleaning and Standardization
+  Clean raw diabetes records, remove duplicates, update fasting glucose values, and prepare the dataset for analysis.
 
-This page prepares the raw clinical dataset for analysis.
+- [Clinical Pattern Analysis](process/fasting-body-composition-lifestyle.html)
 
-Main tasks include:
+  Explore fasting glucose, body composition, and lifestyle-related patterns by age group.
 
-- Loading raw and supplementary datasets from environment variables.
-- Removing duplicate columns and duplicate patient records.
-- Updating fasting glucose values by patient `ID`.
-- Converting clinical fields such as fasting glucose, BMI, weight, and height into numeric format.
-- Removing records with missing key analytical values.
-- Exporting the cleaned dataset for downstream analysis.
+- [Final Calculation and Regional Summary](process/final_calculation.html)
 
-Check:
-- [Data Cleaning and Standardization](https://miskatul-anwar.github.io/Chittagong-Diabetes-Data-Analysis/process/data-wrangling.html)
-- [Final Evaluation](https://miskatul-anwar.github.io/Chittagong-Diabetes-Data-Analysis/process/final_calculation.html)
-### Thana-Level Distribution and Age Group Analysis
+  Review thana-level population distribution, City Corporation grouping, and age-group percentage summaries.
 
-This page analyzes the cleaned dataset by region and age group.
+## Spatial Maps
 
-Main tasks include:
+- [City Corporation Map](process/City-Copr-Map.html)
 
-* Standardizing thana names.
-* Separating records into City Corporation and outside-City-Corporation groups.
-* Calculating thana-wise population shares.
-* Summarizing age-group distribution by thana.
-* Checking whether all filtered records are correctly classified.
-* Preparing percentage summaries for maps and reports.
+  View diabetes distribution and age-group composition across Chattogram City Corporation thanas.
 
-File:
+- [Chattogram District Map](process/subdistrict-CC-Map.html)
 
-[Thana-Level Distribution and Age Group Analysis](https://miskatul-anwar.github.io/Chittagong-Diabetes-Data-Analysis/process/final_calculation.html)
+  Compare diabetes distribution between Chattogram City Corporation and outside-City-Corporation upazilas.
 
-### Spatial Mapping
+- [Control Status Map](process/controlled-uncontrolled.html)
 
-The mapping outputs show diabetes distribution across Chattogram using GADM administrative boundaries.
-
-Current map outputs include:
-
-* Chattogram City Corporation diabetes distribution.
-* City Corporation control-status pie charts by thana.
-* Chattogram district-level diabetes share map.
-* Outside-City-Corporation and City Corporation age-group composition maps.
-
-Generated maps are saved in:
-
-- [Spatial Mapping](https://miskatul-anwar.github.io/Chittagong-Diabetes-Data-Analysis/process/subdistrict-CC-Map.html)
-- [Spatial Mapping 2](https://miskatul-anwar.github.io/Chittagong-Diabetes-Data-Analysis/process/City-Copr-Map.html)
-- [Based on Total Population](https://miskatul-anwar.github.io/Chittagong-Diabetes-Data-Analysis/process/controlled-uncontrolled.html)
-## Data Inputs
-
-The project uses environment variables instead of hard-coded file paths.
-
-Required variables:
-
-```text
-DATASET_PATH
-NEW_PATH
-CLEANED_DATASET_PATH
-GPKG_PATH
-```
-
-These paths should be defined in a `.env` file before rendering the project.
-
-## Regional Classification
-
-### City Corporation Thanas
-
-```text
-Bayejid Bostami, Chandgaon, Bakalia, Kotwali, Double Mooring, Patenga,
-Chittagong Port, Halishahar, Pahartali, Khulshi, Panchlaish
-```
-
-### Outside City Corporation Upazilas
-
-```text
-Mirsharai, Fatikchhari, Raozan, Sitakunda, Hathazari, Boalkhali,
-Patiya, Chandanaish, Sandwip, Rangunia, Anowara, Satkania,
-Banshkhali, Lohagara
-```
-
-## Key Outputs
-
-* Cleaned diabetes dataset.
-* Updated fasting glucose values.
-* Standardized thana names.
-* City Corporation and outside-City-Corporation summaries.
-* Age-group percentage tables.
-* Thana-wise diabetes distribution tables.
-* Control-status distribution tables.
-* PDF maps saved under `report/`.
-
-## Reproducibility
-
-Before rendering, confirm that:
-
-* The `.env` file exists.
-* All dataset paths are valid.
-* Required Python packages are installed.
-* The cleaning page is rendered before dependent analysis pages.
-
-Required Python packages include:
-
-```text
-pandas
-numpy
-geopandas
-seaborn
-python-dotenv
-openpyxl
-matplotlib
-```
-
-## Render the Project
-
-Render the full Quarto project:
-
-```bash
-quarto render
-```
-
-Preview the site locally:
-
-```bash
-quarto preview
-```
-
-
+  View diabetes share by thana with controlled and uncontrolled status shown using pie charts.
 
