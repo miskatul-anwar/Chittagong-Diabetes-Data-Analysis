@@ -4,7 +4,7 @@ project:
   execute-dir: project
 
 book:
-  title: "Chattogram Diabetes Data Analysis"
+  title: "Geospatial Analysis of Diabetes Distribution and Control Status in Chattogram"
   page-navigation: true
   author: "Miskatul Anwar"
   cover-image: cover.png

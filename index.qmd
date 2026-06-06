@@ -1,5 +1,5 @@
 ---
-title: "Chittagong Diabetes Data Analysis"
+title: "Geospatial Analysis of Diabetes Distribution and Control Status in Chattogram"
 subtitle: "A reproducible diabetes data analysis and mapping project for Chattogram"
 author: "Miskatul Anwar"
 date: "2026-06-05"
