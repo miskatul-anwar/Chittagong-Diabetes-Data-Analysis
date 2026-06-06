@@ -2,31 +2,31 @@
   {
     "objectID": "index.html",
     "href": "index.html",
-    "title": "Chittagong Diabetes Data Analysis",
+    "title": "Geospatial Analysis of Diabetes Distribution and Control Status in Chattogram",
     "section": "",
     "text": "Overview\nThis project presents a reproducible workflow for cleaning, analyzing, and mapping diabetes patient data from the Chittagong region.\nThe analysis covers clinical data preparation, thana-level distribution, age-group patterns, City Corporation classification, spatial mapping, and control-status visualization.\nUse the pages below to explore the full workflow.",
     "crumbs": [
-      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Chittagong Diabetes Data Analysis</span>"
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Geospatial Analysis of Diabetes Distribution and Control Status in Chattogram</span>"
     ]
   },
   {
     "objectID": "index.html#start-here",
     "href": "index.html#start-here",
-    "title": "Chittagong Diabetes Data Analysis",
+    "title": "Geospatial Analysis of Diabetes Distribution and Control Status in Chattogram",
     "section": "Start Here",
     "text": "Start Here\n\nData Cleaning and Standardization\nClean raw diabetes records, remove duplicates, update fasting glucose values, and prepare the dataset for analysis.\nClinical Pattern Analysis\nExplore fasting glucose, body composition, and lifestyle-related patterns by age group.\nFinal Calculation and Regional Summary\nReview thana-level population distribution, City Corporation grouping, and age-group percentage summaries.",
     "crumbs": [
-      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Chittagong Diabetes Data Analysis</span>"
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Geospatial Analysis of Diabetes Distribution and Control Status in Chattogram</span>"
     ]
   },
   {
     "objectID": "index.html#spatial-maps",
     "href": "index.html#spatial-maps",
-    "title": "Chittagong Diabetes Data Analysis",
+    "title": "Geospatial Analysis of Diabetes Distribution and Control Status in Chattogram",
     "section": "Spatial Maps",
     "text": "Spatial Maps\n\nCity Corporation Map\nView diabetes distribution and age-group composition across Chattogram City Corporation thanas.\nChattogram District Map\nCompare diabetes distribution between Chattogram City Corporation and outside-City-Corporation upazilas.\nControl Status Map\nView diabetes share by thana with controlled and uncontrolled status shown using pie charts.",
     "crumbs": [
-      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Chittagong Diabetes Data Analysis</span>"
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Geospatial Analysis of Diabetes Distribution and Control Status in Chattogram</span>"
     ]
   },
   {
